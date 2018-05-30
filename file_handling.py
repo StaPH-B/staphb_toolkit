@@ -15,7 +15,7 @@ class BSProject(object):
         if not os.path.isdir(self.path):
             raise ValueError("BaseSpace project " + self.name + " not found. \nPlease check project id "
                                                                 "and make sure that"
-                                                                "BaseSpace is proberly mounted")
+                                                                "BaseSpace is properly mounted")
         return
 
     def link_reads(self, output_dir=None, samples=None):
