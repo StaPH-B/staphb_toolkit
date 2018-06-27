@@ -1,1 +1,2 @@
-# DCLS_ToolKit
+# StaPH-B ToolKit
+Bioinformatics tools for public health scientists
