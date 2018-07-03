@@ -26,7 +26,7 @@ class BSProject(object):
         return
 
     def link_reads(self, output_dir=None, samples=None):
-        #TODO rename sample names using
+        #TODO rename sample names using new method
         if output_dir is None:
             raw_reads_dir = os.getcwd() + "/" + self.name + "/raw_reads/"
         else:
