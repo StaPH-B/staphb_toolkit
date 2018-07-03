@@ -9,8 +9,10 @@ import datetime
 from time import gmtime, strftime
 
 
-
 class BSProject(object):
+    """
+
+    """
 
     def __init__(self, name):
         self.name = name  # name of BS project
@@ -24,6 +26,7 @@ class BSProject(object):
         return
 
     def link_reads(self, output_dir=None, samples=None):
+        #TODO rename sample names using new method
         if output_dir is None:
             raw_reads_dir = os.getcwd() + "/" + self.name + "/raw_reads/"
         else:
@@ -51,6 +54,7 @@ class BSProject(object):
         return
 
     def post_to_basespace(self, report, report_dir):
+        # TODO change date to date and time
         app_results_dir = self.path + "/AppResults/" + report + strftime("_%Y_%m_%d", gmtime())  + "/"
         subprocess.call("mkdir" + " " + app_results_dir + " " "&& cp -R" + " " + report_dir + "*" + " "
                         + app_results_dir, shell=True)
@@ -60,6 +64,7 @@ class BSProject(object):
 
         print(report_dir + " " + "uploaded to BaseSpace.")
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="BaseSpace.py <input> [options]")
     parser.add_argument("input", type=str, help="Name of BaseSpace project")
@@ -67,7 +72,7 @@ if __name__ == '__main__':
                                                          "an output_dir with the same name as the <input> "
                                                          "BaseSpace Project")
     parser.add_argument("-link", action='store_true', help="Will link reads from <input> BaseSpace Project to "
-                                                          "<output_dir>/raw_reads/")
+                                                           "<output_dir>/raw_reads/")
     parser.add_argument("-postToBS", choices=["Belvidere", "Tredegar"], help="Will post the indicated report to the "
                                                                              "<input> BaseSpace Project")
 
@@ -88,7 +93,7 @@ if __name__ == '__main__':
 
     project = BSProject(input_dir)
 
-    print("Selected BaseSpace Project: ", input_dir )
+    print("Selected BaseSpace Project: ", input_dir)
 
     if link_reads:
         project.link_reads(output_dir)
