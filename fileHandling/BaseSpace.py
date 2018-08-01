@@ -5,7 +5,7 @@ import glob
 import subprocess
 import sys
 import argparse
-import datetime
+import re
 from time import gmtime, strftime
 
 
@@ -25,7 +25,7 @@ class BSProject(object):
                                                                 "BaseSpace is properly mounted")
         return
 
-    def link_reads(self, output_dir=None, samples=None):
+    def link_raw_reads(self, output_dir=None, samples=None):
         #TODO rename sample names using new method
         if output_dir is None:
             raw_reads_dir = os.getcwd() + "/" + self.name + "/raw_reads/"
@@ -45,7 +45,8 @@ class BSProject(object):
                 reads.extend(glob.glob(self.path + "/Samples/" + sample + "/Files/*.fastq.gz"))
 
         for read in reads:
-            dest = raw_reads_dir + os.path.basename(read).replace("_001", "")
+            dest = raw_reads_dir + re.sub('S\d+_L\d+_R', "", os.path.basename(read))
+            dest = dest.replace("_001","")
             if not os.path.isfile(dest):
                 os.symlink(read, dest)
                 print("Sym link for", read, "made at", dest)
@@ -71,8 +72,8 @@ if __name__ == '__main__':
     parser.add_argument("-o", default="", type=str, help="Name of output_dir. Default will store output within "
                                                          "an output_dir with the same name as the <input> "
                                                          "BaseSpace Project")
-    parser.add_argument("-link", action='store_true', help="Will link reads from <input> BaseSpace Project to "
-                                                           "<output_dir>/raw_reads/")
+    parser.add_argument("-link_raw_reads", action='store_true', help="Will link reads from <input> BaseSpace Project "
+                                                                     "to <output_dir>/raw_reads/")
     parser.add_argument("-postToBS", choices=["Belvidere", "Tredegar"], help="Will post the indicated report to the "
                                                                              "<input> BaseSpace Project")
 
@@ -83,8 +84,8 @@ if __name__ == '__main__':
 
     input_dir = args.input
     output_dir = args.o
-    link_reads = args.link
-    reportToBS = args.postToBS
+    link_raw_reads = args.link_raw_reads
+    postToBS = args.postToBS
 
     if len(output_dir) > 0:
         pass
@@ -94,19 +95,19 @@ if __name__ == '__main__':
     project = BSProject(input_dir)
 
     print("Selected BaseSpace Project: ", input_dir)
+    print(link_raw_reads)
 
-    if link_reads:
-        project.link_reads(output_dir)
+    if link_raw_reads:
+        print("linking raw reads. . .")
+        project.link_raw_reads(output_dir)
 
-    if reportToBS:
-        report_dir = output_dir + "/reports/" + reportToBS + "/"
+    if postToBS:
+        report_dir = output_dir + "/reports/" + postToBS + "/"
 
         if not os.path.isdir(report_dir):
-            raise ValueError("No " + reportToBS + " report was not found.")
+            raise ValueError("No " + posttToBS + " report was not found.")
         else:
-            print(report_dir)
-            print(reportToBS)
-            print("Posting", " ", reportToBS, " ", "report to BaseSpace. . .")
-            project.post_to_basespace(str(reportToBS), report_dir)
+            print("Posting", " ", postToBS, " ", "report to BaseSpace. . .")
+            project.post_to_basespace(str(postToBS), report_dir)
 
 
