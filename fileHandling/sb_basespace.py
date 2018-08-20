@@ -14,9 +14,9 @@ class BSProject(object):
 
     """
 
-    def __init__(self, name):
-        self.name = name  # name of BS project
-        self.path = os.path.expanduser("~") + "/BaseSpace/Projects/" + name  # path to BS project
+    def __init__(self, Project):
+        self.name = Project  # name of BS project
+        self.path = os.path.expanduser("~") + "/BaseSpace/Projects/" + self.name  # path to BS project
         self.reads = glob.glob(self.path + "/Samples/*/Files/*.fastq.gz")  # Read files for all samples in BS Project
 
         if not os.path.isdir(self.path):
@@ -26,11 +26,7 @@ class BSProject(object):
         return
 
     def link_raw_reads(self, output_dir=None, samples=None):
-        #TODO rename sample names using new method
-        if output_dir is None:
-            raw_reads_dir = os.getcwd() + "/" + self.name + "/raw_reads/"
-        else:
-            raw_reads_dir = os.getcwd() + "/" + output_dir + "/raw_reads/"
+        raw_reads_dir = os.getcwd() + "/" + output_dir + "/raw_reads/"
 
         if not os.path.isdir(raw_reads_dir):
             os.makedirs(raw_reads_dir)
@@ -47,6 +43,7 @@ class BSProject(object):
         for read in reads:
             dest = raw_reads_dir + re.sub('S\d+_L\d+_R', "", os.path.basename(read))
             dest = dest.replace("_001","")
+            print(dest)
             if not os.path.isfile(dest):
                 os.symlink(read, dest)
                 print("Sym link for", read, "made at", dest)
@@ -67,7 +64,7 @@ class BSProject(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage="BaseSpace.py <input> [options]")
+    parser = argparse.ArgumentParser(usage="sb_basespace.py <input> [options]")
     parser.add_argument("input", type=str, help="Name of BaseSpace project")
     parser.add_argument("-o", default="", type=str, help="Name of output_dir. Default will store output within "
                                                          "an output_dir with the same name as the <input> "
@@ -94,8 +91,7 @@ if __name__ == '__main__':
 
     project = BSProject(input_dir)
 
-    print("Selected BaseSpace Project: ", input_dir)
-    print(link_raw_reads)
+    print("Selected BaseSpace Project: ", project.name)
 
     if link_raw_reads:
         print("linking raw reads. . .")
