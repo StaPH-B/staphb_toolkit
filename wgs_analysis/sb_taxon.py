@@ -30,23 +30,21 @@ class SBTaxon:
         #data dictionary for storing mash species prediction
         #formatted id: predicted_species
         mash_species = {}
-
         # run MASH and store top hit in mash_species
         for id in self.reads.idList:
             mash_species[id] = ""
 
-            r1 = self.reads.rawdata[id][0]
-            r2 = self.reads.rawdata[id][1]
-
+            fwd = self.reads.rawdata[id][0]
+            rev = self.reads.rawdata[id][1]
             cat_reads = mash_output_dir + id + ".fastq"
             mash_sketch = mash_output_dir + id + ".fastq.msh"
             mash_result = mash_output_dir + id + "_distance.tab"
 
-            if not cat_reads:
-                subprocess.call("cat" + " " + r1 + " " + r2 + " > " + cat_reads +
+            if not os.path.isfile(cat_reads):
+                subprocess.call("cat" + " " + fwd + " " + rev + " > " + cat_reads +
                                 " && mash sketch -m 2 " + cat_reads, shell = True)
 
-            if not mash_result:
+            if not os.path.isfile(mash_result):
                 subprocess.call("mash dist" + " " + mash_db + " " + mash_sketch + " > " + mash_result, shell = True)
 
             subprocess.call("sort -gk3" + " " + mash_result + " " + "-o" + " " + mash_result, shell = True)
@@ -58,6 +56,7 @@ class SBTaxon:
             mash_species[id] = taxon.decode('ASCII').rstrip()
 
         return(mash_species)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="sb_taxon.py <input> [options]")
@@ -78,8 +77,10 @@ if __name__ == '__main__':
     if not output_dir:
         output_dir = path
 
-    reads = SBTaxon(path, output_dir)
-    print("Project selected: " + reads.name)
+    taxons = SBTaxon(path, output_dir)
+    print("Project selected: " + taxons.name)
 
     if mash:
-        print(reads.sb_mash())
+        print(taxons.reads.readList)
+        print(taxons.sb_mash())
+
