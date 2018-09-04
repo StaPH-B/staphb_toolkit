@@ -48,14 +48,17 @@ class SBReads:
             for file in files:
                 if '.fastq' in file:
                     if '_R1' in file or '_1' in file:
+                        if file not in self.readList:
+                            self.readList.append(root + '/' + file)
                         id = file.split('_')[0]
                         if id not in self.idList:
                             self.idList.append(id)
                     if '_R2' in file or '_2' in file:
+                        if file not in self.readList:
+                            self.readList.append(root + '/' + file)
                         id = file.split('_')[0]
                         if id not in self.idList:
                             self.idList.append(id)
-                    self.readList.append(root+'/'+file)
 
         if len(self.readList) == 0:
             raise ValueError("No read fastq read files found in" + " " + path)
