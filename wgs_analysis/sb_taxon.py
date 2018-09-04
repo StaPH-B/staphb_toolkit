@@ -8,27 +8,32 @@ import argparse
 import subprocess
 from time import gmtime, strftime
 
-class SBMash(object):
+class SBTaxon:
 
-    def __init__(self, project):
-        self.name = input_dir  # name of wgs project
+    def __init__(self, project_dir, read_dir = None):
+        self.name = project_dir  # name of wgs project
         self.path = os.path.expanduser("~") + "/" + self.name  # path to project
-        self.reads = glob.glob(self.path + "/raw_reads/*.fastq*")  # Read files
+        if read_dir is None:
+            read_dir = "/raw_reads"
+        self.reads = glob.glob(self.path + read_dir + "/*.fastq*")  # Read files
+        test = glob.glob("")
 
         if not os.path.isdir(self.name):
             raise ValueError(self.name + " " + "not found.")
 
         if len(self.reads) == 0:
-            raise ValueError("No read files in" + " " + self.input)
+            print(self.path + read_dir)
+            print(self.reads)
+            raise ValueError("No read files in" + " " + self.name)
 
         return
 
-    def mash_raw_reads(self, samples=None):
-        mash_output_dir = self.path + "mash_output/"
+    def sb_mash(self, samples=None):
+        mash_output_dir = self.path + "/mash_output/"
 
         if not os.path.isdir(mash_output_dir):
             os.makedirs(mash_output_dir)
-            print("Directory for raw reads made: ", mash_output_dir)
+            print("Directory for mash output made: ", mash_output_dir)
 
         if samples is None:
             reads = self.reads
@@ -74,25 +79,32 @@ class SBMash(object):
             count= count + 1
 
 
-
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage="sb_local_reads.py <input> [options]")
-    parser.add_argument("input", type=str, help="path to directory containing read files")
+    parser = argparse.ArgumentParser(usage="sb_taxon.py <input> [options]")
+    parser.add_argument("project", type=str, help="path to Project containing read files")
+    parser.add_argument("-reads_dir", default="", type=str, help="path to read files; default = project_dir/raw_read")
+    parser.add_argument("-mash", action='store_true', help="Perform taxon prediction using MASH against RefSeq db")
+
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
         parser.exit()
     args = parser.parse_args()
 
-    input_dir = args.input
+    project = args.project
+    mash = args.mash
 
+    reads_dir = args.reads_dir
+    if len(reads_dir) > 0:
+        pass
+    else:
+        reads_dir =  "/raw_reads/"
 
+    project = SBTaxon(project, reads_dir)
+    print("Project selected: " + project.name)
 
-    project = SBMash(input_dir)
 
     #print(project.name, project.reads)
-    project.mash_raw_reads()
-
+    if mash:
+        project.sb_mash()
 
