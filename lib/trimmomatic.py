@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+#author: Nick Florek
+#email: nicholas.florek@slh.wisc.edu
+
 import os,sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
