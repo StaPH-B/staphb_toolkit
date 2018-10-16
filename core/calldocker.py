@@ -5,6 +5,7 @@ import os
 import argparse
 import sys
 import json
+import shlex
 
 def call(container,command,cwd='',paths={},remove=True):
     #access docker environment
@@ -21,7 +22,7 @@ def call(container,command,cwd='',paths={},remove=True):
             volumes[key] = {'bind':paths[key],'mode':'rw'}
 
     #run the container
-    client.containers.run(container,command,user=user,volumes=volumes,remove=remove)
+    client.containers.run(container,command,user=user,volumes=volumes,working_dir=cwd,remove=remove)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="calldocker.py <docker_container> <command> [options]")
