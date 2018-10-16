@@ -5,38 +5,45 @@ import sys
 import argparse
 import subprocess
 import csv
-from staphB_ToolKit.fileHandling import sb_read_data
-from staphB_ToolKit.wgs_analysis import sb_taxon
+from staphB_ToolKit.core import fileparser
+from staphB_ToolKit.tools import taxon
 
-class SBReadQuality:
+class ReadQuality:
+    #class object to contain fastq file information
+    runfiles = None
+    #path to fastq files
+    path = None
+    #output directory
+    output_dir = None
 
-    def __init__(self, path, output_dir = ""):
-        self.name = path
-        self.reads = sb_read_data.SBReads(self.name)
-        if not output_dir:
-            output_dir = self.name
-        self.output = output_dir
+    def __init__(self,runfiles=None, path, output_dir = ""):
+        if runfiles:
+            self.runfiles = runfiles
+        else:
+            self.path = path
+            self.runfiles = fileparser.RunFiles(self.path)
 
-        if len(self.reads.idList) == 0:
-            raise ValueError("No read files in" + " " + self.name)
+        if output_dir:
+            self.output_dir = output_dir
+        else:
+            self.output_dir = os.getcwd()
 
-
-    def sb_cg_pipeline(self, mash=True):
-        cgp_output_dir = self.output + "/cg_pipeline_output/"
+    def cg_pipeline(self, mash=True):
+        cgp_output_dir = os.path.join(self.output_dir,"cg_pipeline_output")
 
         if not os.path.isdir(cgp_output_dir):
             os.makedirs(cgp_output_dir)
             print("Directory for cg_pipeline output made: ", cgp_output_dir)
 
 
-        taxon = sb_taxon.SBTaxon(self.name, self.output)
-        mash_species = taxon.sb_mash()
+        taxon = taxon.Taxon(self.name, self.output_dir)
+        mash_species = taxon.mash()
 
         #data dictrionary containing quality metrics for each isolate
         #formatted id: {r1_q: X, r2_q: X, est_cvg: X}
         isolate_qual = {}
 
-        for id in self.reads.idList:
+        for id in self.runfiles.ids:
             isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_cvg": None}
 
             if 'Salmonella' in mash_species[id] or 'Escherichia' in mash_species[id]:
@@ -56,8 +63,8 @@ class SBReadQuality:
 
             cgp_out = cgp_output_dir + id + "_readMetrics.tsv"
 
-            fwd = self.reads.rawdata[id][0]
-            rev = self.reads.rawdata[id][1]
+            fwd = self.runfile.reads[id].fwd
+            rev = self.runfile.reads[id].rev
             if "R1" in fwd:
                 reads = fwd.replace("R1", "*")
             else:
@@ -84,7 +91,7 @@ class SBReadQuality:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage="sb_read_quality.py <input> [options]")
+    parser = argparse.ArgumentParser(usage="readquality.py <input> [options]")
     parser.add_argument("input", type=str, help="path to dir containing read files")
     parser.add_argument("-o", default="", type=str, help="Name of output_dir")
     parser.add_argument("-cg_pipeline", action='store_true', help="Perform quality assessment using CG_Pipeline")
@@ -102,8 +109,8 @@ if __name__ == '__main__':
     if not output_dir:
         output_dir = path
 
-    quality = SBReadQuality(path, output_dir)
-    print("Project selected: " + quality.name)
+    quality = ReadQuality(path, output_dir)
+    print("Project selected: " + quality.path)
 
     if cg_pipeline:
-        print(quality.sb_cg_pipeline())
+        print(quality.cg_pipeline())
