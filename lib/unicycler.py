@@ -68,7 +68,7 @@ class Unicycler:
 
 
             #call the docker process
-            calldocker.call("staphb/unicycler",command,'/dataout',mounting)
+            calldocker.call("staphb/unicycler-v0.4.7",command,'/dataout',mounting)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="unicycler.py <input> [options]")
