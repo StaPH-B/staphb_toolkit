@@ -65,9 +65,9 @@ class Trimmomatic:
 
             #build command for running trimmomatic
             if self.runfiles.reads[read].paired:
-                command = "java -jar Trimmomatic-0.38/trimmomatic-0.38.jar PE -threads {threads} {in_dir}/{fwd} {in_dir}/{rev} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
+                command = "java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar PE -threads {threads} {in_dir}/{fwd} {in_dir}/{rev} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
             else:
-                command = "java -jar Trimmomatic-0.38/trimmomatic-0.38.jar SE -threads {threads} {in_dir}/{fastq} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
+                command = "java -jar /Trimmomatic-0.38/trimmomatic-0.38.jar SE -threads {threads} {in_dir}/{fastq} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
 
 
             #call the docker process
