@@ -65,13 +65,13 @@ class Trimmomatic:
 
             #build command for running trimmomatic
             if self.runfiles.reads[read].paired:
-                command = "trimmomatic PE -threads {threads} {in_dir}/{fwd} {in_dir}/{rev} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
+                command = "java -jar Trimmomatic-0.38/trimmomatic-0.38.jar PE -threads {threads} {in_dir}/{fwd} {in_dir}/{rev} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
             else:
-                command = "trimmomatic SE -threads {threads} {in_dir}/{fastq} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
+                command = "java -jar Trimmomatic-0.38/trimmomatic-0.38.jar SE -threads {threads} {in_dir}/{fastq} -baseout {out_dir}/{id}.fastq.gz {qualitymetrics}".format(threads=self.threads,in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,id=id,qualitymetrics=self.quality_metrics)
 
 
             #call the docker process
-            calldocker.call("nwflorek/trimmomatic",command,'/dataout',mounting)
+            calldocker.call("staphb/trimmomatic",command,'/dataout',mounting)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="trimmomatic.py <input> [options]")
