@@ -16,7 +16,7 @@ class Taxon:
     #mash db location
     mash_db = "/opt/genomes/RefSeqSketchesDefaults.msh"
 
-    def __init__(self,runfiles=None, path, output_dir = None,mash_db =None):
+    def __init__(self, path, runfiles=None, output_dir = None, mash_db =None):
         if runfiles:
             self.runfiles = runfiles
         else:
@@ -33,7 +33,7 @@ class Taxon:
 
     def mash(self):
         #create output directory
-        mash_output_dir = os.path.join(self.output_dir,"mash_output")
+        mash_output_dir = os.path.join(self.output_dir,"mash_output/")
         if not os.path.isdir(mash_output_dir):
             os.makedirs(mash_output_dir)
             print("Directory for mash output made: ", mash_output_dir)
@@ -42,11 +42,12 @@ class Taxon:
         #formatted id: predicted_species
         mash_species = {}
         # run MASH and store top hit in mash_species
-        for id in self.runfile.ids:
+        print("Samples found:" + ', '.join(self.runfiles.ids))
+        for id in self.runfiles.ids:
             mash_species[id] = ""
 
-            fwd = self.runfile.reads[id].fwd
-            rev = self.runfile.reads[id].rev
+            fwd = self.runfiles.reads[id].fwd
+            rev = self.runfiles.reads[id].rev
             cat_reads = mash_output_dir + id + ".fastq"
             mash_sketch = mash_output_dir + id + ".fastq.msh"
             mash_result = mash_output_dir + id + "_distance.tab"
@@ -56,7 +57,7 @@ class Taxon:
                                 " && mash sketch -m 2 " + cat_reads, shell = True)
 
             if not os.path.isfile(mash_result):
-                subprocess.call("mash dist" + " " + mash_db + " " + mash_sketch + " > " + mash_result, shell = True)
+                subprocess.call("mash dist" + " " + self.mash_db + " " + mash_sketch + " > " + mash_result, shell = True)
 
             subprocess.call("sort -gk3" + " " + mash_result + " " + "-o" + " " + mash_result, shell = True)
 
@@ -66,7 +67,9 @@ class Taxon:
 
             mash_species[id] = taxon.decode('ASCII').rstrip()
 
-        return(mash_species)
+
+        return mash_species
+
 
 
 if __name__ == '__main__':
