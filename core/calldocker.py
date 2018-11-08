@@ -18,6 +18,7 @@ def call(container,command,cwd='',paths={},remove=True):
     user = str(os.geteuid())+':'+str(os.getegid())
 
     #setup mount point paths
+    #{"/path/outside":"/path/incontainer"}
     volumes = {}
     if paths:
         for key in paths.keys():
