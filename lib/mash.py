@@ -36,8 +36,6 @@ class Mash:
         else:
             self.threads = 1
 
-
-
     def mash(self):
         #create output directory
         mash_out_dir = os.path.join(self.output_dir,"mash_output/")
@@ -81,7 +79,6 @@ class Mash:
                        "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
                                                                         mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
                                                                         mash_result=mash_result)
-
 
             #call the docker process
             calldocker.call("staphb/mash",sketch,'/dataout',mounting)
