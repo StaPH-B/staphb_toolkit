@@ -71,7 +71,7 @@ class Trimmomatic:
 
 
             #call the docker process
-            calldocker.call("staphb/trimmomatic-0.38",command,'/dataout',mounting)
+            calldocker.call("staphb/trimmomatic-0.38",command,out_dir,mounting)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="trimmomatic.py <input> [options]")
