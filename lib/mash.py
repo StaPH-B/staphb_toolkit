@@ -36,6 +36,8 @@ class Mash:
         else:
             self.threads = 1
 
+
+
     def mash(self):
         #create output directory
         mash_out_dir = os.path.join(self.output_dir,"mash_output/")
@@ -46,10 +48,15 @@ class Mash:
         for read in self.runfiles.reads:
             #get id
             id = self.runfiles.reads[read].id
+
+            # change self.path to local dir if path is a basemounted dir
+            if os.path.isdir(self.path + "/AppResults"):
+                self.path = self.output_dir
+
             #get paths to fastq files
             if self.runfiles.reads[read].paired:
-                fwd = os.path.basename(self.runfiles.reads[read].fwd)
-                rev = os.path.basename(self.runfiles.reads[read].rev)
+                fwd = os.path.abspath(self.runfiles.reads[read].fwd).replace(self.path, "")
+                rev = os.path.basename(self.runfiles.reads[read].rev).replace(self.path,"")
             else:
                 fastq = os.path.basename(self.runfiles.reads[read].path)
 
@@ -98,7 +105,7 @@ if __name__ == '__main__':
     threads = args.t
 
     if not output_dir:
-        output_dir = path
+        output_dir = os.getcwd()
 
     mash_obj = Mash(threads=threads,path=path,output_dir=output_dir)
     mash_obj.mash()

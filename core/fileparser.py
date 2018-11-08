@@ -5,6 +5,8 @@ import argparse
 import glob
 import re
 import sys
+from staphB_ToolKit.core import basemount
+
 
 #class for containing all sequencing run information
 class RunFiles:
@@ -41,16 +43,24 @@ class RunFiles:
     #data dictonary for containing runtime information
     runtime = {}
 
-    def __init__(self,path):
+    def __init__(self,path, output_dir=''):
         #Ensure input path exisits
         if not os.path.isdir(path):
             raise ValueError(path + " " + "not found.")
+
+        if not output_dir:
+            output_dir = os.getcwd()
+
+        if os.path.isdir(path+"/AppResults"):
+            basemount_project = basemount.Basemount(path, output_dir)
+            basemount_project.copy_reads()
+            path = output_dir
 
 
         for root,dirs,files in os.walk(path):
             #scan path and look for fastq files then gather ids and store in temp lists
             for file in files:
-                if '.fastq' in file:
+                if '.fastq' in file or '.fastq.gz' in file:
                     #get id and check if we have seen this id before by adding to id list and creating a new read object
                     id = file.split('_')[0]
                     if id not in self.ids:
@@ -131,7 +141,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="fileparser.py <input> [options]")
     parser.add_argument("input", type=str, help="Path to fastq files.")
     parser.add_argument("-o", default="", type=str, help="Path to output directory.")
-    parser.add_argument("-link_reads", action='store_true', help="Link reads to project_dir/raw_reads_dir.")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -140,7 +149,6 @@ if __name__ == '__main__':
 
     input_dir = args.input
     output_dir = args.o
-    link_reads = args.link_reads
 
     run = RunFiles(input_dir)
 
@@ -149,6 +157,4 @@ if __name__ == '__main__':
     else:
         output_dir = input_dir
 
-    if link_reads:
-        print("linking raw reads. . .")
-        run.link_reads(output_dir)
+    print("Isolates found in " + input_dir + ":" + run.ids )
