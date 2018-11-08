@@ -70,7 +70,7 @@ class BP:
                 command = ""
 
             #call the docker process
-            calldocker.call("staphb/container",command,'/dataout',mounting)
+            calldocker.call("staphb/container",command,out_dir,mounting)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="template.py <input> [options]")
