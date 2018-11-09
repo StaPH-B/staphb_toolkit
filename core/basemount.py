@@ -37,14 +37,19 @@ class Basemount:
 
     def copy_reads(self):
         raw_reads_dir = self.out + "/raw_reads/"
+
+        if not os.path.isdir(raw_reads_dir):
+            os.makedirs(raw_reads_dir)
+            print("Directory made for raw read files: " + raw_reads_dir)
+
         print("Copying reads from BaseSpace to " + raw_reads_dir)
         for read in self.reads:
-            if not os.path.isdir(raw_reads_dir):
-                os.makedirs(raw_reads_dir)
-                print("Directory made for raw read files: " + raw_reads_dir)
             dest = raw_reads_dir + re.sub('S\d+_L\d+_R', "", os.path.basename(read))
             dest = dest.replace("_001","")
-            subprocess.Popen(["cp", read, dest])
+            if os.path.isfile((dest)):
+                pass
+            else:
+                subprocess.Popen(["cp", read, dest])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="fileparser.py <input> [options]")
