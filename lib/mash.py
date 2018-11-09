@@ -43,48 +43,74 @@ class Mash:
             os.makedirs(mash_out_dir)
             print("Directory for mash output made: ", mash_out_dir)
 
+        mash_species = {}
+
         for read in self.runfiles.reads:
             #get id
             id = self.runfiles.reads[read].id
-
-            # change self.path to local dir if path is a basemounted dir
-            if os.path.isdir(self.path + "/AppResults"):
-                self.path = self.output_dir
-
-            #get paths to fastq files
-            if self.runfiles.reads[read].paired:
-                fwd = os.path.abspath(self.runfiles.reads[read].fwd).replace(self.path, "")
-                rev = os.path.basename(self.runfiles.reads[read].rev).replace(self.path,"")
-            else:
-                fastq = os.path.basename(self.runfiles.reads[read].path)
-
-            #create paths for data
-            if self.path == self.output_dir:
-                mounting = {self.path:'/data'}
-                out_dir = '/data'
-                in_dir = '/data'
-            else:
-                mounting = {self.path:'/datain',self.output_dir:'/dataout'}
-                out_dir = '/dataout'
-                in_dir = '/datain'
-
-            #build command for creating sketches and generating mash distance table
-            #TODO write elif to catch single read data
             mash_result = id + "_distance.tab"
-            if self.runfiles.reads[read].paired:
-                sketch = "bash -c 'cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -m 2 - " \
-                         "-o {out_dir}/{sketch}'".format(in_dir=in_dir,out_dir=out_dir,mash_out_dir=mash_out_dir,
-                                                         sketch=id + "_sketch",fwd=fwd,rev=rev)
-                dist = "bash -c 'mash dist /db/RefSeqSketchesDefaults.msh {in_dir}/{sketch} > " \
-                       "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
-                                                                        mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
-                                                                        mash_result=mash_result)
 
-            #call the docker process
-            calldocker.call("staphb/mash",sketch,'/dataout',mounting)
-            calldocker.call("staphb/mash", dist, '/dataout',mounting)
-            subprocess.Popen(["sort", "-gk3", mash_result, "-o", mash_result])
-            subprocess.Popen(["mv", id + "_sketch.msh", mash_result, mash_out_dir])
+            if os.path.isfile(mash_out_dir + mash_result):
+                pass
+            else:
+
+                # change self.path to local dir if path is a basemounted dir
+                if os.path.isdir(self.path + "/AppResults"):
+                    self.path = self.output_dir
+
+                #get paths to fastq files
+                if self.runfiles.reads[read].paired:
+                    fwd = os.path.abspath(self.runfiles.reads[read].fwd).replace(self.path, "")
+                    rev = os.path.abspath(self.runfiles.reads[read].rev).replace(self.path,"")
+                else:
+                    fastq = os.path.basename(self.runfiles.reads[read].path)
+
+                #create paths for data
+                if self.path == self.output_dir:
+                    mounting = {self.path:'/data'}
+                    out_dir = '/data'
+                    in_dir = '/data'
+                else:
+                    mounting = {self.path:'/datain',self.output_dir:'/dataout'}
+                    out_dir = '/dataout'
+                    in_dir = '/datain'
+
+                #build command for creating sketches and generating mash distance table
+                #TODO write elif to catch single read data
+
+                if self.runfiles.reads[read].paired:
+                    sketch = "bash -c 'cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -m 2 - " \
+                             "-o {out_dir}/{sketch}'".format(in_dir=in_dir,out_dir=out_dir,mash_out_dir=mash_out_dir,
+                                                             sketch=id + "_sketch",fwd=fwd,rev=rev)
+                    dist = "bash -c 'mash dist /db/RefSeqSketchesDefaults.msh {in_dir}/{sketch} > " \
+                           "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
+                                                                            mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
+                                                                            mash_result=mash_result)
+
+                #call the docker process
+                calldocker.call("staphb/mash",sketch,'/dataout',mounting)
+                calldocker.call("staphb/mash", dist, '/dataout',mounting)
+                subprocess.Popen(["sort", "-gk3", mash_result, "-o", mash_result])
+
+                #organize output into single directory
+                subprocess.Popen(["mv", id + "_sketch.msh", mash_result, mash_out_dir])
+
+        #capture predicted genus and species
+        for read in self.runfiles.reads:
+            # get id
+            id = self.runfiles.reads[read].id
+            mash_result = mash_out_dir + id + "_distance.tab"
+
+            taxon = subprocess.check_output("head -1 " + mash_result +
+                                    "| sed 's/.*-\.-//' | awk -F '\t' '{print $1}' | "
+                                    "awk -F '_' '{print $1 \"_\" $2}' | sed 's/\.[^.]*$//'", shell=True)
+
+            mash_species[id] = taxon.decode('ASCII').rstrip()
+
+
+        print("Predicted species by MASH: " + str(mash_species))
+        return mash_species
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="mash.py <input> [options]")
