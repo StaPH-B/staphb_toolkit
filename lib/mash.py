@@ -3,11 +3,11 @@
 #author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import os,sys
+import os,sys, shutil
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 import argparse
-import subprocess
+import re
 from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
 
@@ -20,35 +20,39 @@ class Mash:
     output_dir = None
 
     def __init__(self,threads=None,runfiles=None, path=None, output_dir = ""):
-        if runfiles:
-            self.runfiles = runfiles
-        else:
-            self.path = path
-            self.runfiles = fileparser.RunFiles(self.path)
-
         if output_dir:
             self.output_dir = os.path.abspath(output_dir)
         else:
             self.output_dir = os.getcwd()
+
+        if not os.path.isdir(self.output_dir):
+            os.makedirs(self.output_dir)
+
+        if runfiles:
+            self.runfiles = runfiles
+        else:
+            self.path = path
+            self.runfiles = fileparser.RunFiles(self.path, output_dir=output_dir)
 
         if threads:
             self.threads = threads
         else:
             self.threads = 1
 
+        self.mash_out_dir = self.output_dir + "/mash_output/"
+
+
     def mash(self):
         #create output directory
-        mash_out_dir = os.path.join(self.output_dir,"mash_output/")
+        mash_out_dir = self.mash_out_dir
         if not os.path.isdir(mash_out_dir):
             os.makedirs(mash_out_dir)
             print("Directory for mash output made: ", mash_out_dir)
 
-        mash_species = {}
-
         for read in self.runfiles.reads:
-            #get id
+            globals()#get id
             id = self.runfiles.reads[read].id
-            mash_result = id + "_distance.tab"
+            mash_result = "/" + id + "_distance.tab"
 
             if os.path.isfile(mash_out_dir + mash_result):
                 pass
@@ -88,25 +92,44 @@ class Mash:
                                                                             mash_result=mash_result)
 
                 #call the docker process
+                print("Running Mash...")
                 calldocker.call("staphb/mash",sketch,'/dataout',mounting)
                 calldocker.call("staphb/mash", dist, '/dataout',mounting)
-                subprocess.Popen(["sort", "-gk3", mash_result, "-o", mash_result])
 
                 #organize output into single directory
-                subprocess.Popen(["mv", id + "_sketch.msh", mash_result, mash_out_dir])
+                out_files = (output_dir + '/' + id + '_sketch.msh', output_dir + mash_result)
+                for file in out_files:
+                    shutil.move(file, mash_out_dir)
 
+
+    def mash_species(self):
         #capture predicted genus and species
+        mash_out_dir = self.mash_out_dir
+        mash_species = {}
+
         for read in self.runfiles.reads:
             # get id
             id = self.runfiles.reads[read].id
             mash_result = mash_out_dir + id + "_distance.tab"
+            mash_result_sorted = mash_out_dir + id + "_sorted_distance.tab"
 
-            taxon = subprocess.check_output("head -1 " + mash_result +
-                                    "| sed 's/.*-\.-//' | awk -F '\t' '{print $1}' | "
-                                    "awk -F '_' '{print $1 \"_\" $2}' | sed 's/\.[^.]*$//'", shell=True)
+            mash_hits = open(mash_result, 'r').readlines()
+            output = open(mash_result_sorted, 'w')
+            for line in sorted(mash_hits, key=lambda line: line.split()[2]):
+                output.write(line)
+            output.close()
 
-            mash_species[id] = taxon.decode('ASCII').rstrip()
+            with open(mash_result_sorted) as file:
+                top_hit = file.readline()
+                top_hit = re.sub(r'.*-\.-', '', top_hit)
+                top_hit=top_hit.split()
+                top_hit=top_hit[0]
+                top_hit=re.split(r'^([^_]*_[^_]*)(_|\.).*$', top_hit)[1]
 
+            if top_hit is "Escherichia_col":
+                top_hit = top_hit + "i"
+
+            mash_species[id] = top_hit
 
         print("Predicted species by MASH: " + str(mash_species))
         return mash_species
@@ -117,6 +140,7 @@ if __name__ == '__main__':
     parser.add_argument("input", type=str, help="path to dir containing read files")
     parser.add_argument("-o", default="", type=str, help="Name of output_dir")
     parser.add_argument("-t",default=1,type=int,help="number of threads")
+    parser.add_argument("-s", action='store_true', help="return dictionary of predicted species (i.e. top Mash hits)")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -126,9 +150,13 @@ if __name__ == '__main__':
     path = os.path.abspath(args.input)
     output_dir = args.o
     threads = args.t
+    species = args.s
 
     if not output_dir:
         output_dir = os.getcwd()
 
     mash_obj = Mash(threads=threads,path=path,output_dir=output_dir)
     mash_obj.mash()
+
+    if species:
+        mash_obj.mash_species()
