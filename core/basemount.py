@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 import argparse
 import subprocess
+import shutil
 #class for containing all sequencing run information
 class Basemount:
     # isolates
@@ -42,14 +43,15 @@ class Basemount:
             os.makedirs(raw_reads_dir)
             print("Directory made for raw read files: " + raw_reads_dir)
 
-        print("Copying reads from BaseSpace to " + raw_reads_dir)
         for read in self.reads:
             dest = raw_reads_dir + re.sub('S\d+_L\d+_R', "", os.path.basename(read))
             dest = dest.replace("_001","")
+
             if os.path.isfile((dest)):
                 pass
             else:
-                subprocess.Popen(["cp", read, dest])
+                print("Copying " + read + " to: " + dest)
+                shutil.copyfile(read, dest)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="fileparser.py <input> [options]")
