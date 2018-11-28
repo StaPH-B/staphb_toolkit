@@ -19,7 +19,7 @@ class Mash:
     #output directory
     output_dir = None
 
-    def __init__(self,threads=None,runfiles=None, path=None, output_dir = ""):
+    def __init__(self, threads=None, runfiles=None, path=None, output_dir = ""):
         if output_dir:
             self.output_dir = os.path.abspath(output_dir)
         else:
@@ -132,7 +132,7 @@ class Mash:
 
             mash_species[id] = top_hit
 
-            print("Isolate " + id + " predicted species: " + top_hit)
+            print("Predicted species for isolate %s: %s"%(id,top_hit))
 
         with open(mash_out_dir + "/mash_species.csv", 'w') as f:
             f.write("Isolate,Predicted Species\n")
@@ -147,7 +147,9 @@ if __name__ == '__main__':
     parser.add_argument("input", type=str, help="path to dir containing read files")
     parser.add_argument("-o", default="", type=str, help="Name of output_dir")
     parser.add_argument("-t",default=1,type=int,help="number of threads")
-    parser.add_argument("-s", action='store_true', help="return dictionary of predicted species (i.e. top Mash hits)")
+    parser.add_argument("-species", type=bool, default=True, help="return dictionary of predicted species "
+                                                                  "(i.e. genus and species of top Mash hits)."
+                                                                  "default: -species=True")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -157,7 +159,7 @@ if __name__ == '__main__':
     path = os.path.abspath(args.input)
     output_dir = args.o
     threads = args.t
-    species = args.s
+    species = args.species
 
     if not output_dir:
         output_dir = os.getcwd()
