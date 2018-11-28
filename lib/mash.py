@@ -3,13 +3,14 @@
 #author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import os,sys, shutil
+import os,sys, shutil, csv
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 import argparse
 import re
 from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
+import pandas
 
 class Mash:
     #class object to contain fastq file information
@@ -92,8 +93,9 @@ class Mash:
                                                                             mash_result=mash_result)
 
                 #call the docker process
-                print("Running Mash...")
+                print("Generating MASH sketch for sample " + id)
                 calldocker.call("staphb/mash",sketch,'/dataout',mounting)
+                print("Running MASH for sample " + id)
                 calldocker.call("staphb/mash", dist, '/dataout',mounting)
 
                 #organize output into single directory
@@ -131,7 +133,13 @@ class Mash:
 
             mash_species[id] = top_hit
 
-        print("Predicted species by MASH: " + str(mash_species))
+            print("Isolate " + id + " predicted species: " + top_hit)
+
+        with open(mash_out_dir + "/mash_species.csv", 'w') as f:
+            f.write("Isolate,Predicted Species\n")
+            for key in mash_species.keys():
+                f.write("%s,%s\n"%(key,mash_species[key]))
+
         return mash_species
 
 
