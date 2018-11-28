@@ -3,14 +3,13 @@
 #author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import os,sys, shutil, csv
+import os,sys, shutil
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 import argparse
 import re
 from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
-import pandas
 
 class Mash:
     #class object to contain fastq file information
@@ -115,6 +114,9 @@ class Mash:
             mash_result = mash_out_dir + id + "_distance.tab"
             mash_result_sorted = mash_out_dir + id + "_sorted_distance.tab"
 
+            if not mash_result:
+                self.mash()
+
             mash_hits = open(mash_result, 'r').readlines()
             output = open(mash_result_sorted, 'w')
             for line in sorted(mash_hits, key=lambda line: line.split()[2]):
@@ -127,9 +129,6 @@ class Mash:
                 top_hit=top_hit.split()
                 top_hit=top_hit[0]
                 top_hit=re.split(r'^([^_]*_[^_]*)(_|\.).*$', top_hit)[1]
-
-            if top_hit is "Escherichia_col":
-                top_hit = top_hit + "i"
 
             mash_species[id] = top_hit
 
