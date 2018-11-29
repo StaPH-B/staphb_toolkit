@@ -50,7 +50,7 @@ class CGPipeline:
         mash_species = {}
 
         if from_mash:
-            mash_samples = mash.Mash(path=self.path, output_dir=self.output_dir, threads=threads)
+            mash_samples = mash.Mash(path=self.path, output_dir=self.output_dir, threads=self.threads)
             mash_species = mash_samples.mash_species()
 
         for read in self.runfiles.reads:
@@ -119,6 +119,7 @@ class CGPipeline:
                 # call the docker process
                 print("Getting read metrics for isolate %s"%(id))
                 calldocker.call("staphb/lyveset",command,'/dataout',mounting)
+
             print("CG Pipeline results for isolate %s saved to: %s%s"%(id,cg_out_dir,cgp_result))
 
 
