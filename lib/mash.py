@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
 
-#author: Kevin Libuit
+# author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import os,sys, shutil
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
-
+import os
+import sys
+import shutil
 import argparse
 import re
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
 
+
 class Mash:
-    #class object to contain fastq file information
+    # class object to contain fastq file information
     runfiles = None
-    #path to fastq files
+    # path to fastq files
     path = None
-    #output directory
+    # output directory
     output_dir = None
 
     def __init__(self, threads=None, runfiles=None, path=None, output_dir = ""):
@@ -41,16 +43,15 @@ class Mash:
 
         self.mash_out_dir = self.output_dir + "/mash_output/"
 
-
     def mash(self):
-        #create output directory
+        # create output directory
         mash_out_dir = self.mash_out_dir
         if not os.path.isdir(mash_out_dir):
             os.makedirs(mash_out_dir)
             print("Directory for mash output made: ", mash_out_dir)
 
         for read in self.runfiles.reads:
-            globals()#get id
+            # get id
             id = self.runfiles.reads[read].id
             mash_result = "/" + id + "_distance.tab"
 
@@ -62,14 +63,14 @@ class Mash:
                 if os.path.isdir(self.path + "/AppResults"):
                     self.path = self.output_dir
 
-                #get paths to fastq files
+                # get paths to fastq files
                 if self.runfiles.reads[read].paired:
                     fwd = os.path.abspath(self.runfiles.reads[read].fwd).replace(self.path, "")
                     rev = os.path.abspath(self.runfiles.reads[read].rev).replace(self.path,"")
                 else:
                     fastq = os.path.basename(self.runfiles.reads[read].path)
 
-                #create paths for data
+                # create paths for data
                 if self.path == self.output_dir:
                     mounting = {self.path:'/data'}
                     out_dir = '/data'
@@ -79,32 +80,32 @@ class Mash:
                     out_dir = '/dataout'
                     in_dir = '/datain'
 
-                #build command for creating sketches and generating mash distance table
-                #TODO write elif to catch single read data
+                # build command for creating sketches and generating mash distance table
+                # TODO write elif to catch single read data
 
                 if self.runfiles.reads[read].paired:
                     sketch = "bash -c 'cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -m 2 - " \
-                             "-o {out_dir}/{sketch}'".format(in_dir=in_dir,out_dir=out_dir,mash_out_dir=mash_out_dir,
+                             "-o {in_dir}/{sketch}'".format(in_dir=in_dir,mash_out_dir=mash_out_dir,
                                                              sketch=id + "_sketch",fwd=fwd,rev=rev)
+
                     dist = "bash -c 'mash dist /db/RefSeqSketchesDefaults.msh {in_dir}/{sketch} > " \
                            "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
-                                                                            mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
-                                                                            mash_result=mash_result)
+                                                             mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
+                                                             mash_result=mash_result)
 
-                #call the docker process
+                # call the docker process
                 print("Generating MASH sketch for sample " + id)
                 calldocker.call("staphb/mash",sketch,'/dataout',mounting)
                 print("Running MASH for sample " + id)
                 calldocker.call("staphb/mash", dist, '/dataout',mounting)
 
-                #organize output into single directory
-                out_files = (output_dir + '/' + id + '_sketch.msh', output_dir + mash_result)
+                # organize output into single directory
+                out_files = (self.path + '/' + id + '_sketch.msh', self.output_dir + mash_result)
                 for file in out_files:
                     shutil.move(file, mash_out_dir)
 
-
     def mash_species(self):
-        #capture predicted genus and species
+        # capture predicted genus and species
         mash_out_dir = self.mash_out_dir
         mash_species = {}
 
@@ -114,14 +115,15 @@ class Mash:
             mash_result = mash_out_dir + id + "_distance.tab"
             mash_result_sorted = mash_out_dir + id + "_sorted_distance.tab"
 
-            if not mash_result:
+            if not os.path.isfile(mash_result):
                 self.mash()
 
-            mash_hits = open(mash_result, 'r').readlines()
-            output = open(mash_result_sorted, 'w')
-            for line in sorted(mash_hits, key=lambda line: line.split()[2]):
-                output.write(line)
-            output.close()
+            if not os.path.isfile(mash_result_sorted):
+                mash_hits = open(mash_result, 'r').readlines()
+                output = open(mash_result_sorted, 'w')
+                for line in sorted(mash_hits, key=lambda line: line.split()[2]):
+                    output.write(line)
+                output.close()
 
             with open(mash_result_sorted) as file:
                 top_hit = file.readline()
@@ -143,13 +145,22 @@ class Mash:
 
 
 if __name__ == '__main__':
+    def str2bool(v):
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argprase.ArgumentTypeError('Boolean value expected.')
+
     parser = argparse.ArgumentParser(usage="mash.py <input> [options]")
-    parser.add_argument("input", type=str, help="path to dir containing read files")
-    parser.add_argument("-o", default="", type=str, help="Name of output_dir")
-    parser.add_argument("-t",default=1,type=int,help="number of threads")
-    parser.add_argument("-species", type=bool, default=True, help="return dictionary of predicted species "
-                                                                  "(i.e. genus and species of top Mash hits)."
-                                                                  "default: -species=True")
+    parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
+    parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
+    parser.add_argument("-t",default=1, nargs='?', type=int,help="number of threads")
+    parser.add_argument("-species", nargs='?', type=str2bool, default=True, help="return dictionary of predicted "
+                                                                                 "species (i.e. genus and species of "
+                                                                                 "top Mash hits). default: "
+                                                                                 "-species=True")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()

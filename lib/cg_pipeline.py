@@ -11,6 +11,7 @@ from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
 from staphB_ToolKit.lib import mash
 
+
 class CGPipeline:
     #class object to contain fastq file information
     runfiles = None
@@ -46,28 +47,24 @@ class CGPipeline:
         if not os.path.isdir(cg_out_dir):
             os.makedirs(cg_out_dir)
             print("Directory for CG Pipeline output made: ", cg_out_dir)
-
         mash_species = {}
 
         if from_mash:
             mash_samples = mash.Mash(path=self.path, output_dir=self.output_dir, threads=threads)
             mash_species = mash_samples.mash_species()
 
-
         for read in self.runfiles.reads:
             #get id
             id = self.runfiles.reads[read].id
             cgp_result = id + "_readMetrics.tsv"
 
+            if not os.path.isfile(cg_out_dir + cgp_result):
 
-            if os.path.isfile(cg_out_dir + cgp_result):
-                pass
-            else:
                 # change self.path to local dir if path is a basemounted dir
                 if os.path.isdir(self.path + "/AppResults"):
                     self.path = self.output_dir
 
-                #get paths to fastq files
+                # get paths to fastq files
                 if self.runfiles.reads[read].paired:
                     fwd = os.path.abspath(self.runfiles.reads[read].fwd).replace(self.path, "")
                 else:
@@ -78,7 +75,7 @@ class CGPipeline:
                 else:
                     reads = fwd.replace("_1", "*")
 
-                #create paths for data
+                # create paths for data
                 if self.path == cg_out_dir:
                     mounting = {self.path:'/data'}
                     out_dir = '/data'
@@ -90,28 +87,29 @@ class CGPipeline:
 
                 if from_mash:
                     # set expected genome lengths according to mash hits
-                        if 'Salmonella' in mash_species[id] or 'Escherichia' in mash_species[id]:
-                            genome_length = 5.0
-                        elif 'Campylobacter' in mash_species[id]:
-                            genome_length = 1.6
-                        elif 'Listeria' in mash_species[id]:
-                            genome_length = 3.0
-                        elif 'Vibrio' in mash_species[id]:
-                            genome_length = 4.0
-                        else:
-                            genome_length = input("In Mbp, what is the expected genome size of %s?"%(id))
-                            try:
-                                float(genome_length)
-                            except ValueError:
-                                print("A number was not entered")
+                    if 'Salmonella' in mash_species[id] or 'Escherichia' in mash_species[id]:
+                        genome_length = 5.0
+                    elif 'Campylobacter' in mash_species[id]:
+                        genome_length = 1.6
+                    elif 'Listeria' in mash_species[id]:
+                        genome_length = 3.0
+                    elif 'Vibrio' in mash_species[id]:
+                        genome_length = 4.0
+                    else:
+                        genome_length = input("In Mbp, what is the expected genome size of %s?"%(id))
+                        try:
+                            float(genome_length)
+                        except ValueError:
+                            print("A number was not entered")
                 else:
-                    genome_length = input("In Mbp, what is the expected genome size of %s?"%(id))
+                    genome_length = input("In Mbp, what is the expected genome size of %s? "%(id))
                     try:
                         float(genome_length)
                     except ValueError:
                         print("A number was not entered")
 
-                genome_length = genome_length*1000000
+                genome_length = float(genome_length)*1000000
+                print("Estimated genome length for isolate %s: " % id + str(int(genome_length)))
 
                 # build command for running run_assembly_readMetrics.pl
                 command = "bash -c 'run_assembly_readMetrics.pl --fast {in_dir}/{reads} -e {genome_length} > " \
@@ -121,16 +119,26 @@ class CGPipeline:
                 # call the docker process
                 print("Getting read metrics for isolate %s"%(id))
                 calldocker.call("staphb/lyveset",command,'/dataout',mounting)
+            print("CG Pipeline results for isolate %s saved to: %s%s"%(id,cg_out_dir,cgp_result))
 
 
 if __name__ == '__main__':
+    def str2bool(v):
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argprase.ArgumentTypeError('Boolean value expected.')
+
     parser = argparse.ArgumentParser(usage="cg_pipeline.py <input> [options]")
-    parser.add_argument("input", type=str, help="path to dir containing read files")
-    parser.add_argument("-o", default="", type=str, help="Name of output_dir")
-    parser.add_argument("-t",default=1,type=int,help="number of threads")
-    parser.add_argument("-from_mash", type=bool, default=True, help="Set expected genome length according "
-                                                                    "to MASH species prediction. "
-                                                                    "default: -from_mash=True")
+    parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
+    parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
+    parser.add_argument("-t",default=1, nargs='?', type=int,help="number of threads")
+    parser.add_argument("-from_mash", nargs='?', type=str2bool, default=True, help="Set expected genome length "
+                                                                                   "according to MASH species "
+                                                                                   "prediction. default: "
+                                                                                   "-from_mash=True")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
