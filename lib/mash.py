@@ -151,7 +151,7 @@ if __name__ == '__main__':
         elif v.lower() in ('no', 'false', 'f', 'n', '0'):
             return False
         else:
-            raise argprase.ArgumentTypeError('Boolean value expected.')
+            raise argparse.ArgumentTypeError('Boolean value expected.')
 
     parser = argparse.ArgumentParser(usage="mash.py <input> [options]")
     parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
