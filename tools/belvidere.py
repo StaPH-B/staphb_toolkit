@@ -30,13 +30,22 @@ def main():
     if not output_dir:
         output_dir = os.getcwd()
 
+    if output_dir.endswith('/'):
+        output_dir = output_dir[:-1]
+
+    if '/' in output_dir:
+        project = output_dir.split('/')
+        project = project[-1]
+    else:
+        project = output_dir
+
     #Gather MASH & CG_Pipeline results
     mash_obj = mash.Mash(threads=threads,path=path,output_dir=output_dir)
     mash_species = mash_obj.mash_species()
 
     isolate_qual = {}
-    CGPipeline_obj = cg_pipeline.CGPipeline(threads=threads,path=path,output_dir=output_dir)
-    CGPipeline_obj.read_metrics()
+    cgpipeline_obj = cg_pipeline.CGPipeline(threads=threads,path=path,output_dir=output_dir)
+    cgpipeline_obj.read_metrics()
 
     for id in mash_species:
         isolate_qual[id] = {"species": None, "r1_q": None, "r1_avgReadLength": None, "r1_totalBases": None,
@@ -62,22 +71,23 @@ def main():
                     isolate_qual[id]["r2_numReads"] = line["numReads"]
                     isolate_qual[id]["est_cvg"] += float(line["coverage"])
 
-    #Curate Belvidere report
+    # Curate Belvidere report
+
     reports_dir = output_dir + "/reports/"
-    if output_dir.endswith('/'):
-        output_dir = output_dir[:-1]
-    belvidere_out = "%s/%s_belvidere_report.csv"%(reports_dir,output_dir)
+
+    belvidere_out = "%s/%s_belvidere_report.csv"%(reports_dir,project)
 
     if not os.path.isdir(reports_dir):
         os.makedirs(reports_dir)
         print("Directory for WGS reports made:", reports_dir)
 
-    #Change data dictionary to dataframe to csv
+    # Change data dictionary to dataframe to csv
     df = pandas.DataFrame(isolate_qual).T[["species", "r1_q", "r1_avgReadLength","r1_totalBases", "r1_numReads",
                                              "r2_q", "r2_avgReadLength","r2_totalBases", "r2_numReads","est_cvg"]]
     df.to_csv(belvidere_out)
 
     print("Done! Output saved as " + belvidere_out)
+    print("HERE: " + project)
 
 
 if __name__ == '__main__':
