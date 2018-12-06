@@ -8,6 +8,7 @@ import sys
 import argparse
 import csv
 import pandas
+import datetime
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 from staphB_ToolKit.lib import mash, cg_pipeline
@@ -28,14 +29,16 @@ def main():
     threads = args.t
 
     if not output_dir:
-        output_dir = os.getcwd()
+        output_dir = os.path.abspath("belvidere_output")
 
     if output_dir.endswith('/'):
         output_dir = output_dir[:-1]
 
-    if '/' in output_dir:
+    if '/' in output_dir and "belvidere_output" not in output_dir:
         project = output_dir.split('/')
         project = project[-1]
+    elif "belvidere_output" in output_dir:
+        project = datetime.datetime.today().strftime('%Y-%m-%d')
     else:
         project = output_dir
 
@@ -86,8 +89,7 @@ def main():
                                              "r2_q", "r2_avgReadLength","r2_totalBases", "r2_numReads","est_cvg"]]
     df.to_csv(belvidere_out)
 
-    print("Done! Output saved as " + belvidere_out)
-    print("HERE: " + project)
+    print("Belvidere is complete! Output saved as %s"%belvidere_out)
 
 
 if __name__ == '__main__':
