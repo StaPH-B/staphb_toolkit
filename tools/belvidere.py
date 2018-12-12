@@ -55,7 +55,7 @@ def main():
                             "r1_numReads": None, "r2_q": None, "r2_avgReadLength": None, "r2_totalBases": None,
                             "r2_numReads": None, "est_cvg": None}
 
-        isolate_qual[id]["species"] = mash_species[id]
+        isolate_qual[id]["predicted_species"] = mash_species[id]
 
         with open("%s/cg_pipeline_output/%s_readMetrics.tsv"%(output_dir,id)) as tsv_file:
             tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
@@ -85,8 +85,9 @@ def main():
         print("Directory for WGS reports made:", reports_dir)
 
     # Change data dictionary to dataframe to csv
-    df = pandas.DataFrame(isolate_qual).T[["species", "r1_q", "r1_avgReadLength","r1_totalBases", "r1_numReads",
-                                             "r2_q", "r2_avgReadLength","r2_totalBases", "r2_numReads","est_cvg"]]
+    df = pandas.DataFrame(isolate_qual).T[["predicted_species", "r1_q", "r1_avgReadLength","r1_totalBases",
+                                           "r1_numReads", "r2_q", "r2_avgReadLength","r2_totalBases", "r2_numReads",
+                                           "est_cvg"]]
     df.to_csv(belvidere_out)
 
     print("Belvidere is complete! Output saved as %s"%belvidere_out)
