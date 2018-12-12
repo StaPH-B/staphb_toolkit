@@ -87,7 +87,8 @@ class CGPipeline:
 
                 if from_mash:
                     # set expected genome lengths according to mash hits
-                    if 'Salmonella' in mash_species[id] or 'Escherichia' in mash_species[id]:
+                    if 'Salmonella' in mash_species[id] or 'Escherichia' in mash_species[id] \
+                            or 'Shigella' in mash_species[id]:
                         genome_length = 5.0
                     elif 'Campylobacter' in mash_species[id]:
                         genome_length = 1.6
