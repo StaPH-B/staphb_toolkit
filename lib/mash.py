@@ -72,42 +72,30 @@ class Mash:
                     fastq = os.path.basename(self.runfiles.reads[read].path)
 
                 # create paths for data
-                if self.path == self.output_dir:
-                    mounting = {self.path:'/data'}
-                    if db is not "RefSeqSketchesDefaults.msh":
-                        mounting.update({self.db:'/db/'})
-                    out_dir = '/data'
-                    in_dir = '/data'
-                else:
-                    mounting = {self.path:'/datain',self.output_dir:'/dataout'}
-                    if db is not "RefSeqSketchesDefaults.msh":
-                        mounting.update({os.path.dirname(db):'/db'})
-                    out_dir = '/dataout'
-                    in_dir = '/datain'
+                mounting = {self.path:'/datain',mash_out_dir:'/dataout'}
+                if db is not "RefSeqSketchesDefaults.msh":
+                    mounting.update({os.path.dirname(db):'/db'})
+                out_dir = '/dataout'
+                in_dir = '/datain'
 
                 # build command for creating sketches and generating mash distance table
                 # TODO write elif to catch single read data
 
                 if self.runfiles.reads[read].paired:
                     sketch = "bash -c 'cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -m 2 - " \
-                             "-o {in_dir}/{sketch}'".format(in_dir=in_dir,mash_out_dir=mash_out_dir,
-                                                             sketch=id + "_sketch",fwd=fwd,rev=rev)
+                             "-o {out_dir}/{sketch}'".format(in_dir=in_dir,out_dir=out_dir,sketch=id + "_sketch",
+                                                             fwd=fwd,rev=rev)
 
-                    dist = "bash -c 'mash dist /db/{db} {in_dir}/{sketch} > " \
-                           "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
-                                                             mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
+                    dist = "bash -c 'mash dist /db/{db} {out_dir}/{sketch} > " \
+                           "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir, sketch=id+ "_sketch.msh",
                                                              mash_result=mash_result, db=db_name)
 
                 # call the docker process
-                print("Generating MASH sketch for sample " + id)
-                calldocker.call("staphb/mash",sketch,'/dataout',mounting)
+                if not os.path.isfile("%s/%s_sketch.sh"%(mash_out_dir, id)):
+                    print("Generating MASH sketch for sample " + id)
+                    calldocker.call("staphb/mash",sketch,'/dataout',mounting)
                 print("Running MASH for sample " + id)
                 calldocker.call("staphb/mash", dist, '/dataout',mounting)
-
-                # organize output into single directory
-                out_files = (self.path + '/' + id + '_sketch.msh', self.output_dir + mash_result)
-                for file in out_files:
-                    shutil.move(file, mash_out_dir)
 
     def mash_species(self):
         # capture predicted genus and species
