@@ -21,7 +21,7 @@ class Mash:
     # output directory
     output_dir = None
 
-    def __init__(self, threads=None, runfiles=None, path=None, output_dir = ""):
+    def __init__(self, runfiles=None, path=None, output_dir = None, db=None):
         if output_dir:
             self.output_dir = os.path.abspath(output_dir)
         else:
@@ -36,16 +36,17 @@ class Mash:
             self.path = path
             self.runfiles = fileparser.RunFiles(self.path, output_dir=output_dir)
 
-        if threads:
-            self.threads = threads
+        if db:
+            self.db=db
         else:
-            self.threads = 1
+            self.db = "/db/RefSeqSketchesDefaults.msh"
 
         self.mash_out_dir = self.output_dir + "/mash_output/"
 
     def mash(self):
         # create output directory
         mash_out_dir = self.mash_out_dir
+        db_name = os.path.basename(self.db)
         if not os.path.isdir(mash_out_dir):
             os.makedirs(mash_out_dir)
             print("Directory for mash output made: ", mash_out_dir)
@@ -73,10 +74,14 @@ class Mash:
                 # create paths for data
                 if self.path == self.output_dir:
                     mounting = {self.path:'/data'}
+                    if db is not "RefSeqSketchesDefaults.msh":
+                        mounting.update({self.db:'/db/'})
                     out_dir = '/data'
                     in_dir = '/data'
                 else:
                     mounting = {self.path:'/datain',self.output_dir:'/dataout'}
+                    if db is not "RefSeqSketchesDefaults.msh":
+                        mounting.update({os.path.dirname(db):'/db'})
                     out_dir = '/dataout'
                     in_dir = '/datain'
 
@@ -88,10 +93,10 @@ class Mash:
                              "-o {in_dir}/{sketch}'".format(in_dir=in_dir,mash_out_dir=mash_out_dir,
                                                              sketch=id + "_sketch",fwd=fwd,rev=rev)
 
-                    dist = "bash -c 'mash dist /db/RefSeqSketchesDefaults.msh {in_dir}/{sketch} > " \
+                    dist = "bash -c 'mash dist /db/{db} {in_dir}/{sketch} > " \
                            "{out_dir}/{mash_result}'".format(in_dir=in_dir,out_dir=out_dir,
                                                              mash_out_dir=mash_out_dir,sketch=id+ "_sketch.msh",
-                                                             mash_result=mash_result)
+                                                             mash_result=mash_result, db=db_name)
 
                 # call the docker process
                 print("Generating MASH sketch for sample " + id)
@@ -156,11 +161,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="mash.py <input> [options]")
     parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
     parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
-    parser.add_argument("-t",default=1, nargs='?', type=int,help="number of threads")
     parser.add_argument("-species", nargs='?', type=str2bool, default=True, help="return dictionary of predicted "
                                                                                  "species (i.e. genus and species of "
                                                                                  "top Mash hits). default: "
                                                                                  "-species=True")
+    parser.add_argument("-db", default="", nargs="?", type=str, help="path to custom mash db")
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -169,13 +174,13 @@ if __name__ == '__main__':
 
     path = os.path.abspath(args.input)
     output_dir = args.o
-    threads = args.t
     species = args.species
+    db = args.db
 
     if not output_dir:
         output_dir = os.getcwd()
 
-    mash_obj = Mash(threads=threads,path=path,output_dir=output_dir)
+    mash_obj = Mash(path=path,output_dir=output_dir,db=db)
     mash_obj.mash()
 
     if species:
