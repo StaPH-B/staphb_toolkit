@@ -116,11 +116,11 @@ if __name__ == '__main__':
     extra_params = []
 
     if args.plasmid:
-        extra_params.append(args.plasmid)
+        extra_params.append("--plasmid")
     if args.only_assembler:
-        extra_params.append(args.only_assembler)
+        extra_params.append("--only_assembler")
     if args.careful:
-        extra_params.append(args.careful)
+        extra_params.append("--careful")
 
     if not output_dir:
         output_dir = os.getcwd()
