@@ -73,8 +73,9 @@ class Mash:
 
                 # create paths for data
                 mounting = {self.path:'/datain',mash_out_dir:'/dataout'}
-                if db is not "RefSeqSketchesDefaults.msh":
-                    mounting.update({os.path.dirname(db):'/db'})
+                if str(db_name) != "RefSeqSketchesDefaults.msh":
+                    mounting.update({os.path.dirname(self.db):'/db'})
+
                 out_dir = '/dataout'
                 in_dir = '/datain'
 
