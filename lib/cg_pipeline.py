@@ -20,7 +20,7 @@ class CGPipeline:
     #output directory
     output_dir = None
 
-    def __init__(self, threads=None, runfiles=None, path=None, output_dir = ""):
+    def __init__(self, runfiles=None, path=None, output_dir = ""):
         if output_dir:
             self.output_dir = os.path.abspath(output_dir)
         else:
@@ -35,11 +35,6 @@ class CGPipeline:
             self.path = path
             self.runfiles = fileparser.RunFiles(self.path, output_dir=output_dir)
 
-        if threads:
-            self.threads = threads
-        else:
-            self.threads = 1
-
         self.cg_out_dir = self.output_dir + "/cg_pipeline_output/"
 
     def read_metrics(self, from_mash=True):
@@ -50,7 +45,7 @@ class CGPipeline:
         mash_species = {}
 
         if from_mash:
-            mash_samples = mash.Mash(path=self.path, output_dir=self.output_dir, threads=self.threads)
+            mash_samples = mash.Mash(path=self.path, output_dir=self.output_dir)
             mash_species = mash_samples.mash_species()
 
         for read in self.runfiles.reads:
@@ -76,14 +71,9 @@ class CGPipeline:
                     reads = fwd.replace("_1", "*")
 
                 # create paths for data
-                if self.path == cg_out_dir:
-                    mounting = {self.path:'/data'}
-                    out_dir = '/data'
-                    in_dir = '/data'
-                else:
-                    mounting = {self.path:'/datain', cg_out_dir:'/dataout'}
-                    out_dir = '/dataout'
-                    in_dir = '/datain'
+                mounting = {self.path:'/datain', cg_out_dir:'/dataout'}
+                out_dir = '/dataout'
+                in_dir = '/datain'
 
                 if from_mash:
                     # set expected genome lengths according to mash hits
@@ -136,7 +126,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="cg_pipeline.py <input> [options]")
     parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
     parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
-    parser.add_argument("-t",default=1, nargs='?', type=int,help="number of threads")
     parser.add_argument("-from_mash", nargs='?', type=str2bool, default=True, help="Set expected genome length "
                                                                                    "according to MASH species "
                                                                                    "prediction. default: "
@@ -149,11 +138,10 @@ if __name__ == '__main__':
 
     path = os.path.abspath(args.input)
     output_dir = args.o
-    threads = args.t
     from_mash = args.from_mash
 
     if not output_dir:
         output_dir = os.getcwd()
 
-    CGPipeline_obj = CGPipeline(threads=threads, path=path, output_dir=output_dir)
+    CGPipeline_obj = CGPipeline(path=path, output_dir=output_dir)
     CGPipeline_obj.read_metrics(from_mash=from_mash)

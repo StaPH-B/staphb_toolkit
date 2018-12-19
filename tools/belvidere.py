@@ -16,7 +16,6 @@ from staphB_ToolKit.lib import mash, cg_pipeline
 def main():
     parser = argparse.ArgumentParser(usage="belvidere.py <input> [options]")
     parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
-    parser.add_argument("-t", default=1, nargs='?', type=int, help="number of threads")
     parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
 
     if len(sys.argv[1:]) == 0:
@@ -26,7 +25,6 @@ def main():
 
     path=args.input
     output_dir = args.o
-    threads = args.t
 
     if not output_dir:
         output_dir = os.path.abspath("belvidere_output")
@@ -43,11 +41,11 @@ def main():
         project = output_dir
 
     #Gather MASH & CG_Pipeline results
-    mash_obj = mash.Mash(threads=threads,path=path,output_dir=output_dir)
+    mash_obj = mash.Mash(path=path,output_dir=output_dir)
     mash_species = mash_obj.mash_species()
 
     isolate_qual = {}
-    cgpipeline_obj = cg_pipeline.CGPipeline(threads=threads,path=path,output_dir=output_dir)
+    cgpipeline_obj = cg_pipeline.CGPipeline(path=path,output_dir=output_dir)
     cgpipeline_obj.read_metrics()
 
     for id in mash_species:
