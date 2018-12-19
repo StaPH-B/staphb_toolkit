@@ -73,14 +73,9 @@ class Spades:
                     fastq = os.path.basename(self.runfiles.reads[read].path)
 
                 # create paths for data
-                if self.path == self.output_dir:
-                    mounting = {self.path:'/data', spades_results:'/dataout'}
-                    out_dir = '/data'
-                    in_dir = '/data'
-                else:
-                    mounting = {self.path:'/datain',spades_results:'/dataout'}
-                    out_dir = '/dataout'
-                    in_dir = '/datain'
+                mounting = {self.path:'/datain',spades_results:'/dataout'}
+                out_dir = '/dataout'
+                in_dir = '/datain'
 
                 # build command for creating sketches and generating mash distance table
                 # TODO write elif to catch single read data
@@ -98,6 +93,7 @@ class Spades:
                 print("Generating SPAdes assembly for sample " + id)
                 calldocker.call("staphb/spades",command,'/dataout',mounting)
 
+            print("SPAdes assembly for isolate %s saved to: %s"%(id,spades_results))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="mash.py <input> [options]")
