@@ -47,6 +47,7 @@ class Mash:
         # create output directory
         mash_out_dir = self.mash_out_dir
         db_name = os.path.basename(self.db)
+
         if not os.path.isdir(mash_out_dir):
             os.makedirs(mash_out_dir)
             print("Directory for mash output made: ", mash_out_dir)
@@ -74,8 +75,7 @@ class Mash:
                 # create paths for data
                 mounting = {self.path:'/datain',mash_out_dir:'/dataout'}
                 if str(db_name) != "RefSeqSketchesDefaults.msh":
-                    mounting.update({os.path.dirname(self.db):'/db'})
-
+                    mounting.update({os.path.dirname(os.path.realpath(self.db)):'/db'})
                 out_dir = '/dataout'
                 in_dir = '/datain'
 
@@ -92,7 +92,7 @@ class Mash:
                                                              mash_result=mash_result, db=db_name)
 
                 # call the docker process
-                if not os.path.isfile("%s/%s_sketch.sh"%(mash_out_dir, id)):
+                if not os.path.isfile("%s/%s_sketch.msh"%(mash_out_dir, id)):
                     print("Generating MASH sketch for sample " + id)
                     calldocker.call("staphb/mash",sketch,'/dataout',mounting)
                 print("Running MASH for sample " + id)
