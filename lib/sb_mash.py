@@ -12,7 +12,7 @@ from staphB_ToolKit.core.sb_libs import SB_lib
 
 class Mash(SB_lib):
     def __init__(self, parameters=None, path=None, executable = 'mash', docker_image='mash'):
-        SB_lib.__init__(self,parameters, path, executable, docker_image)
+        SB_lib.__init__(self,parameters=parameters, path=path, executable=executable, docker_image=docker_image)
 
 
 if __name__ == '__main__':

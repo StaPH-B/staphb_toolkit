@@ -11,8 +11,8 @@ from staphB_ToolKit.core.sb_libs import SB_lib
 
 
 class Spades(SB_lib):
-    def __init__(self, parameters=None, path=None, executable = 'spades.py', docker_image='spades'):
-        SB_lib.__init__(self,parameters, path, executable, docker_image)
+    def __init__(self, parameters=None, path=None, executable='spades.py', docker_image='spades'):
+        SB_lib.__init__(self, parameters=parameters, path=path, executable=executable, docker_image=docker_image)
 
 
 if __name__ == '__main__':
@@ -35,9 +35,6 @@ if __name__ == '__main__':
     if unknown:
         for arg in unknown:
             parameters += f" {arg}"
-
-    print(unknown)
-    print(parameters)
 
     spades_obj = Spades(parameters=parameters, path=os.getcwd())
     spades_obj.run_lib()
