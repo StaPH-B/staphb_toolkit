@@ -18,6 +18,7 @@ class SB_lib:
         self.path=path
         self.docker_image = docker_image
         self.executable = executable
+        # TODO: Find a better way to grab json file
         docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
         docker_tag = ""
 
