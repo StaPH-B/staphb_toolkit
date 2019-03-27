@@ -11,8 +11,8 @@ from staphB_ToolKit.core.sb_libs import SB_lib
 
 
 class Mash(SB_lib):
-    def __init__(self, parameters=None, path=None, docker_image=None):
-        SB_lib.__init__(self,parameters=None, path=None, executable = 'mash', docker_image='mash')
+    def __init__(self, parameters=None, path=None, executable = 'mash', docker_image='mash'):
+        SB_lib.__init__(self,parameters, path, executable, docker_image)
 
 
 if __name__ == '__main__':
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if len(sys.argv[1:]) == 0:
         parser.print_help()
         parser.exit()
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     if args.h:
         mash_obj=Mash(parameters="-h")
@@ -31,6 +31,13 @@ if __name__ == '__main__':
         sys.exit()
 
     parameters = args.mash_parameters
+
+    if unknown:
+        for arg in unknown:
+            parameters += f" {arg}"
+
+    print(unknown)
+    print(parameters)
 
     mash_obj = Mash(parameters=parameters, path=os.getcwd())
     mash_obj.run_lib()
