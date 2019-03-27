@@ -6,10 +6,7 @@
 import os
 import sys
 import json
-import argparse
-import re
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
-from staphB_ToolKit.core import fileparser
 from staphB_ToolKit.core import calldocker
 
 
