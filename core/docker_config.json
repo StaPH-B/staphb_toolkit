@@ -1,0 +1,11 @@
+{
+  "images": [
+    {
+      "name": "mash",
+      "tag": "2.1"
+    },
+    { "name": "spades",
+      "tag": "3.12.0"
+    }
+  ]
+}
