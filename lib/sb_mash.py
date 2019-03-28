@@ -36,9 +36,6 @@ if __name__ == '__main__':
         for arg in unknown:
             parameters += f" {arg}"
 
-    print(unknown)
-    print(parameters)
-
     mash_obj = Mash(parameters=parameters, path=os.getcwd())
     mash_obj.run_lib()
 
