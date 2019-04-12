@@ -35,4 +35,4 @@ class SB_lib:
         in_dir = '/data'
 
         command = f"{self.executable} {self.parameters}"
-        print(calldocker.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/dataout', mounting))
+        print(calldocker.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', mounting))
