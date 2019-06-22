@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-#author: Nick Florek
-#email: nicholas.florek@slh.wisc.edu
+#author: Kelsey Florek
+#email: kelsey.florek@slh.wisc.edu
 
 import docker
 import os
