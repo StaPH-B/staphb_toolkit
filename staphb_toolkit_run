@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+#author: Kelsey Florek
+#email: kelsey.florek@slh.wisc.edu
+
+import sys,os
+import argparse
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(usage="staphb_toolkit_run [optional arguments] <application> [application arguments]")
+    subparsers = parser.add_subparsers(title='application',metavar='',dest="subparser_name",required=True)
+    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet applicable)")
+
+    #parser for applications
+    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler')
+    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash')
+
+    if len(sys.argv[1:]) == 0:
+        parser.print_help()
+        parser.exit()
+    args = parser.parse_args()
+
+    print(args)
