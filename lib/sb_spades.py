@@ -36,5 +36,5 @@ if __name__ == '__main__':
         for arg in unknown:
             parameters += f" {arg}"
 
-    spades_obj = Spades(parameters=parameters, path=os.getcwd())
+    spades_obj = Spades(parameters=parameters, path={os.getcwd(): '/data'})
     spades_obj.run_lib()
