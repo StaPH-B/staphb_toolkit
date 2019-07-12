@@ -29,10 +29,5 @@ class SB_lib:
         self.parameters = parameters
 
     def run_lib(self):
-        # create paths for data
-        mounting = {self.path: '/data'}
-        out_dir = '/data'
-        in_dir = '/data'
-
         command = f"{self.executable} {self.parameters}"
-        print(calldocker.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', mounting))
+        print(calldocker.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
