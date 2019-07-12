@@ -3,13 +3,16 @@
 #author: Kelsey Florek
 #email: kelsey.florek@slh.wisc.edu
 
-import sys,os
+import sys,os,re
 import argparse
+import core.calldocker as cd
+import lib.sb_spades as spades
+import lib.sb_mash as mash
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="staphb_toolkit_run [optional arguments] <application> [application arguments]")
     subparsers = parser.add_subparsers(title='application',metavar='',dest="subparser_name",required=True)
-    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet applicable)")
+    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet operational)")
 
     #parser for applications
     parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler')
@@ -18,6 +21,43 @@ if __name__ == '__main__':
     if len(sys.argv[1:]) == 0:
         parser.print_help()
         parser.exit()
-    args = parser.parse_args()
+    parser_args = parser.parse_known_args()
 
-    print(args)
+    program = parser_args[0].subparser_name
+    args = parser_args[1]
+
+    #path replacement
+    #replace absolute and relative paths with paths in docker container
+    #search pattern for absolute and relative paths
+    regex_path_pattern = '^[\/,~\/,.]\S*'
+    #generate mapping of paths and container paths
+    path_map = {os.getcwd():'/data'} #{"/path/outside":"/path/incontainer"}
+    counter = 1
+    arg_string = '' #string of final arguments for docker command
+    for arg in args:
+        #check if argument is a path
+        re_obj = re.match(regex_path_pattern,arg)
+        #if it is add a path mapping
+        if re_obj:
+            path = re_obj.group()
+            basename = os.path.basename(path)
+            dirname = os.path.dirname(path)
+            #check if we have already created a mount point for this location
+            if dirname in path_map.keys():
+                mountname = os.path.dirname(path_map[dirname])
+                path_map[dirname] = mountname+'/'
+            else:
+                path_map[dirname] = '/mount'+str(counter)+'/'
+                counter += 1
+            arg_string = arg_string + ' ' + path_map[dirname]+'/'+basename
+        #if it's not add the argument to final string
+        else:
+            arg_string = arg_string + ' ' + arg
+
+    if program == 'spades':
+        spades_obj = spades.Spades(parameters=arg_string, path=path_map)
+        spades_obj.run_lib()
+
+    if program == 'mash':
+        mash_obj = mash.Mash(parameters=arg_string, path=path_map)
+        mash_obj.run_lib()
