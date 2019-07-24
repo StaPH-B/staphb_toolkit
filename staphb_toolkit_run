@@ -2,13 +2,15 @@
 
 #authors:
 # Kelsey Florek (kelsey.florek@slh.wisc.edu)
-# Kevin Libuit (kevin.libuit@dgs.virginia.gov) 
+# Kevin Libuit (kevin.libuit@dgs.virginia.gov)
 
 import sys,os,re
 import argparse
 import core.calldocker as cd
 import lib.sb_spades as spades
 import lib.sb_mash as mash
+import lib.sb_seqyclean as seqyclean
+import lib.sb_shovill as shovill
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="staphb_toolkit_run [optional arguments] <application> [application arguments]")
@@ -18,6 +20,8 @@ if __name__ == '__main__':
     #parser for applications
     parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler')
     parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash')
+    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis')
+    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler')
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -27,7 +31,7 @@ if __name__ == '__main__':
     program = parser_args[0].subparser_name
     args = parser_args[1]
 
-    #path replacement
+    #path replacement ---------------------------------------------------------
     #replace absolute and relative paths with paths in docker container
     #search pattern for absolute and relative paths
     regex_path_pattern = '^[\/,~\/,.]\S*'
@@ -54,7 +58,9 @@ if __name__ == '__main__':
         #if it's not add the argument to final string
         else:
             arg_string = arg_string + ' ' + arg
+    #--------------------------------------------------------------------------
 
+    #Program specific execution code
     if program == 'spades':
         spades_obj = spades.Spades(parameters=arg_string, path=path_map)
         spades_obj.run_lib()
@@ -62,3 +68,15 @@ if __name__ == '__main__':
     if program == 'mash':
         mash_obj = mash.Mash(parameters=arg_string, path=path_map)
         mash_obj.run_lib()
+
+    if program == 'mash':
+        mash_obj = mash.Mash(parameters=arg_string, path=path_map)
+        mash_obj.run_lib()
+
+    if program == 'seqyclean':
+        seqyclean_obj = seqyclean.Seqyclean(parameters=arg_string, path=path_map)
+        seqyclean_obj.run_lib()
+
+    if program == 'shovill':
+        shovill_obj = shovill.Shovill(parameters=arg_string,path=path_map)
+        shovill_obj.run_lib()

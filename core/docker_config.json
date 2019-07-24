@@ -6,6 +6,12 @@
     },
     { "name": "spades",
       "tag": "3.13.0"
+    },
+    { "name": "seqyclean",
+      "tag": "1.10.09"
+    },
+    { "name": "shovill",
+      "tag": "1.0.4"
     }
   ]
 }
