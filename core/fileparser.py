@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-#author: Kelsey Florek
-#email: kelsey.florek@slh.wisc.edu
-
 import os
 import argparse
 import glob
