@@ -6,7 +6,7 @@ import argparse
 import sys
 import json
 import shlex
-
+#TODO add inidcator that container is being downloaded or updated
 def call(container,command,cwd='',paths={},remove=True):
     ###access docker environment
     client = docker.from_env()
