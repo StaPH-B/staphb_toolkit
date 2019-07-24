@@ -11,6 +11,7 @@ import lib.sb_spades as spades
 import lib.sb_mash as mash
 import lib.sb_seqyclean as seqyclean
 import lib.sb_shovill as shovill
+import lib.sb_prokka as prokka
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage="staphb_toolkit_run [optional arguments] <application> [application arguments]")
@@ -22,6 +23,8 @@ if __name__ == '__main__':
     parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash')
     parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis')
     parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler')
+    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation')
+
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()
@@ -80,3 +83,7 @@ if __name__ == '__main__':
     if program == 'shovill':
         shovill_obj = shovill.Shovill(parameters=arg_string,path=path_map)
         shovill_obj.run_lib()
+
+    if program == 'prokka':
+        prokka_obj = prokka.Prokka(parameters=arg_string,path=path_map)
+        prokka_obj.run_lib()
