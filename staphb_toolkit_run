@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-#author: Kelsey Florek
-#email: kelsey.florek@slh.wisc.edu
+#authors:
+# Kelsey Florek (kelsey.florek@slh.wisc.edu)
+# Kevin Libuit (kevin.libuit@dgs.virginia.gov) 
 
 import sys,os,re
 import argparse

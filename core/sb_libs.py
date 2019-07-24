@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# author: Kevin Libuit
-#email: kevin.libuit@dgs.virginia.gov
-
 import os
 import sys
 import json
