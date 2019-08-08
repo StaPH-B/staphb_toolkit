@@ -3,9 +3,17 @@
 import os
 import sys
 import json
+from shutil import which
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
-from staphB_ToolKit.core import calldocker
 
+##Test to see if singularity or docker is installed
+if which('docker'):
+    from staphb_toolkit.core import calldocker as container_engine
+elif which('singularity'):
+    from staphb_toolkit.core import callsing as container_engine
+else:
+    print('Singularity or Docker is not installed or not in found in PATH')
+    sys.exit(1)
 
 class SB_lib:
     def __init__(self, parameters=None, path=None, docker_image=None, executable=None):
@@ -27,4 +35,4 @@ class SB_lib:
 
     def run_lib(self):
         command = f"{self.executable} {self.parameters}"
-        print(calldocker.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+        print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))

@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
-from staphB_ToolKit.core.sb_libs import SB_lib
+from staphb_toolkit.core.sb_libs import SB_lib
 
 
 class Prokka(SB_lib):
