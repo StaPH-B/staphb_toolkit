@@ -27,7 +27,7 @@ if __name__ == '__main__':
         roary_obj.run_lib()
         sys.exit()
 
-    parameters = args.unicycler_parameters
+    parameters = args.roary_parameters
 
     if unknown:
         for arg in unknown:
