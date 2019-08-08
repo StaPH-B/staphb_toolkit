@@ -27,7 +27,7 @@ if __name__ == '__main__':
         abricate_obj.run_lib()
         sys.exit()
 
-    parameters = args.unicycler_parameters
+    parameters = args.abricate_parameters
 
     if unknown:
         for arg in unknown:
