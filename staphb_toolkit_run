@@ -72,10 +72,6 @@ if __name__ == '__main__':
         mash_obj = mash.Mash(parameters=arg_string, path=path_map)
         mash_obj.run_lib()
 
-    if program == 'mash':
-        mash_obj = mash.Mash(parameters=arg_string, path=path_map)
-        mash_obj.run_lib()
-
     if program == 'seqyclean':
         seqyclean_obj = seqyclean.Seqyclean(parameters=arg_string, path=path_map)
         seqyclean_obj.run_lib()

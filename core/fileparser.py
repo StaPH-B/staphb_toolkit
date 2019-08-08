@@ -5,7 +5,7 @@ import argparse
 import glob
 import re
 import sys
-from staphB_ToolKit.core import basemount
+from staphb_toolkit.core import basemount
 
 
 #class for containing all sequencing run information
