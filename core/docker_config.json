@@ -13,6 +13,13 @@
     { "name": "shovill",
       "tag": "1.0.4"
     },
+    { "name": "quast",
+      "tag": "5.0.2"
+    },
+    {
+      "name": "lyveset",
+      "tag": "1.1.4f"
+    },
     { "name": "prokka",
       "tag": "1.13"
     }
