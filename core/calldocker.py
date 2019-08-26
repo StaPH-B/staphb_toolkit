@@ -7,6 +7,15 @@ import sys
 import json
 import shlex
 #TODO add inidcator that container is being downloaded or updated
+
+def shutdown():
+    print('\nShutting down the running docker containers and exiting...')
+    client = docker.from_env()
+    container_list = client.containers.list(filters={"label":"prog=sb_toolkit"})
+    for container in container_list:
+        print("shutting down container: ",container.name)
+        container.kill()
+
 def call(container,command,cwd='',paths={},remove=True):
     ###access docker environment
     client = docker.from_env()
@@ -27,7 +36,7 @@ def call(container,command,cwd='',paths={},remove=True):
     output = b''
     #try block to run the container
     try:
-        container_obj = client.containers.run(container,command,user=user,volumes=volumes,working_dir=cwd,remove=remove,detach=True)
+        container_obj = client.containers.run(container,command,user=user,volumes=volumes,working_dir=cwd,remove=remove,detach=True,labels={"prog":"sb_toolkit"})
     except:
         #loop through output as it is streamed
         for line in container_obj.logs(stream=True):
