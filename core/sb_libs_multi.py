@@ -5,7 +5,7 @@ import sys
 import json
 import multiprocessing as mp
 from shutil import which
-import signal
+import signal,psutil
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 ##Test to see if singularity or docker is installed
@@ -16,15 +16,6 @@ elif which('singularity'):
 else:
     print('Singularity or Docker is not installed or not in found in PATH')
     sys.exit(1)
-
-##define and set signal handler, to handle detached containers
-def handler(sig,frame):
-    #shutdown containers
-    container_engine.shutdown()
-    sys.exit()
-
-##attach signal handler
-signal.signal(signal.SIGINT, handler)
 
 class SB_lib_multi:
     def __init__(self, command_list=None, path=None, docker_image=None):
@@ -44,17 +35,37 @@ class SB_lib_multi:
         self.docker_tag = docker_tag
 
     def run_lib(self,jobs):
+        #initalize all workers to ignore signal int since we are handeling the keyboard interrupt ourself
+        parent_id = os.getpid()
+        def init_worker():
+            #only set signal for docker since containers are detached
+            if which('docker'):
+                signal.signal(signal.SIGINT, signal.SIG_IGN)
+            else:
+                def sig_int(signal_num,frame):
+                    parent = psutil.Process(parent_id)
+                    for child in parent.children():
+                        if child.pid != os.getpid():
+                            child.kill()
+                    psutil.Process(os.getpid()).kill()
+                signal.signal(signal.SIGINT,sig_int)
+
         #create multiprocessing pool
-        pool = mp.Pool(processes=jobs)
+        pool = mp.Pool(processes=jobs,initializer=init_worker)
 
-        #set signal handling to default during spawning of subthreads
-        signal.signal(signal.SIGINT,signal.SIG_DFL)
+        try:
+            results = pool.starmap_async(container_engine.call,[[f"staphb/{self.docker_image}:{self.docker_tag}",cmd,'/data',self.path] for cmd in self.command_list])
+            stdouts = results.get()
 
-        results = pool.starmap_async(container_engine.call,[[f"staphb/{self.docker_image}:{self.docker_tag}",cmd,'/data',self.path] for cmd in self.command_list])
+        except KeyboardInterrupt:
+            pool.terminate()
+            pool.join()
+            #shutdown containers
+            container_engine.shutdown()
+            sys.exit()
+        else:
+            pool.close()
+            pool.join()
 
-        #reset signal handling to handle shutting down containers
-        signal.signal(signal.SIGINT, handler)
-
-        stdouts = results.get()
         for stdout in stdouts:
             print(stdout)
