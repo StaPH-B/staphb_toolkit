@@ -15,17 +15,6 @@ else:
     print('Singularity or Docker is not installed or not in found in PATH')
     sys.exit(1)
 
-##define and set signal handler, to handle detached containers
-def handler(sig,frame):
-    print('\nShutting down the running docker containers and exiting...')
-    client = docker.from_env()
-    container_list = client.containers.list(filters={"label":"prog=sb_toolkit"})
-    for container in container_list:
-        print("shutting down container: ",container.name)
-        container.kill()
-    sys.exit()
-signal.signal(signal.SIGINT, handler)
-
 class SB_lib:
     def __init__(self, parameters=None, path=None, docker_image=None, executable=None):
         self.path=path
@@ -46,4 +35,8 @@ class SB_lib:
 
     def run_lib(self):
         command = f"{self.executable} {self.parameters}"
-        print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+        try:
+            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+        except KeyboardInterrupt:
+            container_engine.shutdown()
+            sys.exit()
