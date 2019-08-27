@@ -10,7 +10,7 @@ import shlex
 
 def shutdown():
     print('\nShutting down the running singularity containers and exiting...')
-    #we arn't actually going to do anything
+    #we don't need to do anything since the containers arn't detached
 
 def call(container,command,cwd='',paths={},remove=True):
     ###load container

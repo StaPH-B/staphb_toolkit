@@ -5,6 +5,7 @@ import sys
 import json
 import multiprocessing as mp
 from shutil import which
+import signal
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 ##Test to see if singularity or docker is installed
@@ -41,7 +42,6 @@ class SB_lib_multi:
                     docker_tag = image['tag']
 
         self.docker_tag = docker_tag
-        self.parameters = parameters
 
     def run_lib(self,jobs):
         #create multiprocessing pool
@@ -50,7 +50,7 @@ class SB_lib_multi:
         #set signal handling to default during spawning of subthreads
         signal.signal(signal.SIGINT,signal.SIG_DFL)
 
-        results = pool.starmap_async(cd.call,[[f"staphb/{self.docker_image}:{self.docker_tag}",cmd,'/data',self.path] for cmd in self.command_list])
+        results = pool.starmap_async(container_engine.call,[[f"staphb/{self.docker_image}:{self.docker_tag}",cmd,'/data',self.path] for cmd in self.command_list])
 
         #reset signal handling to handle shutting down containers
         signal.signal(signal.SIGINT, handler)
