@@ -7,6 +7,11 @@ import sys
 import json
 import shlex
 #TODO add inidcator that container is being downloaded or updated
+
+def shutdown():
+    print('\nShutting down the running singularity containers and exiting...')
+    #we don't need to do anything since the containers arn't detached
+
 def call(container,command,cwd='',paths={},remove=True):
     ###load container
     container = 'docker://'+container
