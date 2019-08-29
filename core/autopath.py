@@ -3,10 +3,10 @@
 import os,re
 
 #replace absolute and relative paths with paths in docker container
-def path_replacer(arg_string,cwd):
+def path_replacer(args,cwd):
     #generate mapping of paths and container paths
     path_map = {cwd:'/data'} #{"/path/outside":"/path/incontainer"}
-    if not arg_string:
+    if not args:
         return "",path_map
     #search pattern for absolute and relative paths
     regex_path_pattern = '^[\/,~\/,.]\S*'

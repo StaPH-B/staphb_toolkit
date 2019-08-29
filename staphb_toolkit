@@ -25,19 +25,19 @@ if __name__ == '__main__':
 
     #parser for applications
     #-----------------------------------------
-    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler')
-    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash')
-    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis')
-    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler')
-    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation')
-    parser_abricate = subparsers.add_parser('abricate', help='Abricate - Mass screening of contigs for antimicrobial and virulence genes')
-    parser_iqtree = subparsers.add_parser('iqtree', help='IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.')
-    parser_lyveset = subparsers.add_parser('lyveset', help='LYVE-SET - a method of using hqSNPs to create a phylogeny.')
-    parser_quast = subparsers.add_parser('quast', help='Quast - Genome assembly evaluation tool.')
-    parser_roary = subparsers.add_parser('roary', help='Roary - Rapid large-scale prokaryote pan genome analysis.')
-    parser_seqsero = subparsers.add_parser('seqsero', help='SeqSero - Salmonella serotyping from genome sequencing data.')
-    parser_serotypefinder = subparsers.add_parser('serotypefinder', help='SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.')
-    parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.')
+    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
+    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
+    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis', add_help=False)
+    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler', add_help=False)
+    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation', add_help=False)
+    parser_abricate = subparsers.add_parser('abricate', help='Abricate - Mass screening of contigs for antimicrobial and virulence genes', add_help=False)
+    parser_iqtree = subparsers.add_parser('iqtree', help='IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.', add_help=False)
+    parser_lyveset = subparsers.add_parser('lyveset', help='LYVE-SET - a method of using hqSNPs to create a phylogeny.', add_help=False)
+    parser_quast = subparsers.add_parser('quast', help='Quast - Genome assembly evaluation tool.', add_help=False)
+    parser_roary = subparsers.add_parser('roary', help='Roary - Rapid large-scale prokaryote pan genome analysis.', add_help=False)
+    parser_seqsero = subparsers.add_parser('seqsero', help='SeqSero - Salmonella serotyping from genome sequencing data.', add_help=False)
+    parser_serotypefinder = subparsers.add_parser('serotypefinder', help='SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.', add_help=False)
+    parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.', add_help=False)
     #-----------------------------------------
 
     #handel the arguments and perform automatic path replacement
