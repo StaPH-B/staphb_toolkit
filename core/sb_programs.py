@@ -37,9 +37,8 @@ class Run:
         self.docker_tag = docker_tag
 
     def run(self):
-        command = f"{self.executable} {self.parameters}"
         try:
-            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", self.command, '/data', self.path))
         except KeyboardInterrupt:
             container_engine.shutdown()
             sys.exit()
