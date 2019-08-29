@@ -42,6 +42,7 @@ class MashSpecies():
     def main(self):
         #Run MASH to get distances
         mash_species = {}
+        print("Performing taxonomic predictions with MASH. . .")
         for read in self.runfiles.reads:
             id = self.runfiles.reads[read].id
 
