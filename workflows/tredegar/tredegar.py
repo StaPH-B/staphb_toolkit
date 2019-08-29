@@ -210,8 +210,6 @@ def main():
             if not os.path.isfile(seqsero_out):
                 print("Isolate {id} identified as identified as S.enterica. Running SeqSero for "
                       "serotype prediction".format(id=id))
-                stf_obj.run_lib()
-
                 seqsero_obj.run_lib()
 
             with open(seqsero_out) as tsv_file:
