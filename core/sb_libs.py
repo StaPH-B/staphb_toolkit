@@ -35,4 +35,8 @@ class SB_lib:
 
     def run_lib(self):
         command = f"{self.executable} {self.parameters}"
-        print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+        try:
+            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", command, '/data', self.path))
+        except KeyboardInterrupt:
+            container_engine.shutdown()
+            sys.exit()
