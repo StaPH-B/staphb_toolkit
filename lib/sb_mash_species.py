@@ -7,6 +7,7 @@ import os
 import sys
 import argparse
 import re
+import pathlib
 import datetime
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
@@ -41,6 +42,7 @@ class MashSpecies():
     def main(self):
         #Run MASH to get distances
         mash_species = {}
+        print("Performing taxonomic predictions with MASH. . .")
         for read in self.runfiles.reads:
             id = self.runfiles.reads[read].id
 
@@ -51,6 +53,7 @@ class MashSpecies():
             rev = os.path.abspath(self.runfiles.reads[read].rev).replace(self.path,"")
 
             mash_result="{id}_distance.tab".format(id=id)
+            pathlib.Path(self.output_dir + "/mash_output/").mkdir(parents=True, exist_ok=True)
             mash_mounting = {self.path: '/datain', self.output_dir + "/mash_output/":'/dataout'}
             out_dir = '/dataout'
             in_dir = '/datain'
@@ -61,11 +64,15 @@ class MashSpecies():
             mash_dist="'mash dist /db/{db} {out_dir}/{id}/{sketch} > {out_dir}/{id}/{mash_result}'".format(
                 id=id,in_dir=in_dir,out_dir=out_dir, sketch=id+ "_sketch.msh", mash_result=mash_result,
                 db="RefSeqSketchesDefaults.msh")
+            
+            print(id)
+            if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + id+"_sketch.msh"):
+                mash_sketch = sb_mash.Mash(executable="bash -c", parameters=mash_sketch, path=mash_mounting)
+                mash_sketch.run_lib()
 
-            mash_sketch = sb_mash.Mash(executable="bash -c", parameters=mash_sketch, path=mash_mounting)
-            mash_sketch.run_lib()
-            mash_dist = sb_mash.Mash(executable="bash -c", parameters=mash_dist, path=mash_mounting)
-            mash_dist.run_lib()
+            if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + mash_result):
+                mash_dist = sb_mash.Mash(executable="bash -c", parameters=mash_dist, path=mash_mounting)
+                mash_dist.run_lib()
             mash_result_sorted = self.mash_out_dir + "/" + id + "/" + id + "_sorted_distance.tab"
 
             mash_hits = open(self.mash_out_dir+"/"+id+"/"+mash_result, 'r').readlines()
@@ -83,14 +90,11 @@ class MashSpecies():
 
             mash_species[id] = top_hit
 
-            print("Predicted species for isolate %s: %s"%(id,top_hit))
-
             with open(self.mash_out_dir + "/mash_species.csv", 'w') as f:
                 f.write("Isolate,Predicted Species\n")
                 for key in mash_species.keys():
                     f.write("%s,%s\n"%(key,mash_species[key]))
 
-        print(str(mash_species))
         return mash_species
 
 if __name__ == '__main__':
