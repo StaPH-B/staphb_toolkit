@@ -102,7 +102,7 @@ def main():
             shovill_obj.run_lib()
 
         pathlib.Path(output_dir + "/quast_output/").mkdir(parents=True, exist_ok=True)
-        quast_mounting = {os.path.abspath(path): '/datain', os.path.abspath(output_dir) + "/quast_output/": '/dataout'}
+        quast_mounting = {os.path.abspath(output_dir): '/datain', os.path.abspath(output_dir) + "/quast_output/": '/dataout'}
         quast_params = "'quast.py {in_dir}/{assembly} -o {out_dir}/{id}'".format(
             assembly=assembly, id=id, out_dir=out_dir, in_dir=in_dir)
 
@@ -156,7 +156,7 @@ def main():
 
         if "Escherichia_coli" in isolate_qual[id]["predicted_species"]:
             pathlib.Path(output_dir + "/serotypefinder_output/").mkdir(parents=True, exist_ok=True)
-            stf_mounting = {os.path.abspath(path): '/datain',
+            stf_mounting = {os.path.abspath(output_dir): '/datain',
                            os.path.abspath(output_dir) + "/serotypefinder_output": '/dataout'}
             stf_params = "-d /serotypefinder/database/ -i {in_dir}/{assembly} " \
                       "-b /blast-2.2.26/ -o {out_dir}/{id}/ -s ecoli -k 95.00 -l 0.60".format(
