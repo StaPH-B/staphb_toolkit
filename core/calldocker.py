@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 import docker
-import os
+import os,sys
 import argparse
-import sys
 import json
 import shlex
-#TODO add inidcator that container is being downloaded or updated
+import ast
 
 def shutdown():
     print('\nShutting down the running docker containers and exiting...')
@@ -19,6 +18,21 @@ def shutdown():
 def call(container,command,cwd='',paths={},remove=True):
     ###access docker environment
     client = docker.from_env()
+
+    #update or pull image if necessary from docker hub
+    low_client = docker.APIClient(base_url='unix://var/run/docker.sock')
+    pull_stdout = low_client.pull(container,stream=True)
+    out_lines = []
+    for line in pull_stdout:
+        out = ast.literal_eval(line.decode('utf-8'))
+        out_lines.append(out['status'])
+        if len(out_lines) == 4:
+            print(f"Downloading container {container}, this could take some time.")
+        elif len(out_lines) > 4:
+            if "Downloaded newer image" in out['status']:
+                print(out['status'])
+        else:
+            pass
 
     ###get the effectie user and group id's
     user = str(os.geteuid())+':'+str(os.getegid())
