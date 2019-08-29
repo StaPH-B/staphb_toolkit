@@ -63,10 +63,12 @@ class MashSpecies():
             mash_dist="'mash dist /db/{db} {out_dir}/{id}/{sketch} > {out_dir}/{id}/{mash_result}'".format(
                 id=id,in_dir=in_dir,out_dir=out_dir, sketch=id+ "_sketch.msh", mash_result=mash_result,
                 db="RefSeqSketchesDefaults.msh")
-
+            
+            print(id)
             if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + id+"_sketch.msh"):
                 mash_sketch = sb_mash.Mash(executable="bash -c", parameters=mash_sketch, path=mash_mounting)
                 mash_sketch.run_lib()
+
             if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + mash_result):
                 mash_dist = sb_mash.Mash(executable="bash -c", parameters=mash_dist, path=mash_mounting)
                 mash_dist.run_lib()
