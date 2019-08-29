@@ -22,6 +22,12 @@
     },
     { "name": "prokka",
       "tag": "1.13"
+    },
+    { "name": "serotypefinder",
+      "tag": "1.1"
+    },
+    { "name": "seqsero",
+      "tag": "1.0.1"
     }
   ]
 }
