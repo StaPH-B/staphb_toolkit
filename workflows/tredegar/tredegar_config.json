@@ -1,0 +1,8 @@
+{
+  "parameters":
+    {
+      "comment": "Mash, Quast, and Seqsero are run using default parameters",
+      "serotypefinder": "-s ecoli -k 95.00 -l 0.60",
+      "cg_pipeline": "--fast"
+    }
+}
