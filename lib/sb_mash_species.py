@@ -29,7 +29,7 @@ class MashSpecies():
             self.runfiles = runfiles
         else:
             self.path = path
-            self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
+            self.runfiles = fileparser.ProcessFastqs(self.path, basespace_output_dir=output_dir)
 
         if db:
             self.db=db
