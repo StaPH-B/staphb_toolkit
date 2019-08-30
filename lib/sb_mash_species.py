@@ -29,7 +29,7 @@ class MashSpecies():
             self.runfiles = runfiles
         else:
             self.path = path
-            self.runfiles = fileparser.RunFiles(self.path, output_dir=output_dir)
+            self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
 
         if db:
             self.db=db
@@ -64,7 +64,7 @@ class MashSpecies():
             mash_dist_command="bash -c 'mash dist /db/{db} {out_dir}/{id}/{sketch} > {out_dir}/{id}/{mash_result}'".format(
                 id=id,in_dir=in_dir,out_dir=out_dir, sketch=id+ "_sketch.msh", mash_result=mash_result,
                 db="RefSeqSketchesDefaults.msh")
-            
+
             print(id)
             if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + id+"_sketch.msh"):
                 mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash")
