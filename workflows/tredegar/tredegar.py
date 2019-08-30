@@ -4,6 +4,7 @@
 #email: kevin.libuit@dgs.virginia.gov
 
 import os
+import json
 import sys
 import argparse
 import csv
@@ -13,11 +14,7 @@ import pathlib
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 from lib import sb_mash_species
-from lib import sb_shovill
-from lib import sb_quast
-from lib import sb_lyveset
-from lib import sb_serotypefinder
-from lib import sb_seqsero
+from core import sb_programs
 from core import fileparser
 
 def main():
@@ -64,6 +61,12 @@ def main():
     matched_wzx = ["O2","O50","O17","O77","O118","O151","O169","O141ab","O141ac"]
     matched_wzy = ["O13","O135","O17","O44","O123","O186"]
 
+    config_file = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + "/tredegar_config.json"
+
+    with open(config_file) as config_file:
+        tredegar_config = json.load(config_file)
+
+
     for read in runfiles.reads:
         if "seqsero_output" in os.path.abspath(runfiles.reads[read].fwd):
             continue
@@ -90,28 +93,28 @@ def main():
 
         pathlib.Path(output_dir + "/shovill_output/").mkdir(parents=True, exist_ok=True)
         shovill_mounting = {os.path.abspath(path): '/datain', os.path.abspath(output_dir) + "/shovill_output/":'/dataout'}
-        shovill_params = "--outdir {out_dir}/{id}/ -R1 {in_dir}/{fwd} -R2 {in_dir}/{rev} " \
+        shovill_command = "shovill --outdir {out_dir}/{id}/ -R1 {in_dir}/{fwd} -R2 {in_dir}/{rev} " \
                          "--ram {mem} --cpus {cpu} --force".format(
             in_dir=in_dir,out_dir=out_dir,fwd=fwd,rev=rev,mem=mem,cpu=cpu,id=id)
 
-        shovill_obj = sb_shovill.Shovill(parameters=shovill_params, path=shovill_mounting)
+        shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, docker_image="shovill")
         assembly = "/shovill_output/" + id + "/" + "contigs.fa"
 
         if not os.path.isfile(output_dir + assembly):
             print("Assemblying {id} with shovill. . .".format(id=id))
-            shovill_obj.run_lib()
+            shovill_obj.run()
 
         pathlib.Path(output_dir + "/quast_output/").mkdir(parents=True, exist_ok=True)
-        quast_mounting = {os.path.abspath(path): '/datain', os.path.abspath(output_dir) + "/quast_output/": '/dataout'}
-        quast_params = "'quast.py {in_dir}/{assembly} -o {out_dir}/{id}'".format(
+        quast_mounting = {os.path.abspath(output_dir): '/datain', os.path.abspath(output_dir) + "/quast_output/": '/dataout'}
+        quast_command = "bash -c 'quast.py {in_dir}/{assembly} -o {out_dir}/{id}'".format(
             assembly=assembly, id=id, out_dir=out_dir, in_dir=in_dir)
 
-        quast_obj = sb_quast.Quast(executable="bash -c", parameters=quast_params, path=quast_mounting)
+        quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, docker_image="quast")
         quast_out = "%s/quast_output/%s/report.tsv" % (output_dir, id)
 
         if not os.path.isfile(quast_out):
             print("Gathering {id} assembly quality metrics with Quast. . .".format(id=id))
-            quast_obj.run_lib()
+            quast_obj.run()
 
         with open(quast_out) as tsv_file:
             tsv_reader = csv.reader(tsv_file, delimiter="\t")
@@ -132,16 +135,18 @@ def main():
         if not genome_length:
             raise ValueError("Unable to predict genome length for isolate" + id)
 
-        cg_params = "'run_assembly_readMetrics.pl {in_dir}/{reads} -e {genome_length} > " \
+        cg_command = "bash -c 'run_assembly_readMetrics.pl {cg_params} {in_dir}/{reads} -e {genome_length} > " \
                           "{out_dir}/{cgp_result}'".format(
-            in_dir=in_dir,out_dir=out_dir,reads=all_reads,genome_length=genome_length,cgp_result=id + "_readMetrics.tsv")
+            in_dir=in_dir,out_dir=out_dir,reads=all_reads,genome_length=genome_length,
+            cgp_result=id + "_readMetrics.tsv", cg_params=tredegar_config["parameters"]["cg_pipeline"])
 
-        cg_obj= sb_lyveset.LyveSet(executable="bash -c", parameters=cg_params, path=cg_mounting)
+        cg_obj= sb_programs.Run(command=cg_command, path=cg_mounting, docker_image="lyveset")
         cg_out = "%s/cg_pipeline_output/%s_readMetrics.tsv"%(output_dir,id)
 
         if not os.path.isfile(cg_out):
-            print("Getting {id} sequencing quality metrics".format(id=id))
-            cg_obj.run_lib()
+            print("Getting {id} sequencing quality metrics with CG Pipeline".format(id=id))
+            cg_obj.run()
+            print("CG Pipeline complete.")
 
         with open(cg_out) as tsv_file:
             tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
@@ -156,18 +161,19 @@ def main():
 
         if "Escherichia_coli" in isolate_qual[id]["predicted_species"]:
             pathlib.Path(output_dir + "/serotypefinder_output/").mkdir(parents=True, exist_ok=True)
-            stf_mounting = {os.path.abspath(path): '/datain',
+            stf_mounting = {os.path.abspath(output_dir): '/datain',
                            os.path.abspath(output_dir) + "/serotypefinder_output": '/dataout'}
-            stf_params = "-d /serotypefinder/database/ -i {in_dir}/{assembly} " \
-                      "-b /blast-2.2.26/ -o {out_dir}/{id}/ -s ecoli -k 95.00 -l 0.60".format(
-                in_dir=in_dir, out_dir=out_dir, assembly=assembly, id=id)
+            stf_command = "serotypefinder.pl -d /serotypefinder/database/ -i {in_dir}/{assembly} " \
+                      "-b /blast-2.2.26/ -o {out_dir}/{id}/ {stf_params} ".format(
+                in_dir=in_dir, out_dir=out_dir, assembly=assembly, id=id,
+                stf_params=tredegar_config["parameters"]["serotypefinder"])
 
-            stf_obj = sb_serotypefinder.Serotypefinder(parameters=stf_params, path=stf_mounting)
+            stf_obj = sb_programs.Run(command=stf_command, path=stf_mounting, docker_image="serotypefinder")
             stf_out = "%s/serotypefinder_output/%s/results_tab.txt" % (output_dir, id)
 
             if not os.path.isfile(stf_out):
                 print("Isolate {id} identified as E.coli. Running SerotypeFinder for serotype prediction".format(id=id))
-                stf_obj.run_lib()
+                stf_obj.run()
 
             with open(stf_out) as tsv_file:
                 tsv_reader = csv.reader(tsv_file, delimiter="\t")
@@ -202,17 +208,15 @@ def main():
             pathlib.Path(output_dir + "/seqsero_output/").mkdir(parents=True, exist_ok=True)
             seqsero_mounting = {os.path.abspath(path): '/datain',
                            os.path.abspath(output_dir) + "/seqsero_output": '/dataout'}
-            seqsero_params = "'SeqSero.py -m2 -i {in_dir}/{reads} -d {out_dir}/{id}'".format(
+            seqsero_command = "bash -c 'SeqSero.py -m2 -i {in_dir}/{reads} -d {out_dir}/{id}'".format(
                 in_dir=in_dir, out_dir=out_dir, assembly=assembly, id=id, reads=all_reads)
-            seqsero_obj = sb_seqsero.SeqSero(executable="bash -c", parameters=seqsero_params, path=seqsero_mounting)
+            seqsero_obj = sb_programs.Run(command=seqsero_command, path=seqsero_mounting, docker_image="seqsero")
             seqsero_out = "%s/seqsero_output/%s/Seqsero_result.txt" % (output_dir, id)
 
             if not os.path.isfile(seqsero_out):
                 print("Isolate {id} identified as identified as S.enterica. Running SeqSero for "
                       "serotype prediction".format(id=id))
-                stf_obj.run_lib()
-
-                seqsero_obj.run_lib()
+                seqsero_obj.run()
 
             with open(seqsero_out) as tsv_file:
                 tsv_reader = csv.reader(tsv_file, delimiter="\t")
