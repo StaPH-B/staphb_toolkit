@@ -19,7 +19,7 @@ if __name__ == '__main__':
             self.print_help()
             sys.exit(2)
 
-    parser = MyParser(usage="staphb_toolkit_run [optional arguments] <application> [application arguments]")
+    parser = MyParser(usage="staphb_toolkit [optional arguments] <application> [application arguments]")
     subparsers = parser.add_subparsers(title='application',metavar='',dest="subparser_name",required=True)
     parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet operational)")
 
