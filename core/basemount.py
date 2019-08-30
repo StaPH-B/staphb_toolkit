@@ -52,31 +52,3 @@ class Basemount:
                 else:
                     print("Copying " + read + " to: " + dest)
                     shutil.copyfile(read, dest)
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage="fileparser.py <input> [options]")
-    parser.add_argument("input", type=str, help="Path to fastq files.")
-    parser.add_argument("-o", default="", type=str, help="Path to output directory.")
-    parser.add_argument("-copy_reads", action='store_true', help="copy read files to output dir.")
-
-    if len(sys.argv[1:]) == 0:
-        parser.print_help()
-        parser.exit()
-    args = parser.parse_args()
-
-    input_dir = args.input
-    output_dir = args.o
-    copy_reads = args.copy_reads
-
-    if output_dir:
-        pass
-    else:
-        output_dir = os.getcwd()
-
-    project = Basemount(input_dir, output_dir=output_dir)
-
-    print("Isolates in BaseSpace Project " + os.path.basename(input_dir) + ": " + str(project.ids))
-    print("Read files: "+ str(project.reads))
-
-    if copy_reads:
-        print("copying fasatq files to " + output_dir)
-        project.copy_reads()
