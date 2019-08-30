@@ -18,7 +18,7 @@ else:
     sys.exit(1)
 
 class Run:
-    def __init__(self, command=None, path=None, docker_image=None):
+    def __init__(self, command, path, docker_image):
         self.path=path
         self.docker_image = docker_image
         self.command = command
@@ -44,7 +44,7 @@ class Run:
             sys.exit()
 
 class Run_multi:
-    def __init__(self, command_list=None, path=None, docker_image=None):
+    def __init__(self, command_list, path, docker_image):
         self.path = path
         self.docker_image = docker_image
         self.command_list = command_list
