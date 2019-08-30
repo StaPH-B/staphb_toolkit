@@ -5,10 +5,10 @@ import argparse
 import glob
 import re
 import sys
-from staphb_toolkit.core import basemount
+from core.basemount import Basemount
 
 #class for containing all sequencing run information
-class RunFiles:
+class ProcessFastqs:
     #list contianing all isolate ids
     ids = []
 
@@ -39,16 +39,16 @@ class RunFiles:
     #data dictonary containing all of the read objects
     reads = {}
 
-    def __init__(self,path, output_dir=''):
+    def __init__(self,path, basespace_output_dir=''):
         #Ensure input path exisits
         if not os.path.isdir(path):
             raise ValueError(path + " " + "not found.")
 
-        if not output_dir:
+        if not basespace_output_dir:
             output_dir = os.getcwd()
 
         if os.path.isdir(path+"/AppResults"):
-            basemount_project = basemount.Basemount(path, output_dir)
+            basemount_project = Basemount(path, output_dir)
             basemount_project.copy_reads()
             path = output_dir
 
@@ -83,7 +83,7 @@ class RunFiles:
             raise ValueError("No fastq files found in " + path)
 
     #return a list of id with each fastq path
-    def return_id_list(self):
+    def id_list(self):
         output_list = []
         for id in self.ids:
             if self.reads[id].paired:
@@ -92,8 +92,12 @@ class RunFiles:
                 output_list.append([id,self.reads[id].path])
         return output_list
 
+    #return a dictonary of id with each fastq path
+    def id_dict(self):
+        return self.reads
+
     #return a list of all reads
-    def return_fastq_list(self):
+    def fastq_paths(self):
         output_list = []
         for id in self.ids:
             if self.reads[id].paired:
@@ -115,7 +119,7 @@ class RunFiles:
             print("Directory for raw reads made: ", raw_reads_dir)
 
         #for each fastq file create a symbolic link
-        for fastq in self.return_fastq_list():
+        for fastq in self.fastq_paths():
             dest = os.path.join(raw_reads_dir, re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
             dest = dest.replace("_001","")
 
