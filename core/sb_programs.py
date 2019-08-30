@@ -3,8 +3,8 @@
 import os
 import sys
 import json
-import multiprocessing as mp
 from shutil import which
+import multiprocessing as mp
 import signal,psutil
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
@@ -17,7 +17,33 @@ else:
     print('Singularity or Docker is not installed or not in found in PATH')
     sys.exit(1)
 
-class SB_lib_multi:
+class Run:
+    def __init__(self, command=None, path=None, docker_image=None):
+        self.path=path
+        self.docker_image = docker_image
+        self.command = command
+        # TODO: Find a better way to grab json file
+        docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
+        docker_tag = ""
+
+        with open(docker_config) as config_file:
+            config_file = json.load(config_file)
+            try:
+                docker_tag = config_file['images'][docker_image]
+            except KeyError:
+                print(f"The docker image for {docker_image} does not exist.")
+                sys.exit()
+
+        self.docker_tag = docker_tag
+
+    def run(self):
+        try:
+            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", self.command, '/data', self.path))
+        except KeyboardInterrupt:
+            container_engine.shutdown()
+            sys.exit()
+
+class Run_multi:
     def __init__(self, command_list=None, path=None, docker_image=None):
         self.path = path
         self.docker_image = docker_image
@@ -28,19 +54,22 @@ class SB_lib_multi:
 
         with open(docker_config) as config_file:
             config_file = json.load(config_file)
-            for image in config_file['images']:
-                if image['name'] == docker_image:
-                    docker_tag = image['tag']
+            try:
+                docker_tag = config_file['images'][docker_image]
+            except KeyError:
+                print(f"The docker image for {docker_image} does not exist.")
+                sys.exit()
 
         self.docker_tag = docker_tag
 
-    def run_lib(self,jobs):
+    def run(self,jobs):
         #initalize all workers to ignore signal int since we are handeling the keyboard interrupt ourself
         parent_id = os.getpid()
         def init_worker():
-            #only set signal for docker since containers are detached
+            #set signal for docker since containers are detached and we will kill them separately
             if which('docker'):
                 signal.signal(signal.SIGINT, signal.SIG_IGN)
+            #for singularity we will kill the child processes when the main process gets a signal
             else:
                 def sig_int(signal_num,frame):
                     parent = psutil.Process(parent_id)
