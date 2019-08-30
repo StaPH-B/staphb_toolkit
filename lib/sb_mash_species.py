@@ -11,8 +11,8 @@ import pathlib
 import datetime
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
-from lib import sb_mash
 from core import fileparser
+from core import sb_programs
 
 
 class MashSpecies():
@@ -58,21 +58,21 @@ class MashSpecies():
             out_dir = '/dataout'
             in_dir = '/datain'
 
-            mash_sketch="'mkdir -p {out_dir}/{id}/ && cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -r -m 2 " \
+            mash_sketch_command="bash -c 'mkdir -p {out_dir}/{id}/ && cat {in_dir}/{fwd} {in_dir}/{rev} | mash sketch -r -m 2 "\
                         "-o {out_dir}/{id}/{sketch} -'".format(id=id, in_dir=in_dir, out_dir=out_dir,
                                                                sketch=id+"_sketch", fwd=fwd, rev=rev)
-            mash_dist="'mash dist /db/{db} {out_dir}/{id}/{sketch} > {out_dir}/{id}/{mash_result}'".format(
+            mash_dist_command="bash -c 'mash dist /db/{db} {out_dir}/{id}/{sketch} > {out_dir}/{id}/{mash_result}'".format(
                 id=id,in_dir=in_dir,out_dir=out_dir, sketch=id+ "_sketch.msh", mash_result=mash_result,
                 db="RefSeqSketchesDefaults.msh")
             
             print(id)
             if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + id+"_sketch.msh"):
-                mash_sketch = sb_mash.Mash(executable="bash -c", parameters=mash_sketch, path=mash_mounting)
-                mash_sketch.run_lib()
+                mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash")
+                mash_sketch.run()
 
             if not os.path.isfile(self.output_dir + "/mash_output/" + id + "/" + mash_result):
-                mash_dist = sb_mash.Mash(executable="bash -c", parameters=mash_dist, path=mash_mounting)
-                mash_dist.run_lib()
+                mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, docker_image="mash")
+                mash_dist.run()
             mash_result_sorted = self.mash_out_dir + "/" + id + "/" + id + "_sorted_distance.tab"
 
             mash_hits = open(self.mash_out_dir+"/"+id+"/"+mash_result, 'r').readlines()
