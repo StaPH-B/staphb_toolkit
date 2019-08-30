@@ -7,7 +7,6 @@ import re
 import sys
 from staphb_toolkit.core import basemount
 
-
 #class for containing all sequencing run information
 class RunFiles:
     #list contianing all isolate ids
@@ -39,9 +38,6 @@ class RunFiles:
 
     #data dictonary containing all of the read objects
     reads = {}
-
-    #data dictonary for containing runtime information
-    runtime = {}
 
     def __init__(self,path, output_dir=''):
         #Ensure input path exisits
@@ -107,13 +103,6 @@ class RunFiles:
                 output_list.append(self.reads[id].path)
         return output_list
 
-    #function to add runtime data to class **may get depreciated**
-    def add_runtime(self,data_type,id,*path):
-        if data_type not in self.runtime:
-            self.runtime[data_type] = {}
-        self.runtime[data_type][id] = path
-        return None
-
     #create symbolic links to raw reads
     def link_reads(self, output_dir):
         #get output directory
@@ -136,25 +125,3 @@ class RunFiles:
             else:
                 print("Symbolic link for", fastq, "already exists at", dest)
         return None
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage="fileparser.py <input> [options]")
-    parser.add_argument("input", type=str, help="Path to fastq files.")
-    parser.add_argument("-o", default="", type=str, help="Path to output directory.")
-
-    if len(sys.argv[1:]) == 0:
-        parser.print_help()
-        parser.exit()
-    args = parser.parse_args()
-
-    input_dir = args.input
-    output_dir = args.o
-
-    run = RunFiles(input_dir)
-
-    if output_dir:
-        pass
-    else:
-        output_dir = input_dir
-
-    print("Isolates found in " + input_dir + ":" + run.ids )
