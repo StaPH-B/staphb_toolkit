@@ -17,21 +17,10 @@ from lib import sb_mash_species
 from core import sb_programs
 from core import fileparser
 
-def main():
-    parser = argparse.ArgumentParser(usage="tredegar.py <input> [options]")
-    parser.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
-    parser.add_argument("-o", default="", nargs='?', type=str, help="Name of output_dir")
-
-    if len(sys.argv[1:]) == 0:
-        parser.print_help()
-        parser.exit()
-    args = parser.parse_args()
-
-    path=args.input
-    output_dir = args.o
+def tredegar(read_file_path,output_dir=""):
 
     if not output_dir:
-        output_dir = os.path.abspath("tredegar_output")
+        output_dir = os.path.join(os.getcwd(),"tredegar_output")
 
     if output_dir.endswith('/'):
         output_dir = output_dir[:-1]
@@ -44,9 +33,9 @@ def main():
     else:
         project = output_dir
 
-    runfiles = fileparser.ProcessFastqs(path, output_dir=output_dir)
-    if os.path.isdir(path + "/AppResults"):
-        path = output_dir
+    runfiles = fileparser.ProcessFastqs(read_file_path, basespace_output_dir=output_dir)
+    if os.path.isdir(read_file_path + "/AppResults"):
+        read_file_path = output_dir
 
     mem = psutil.virtual_memory()
     mem = str(mem.total >> 30)
@@ -55,7 +44,7 @@ def main():
     #Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
     genome_length = ""
-    mash_species_obj = sb_mash_species.MashSpecies(path=os.path.abspath(path), output_dir=output_dir)
+    mash_species_obj = sb_mash_species.MashSpecies(path=os.path.abspath(read_file_path), output_dir=output_dir)
     mash_species = mash_species_obj.main()
 
     matched_wzx = ["O2","O50","O17","O77","O118","O151","O169","O141ab","O141ac"]
@@ -240,7 +229,3 @@ def main():
                 w.writerow(row)
 
     print("Tredegar is complete! Output saved as %s"%tredegar_out)
-
-
-if __name__ == '__main__':
-    main()
