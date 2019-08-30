@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+#authors:
+# Kelsey Florek (kelsey.florek@slh.wisc.edu)
+# Kevin Libuit (kevin.libuit@dgs.virginia.gov)
+
+import sys,os,re
+import argparse
+import core.calldocker as cd
+import core.sb_programs as sb_prog
+from workflows.tredegar.tredegar import tredegar
+
+if __name__ == '__main__':
+
+    #setup argparser to display help if no arguments
+    class MyParser(argparse.ArgumentParser):
+        def error(self, message):
+            sys.stderr.write('error: %s\n' % message)
+            self.print_help()
+            sys.exit(2)
+
+    parser = MyParser(usage="staphb_toolkit_workflows [optional arguments] <workflow> [workflow arguments]")
+    subparsers = parser.add_subparsers(title='workflow',metavar='',dest="subparser_name",required=True)
+
+    #parser for workflows
+    #-----------------------------------------
+    parser_tredegar = subparsers.add_parser('tredegar', help='Generates taxonomic predictions using MASH', add_help=False)
+    parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    parser_tredegar.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+
+    parser_args = parser.parse_known_args()
+    program = parser_args[0].subparser_name
+    args = parser_args[0]
+    #Program specific execution code
+    #-----------------------------------------
+    if program == 'tredegar':
+        tredegar(read_file_path=args.reads_path,output_dir=args.o)
