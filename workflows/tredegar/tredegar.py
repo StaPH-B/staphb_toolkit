@@ -44,7 +44,7 @@ def main():
     else:
         project = output_dir
 
-    runfiles = fileparser.RunFiles(path, output_dir=output_dir)
+    runfiles = fileparser.ProcessFastqs(path, output_dir=output_dir)
     if os.path.isdir(path + "/AppResults"):
         path = output_dir
 
