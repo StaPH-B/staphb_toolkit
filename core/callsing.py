@@ -28,6 +28,6 @@ def call(container,command,cwd='',paths={},remove=True):
     command_list = command.split()
 
     ###run the container
-    output = Client.execute(command_list,bind=volumes,writable=True,options=['--pwd',cwd])
+    output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd])
     #once container is finished return output as a string
     return output
