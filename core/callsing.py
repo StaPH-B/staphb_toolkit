@@ -25,9 +25,12 @@ def call(container,command,cwd='',paths={},remove=True):
             volumes.append(key+':'+paths[key])
 
     ###setup command as a list
-    command_list = command.split()
+    command_list = shlex.split(command)
 
     ###run the container
     output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd])
+
+    ###format output as string
+    output = ''.join(output)
     #once container is finished return output as a string
     return output
