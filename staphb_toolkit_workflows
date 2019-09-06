@@ -27,6 +27,10 @@ if __name__ == '__main__':
     parser_tredegar = subparsers.add_parser('tredegar', help='Generates taxonomic predictions using MASH', add_help=False)
     parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
     parser_tredegar.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    parser_tredegar.add_argument('-c',metavar='config', type=str,help="path to configuration file")
+    parser_tredegar.add_argument('-t',metavar='cpus', type=int,help="number of cpus to use, defaults to 8",default=8)
+    parser_tredegar.add_argument('-m',metavar='memory GB', type=int,help="number of GB of memory to use, defaults to 16",default=16)
+
 
     parser_args = parser.parse_known_args()
     program = parser_args[0].subparser_name
@@ -34,4 +38,4 @@ if __name__ == '__main__':
     #Program specific execution code
     #-----------------------------------------
     if program == 'tredegar':
-        tredegar(read_file_path=args.reads_path,output_dir=args.o)
+        tredegar(memory=args.m,cpus=args.t,read_file_path=args.reads_path,output_dir=args.o,configuration=args.c)
