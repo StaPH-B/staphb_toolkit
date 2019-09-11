@@ -29,7 +29,7 @@ class MashSpecies():
             self.runfiles = runfiles
         else:
             self.path = path
-            self.runfiles = fileparser.ProcessFastqs(self.path, basespace_output_dir=output_dir)
+            self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
 
         if db:
             self.db=db
@@ -38,22 +38,65 @@ class MashSpecies():
 
         self.mash_out_dir = os.path.join(self.output_dir,"mash_output")
 
-
-    def run(self):
-        #Run MASH to get distances
-        mash_species = {}
-        print("Performing taxonomic predictions with MASH. . .")
-        #dictonary of each set of reads found
+    def trim_reads(self):
         reads_dict = self.runfiles.id_dict()
+        pathlib.Path(os.path.join(self.output_dir, "trimmomatic_output")).mkdir(parents=True, exist_ok=True)
 
         for id in reads_dict:
             if os.path.isdir(self.path + "/AppResults"):
                 self.path = self.output_dir
+            else:
+                self.runfiles.link_reads(output_dir=self.output_dir)
 
-            fwd_path = os.path.basename(reads_dict[id].fwd)
-            rev_path = os.path.basename(reads_dict[id].rev)
+            fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
+            rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
 
-            #create mash output file
+            #create trimmomatic output directory
+            pathlib.Path(os.path.join(self.output_dir,"trimmomatic_output")).mkdir(parents=True, exist_ok=True)
+
+            #docker mounting dictonary
+            trimmomatic_mounting = {self.path: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
+
+            #command for creating the mash sketch
+            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fq.gz SLIDINGWINDOW:4:30; mv /datain/{id}* /dataout/{id}'"
+            #create and run mash sketch object if it doesn't already exist
+            if not os.path.isfile(os.path.join(*[self.output_dir,"trimmomatic_output",id, id+"_2P.fq.gz"])):
+                #create trimmomatic object
+                trimmomatic_obj = sb_programs.Run(command=trimmomatic_command, path=trimmomatic_mounting, docker_image="trimmomatic")
+                #run trimmomatic
+                trimmomatic_obj.run()
+
+
+    def run(self, trim=False, reads_dir="raw_reads"):
+        #Run MASH to get distances
+        mash_species = {}
+        #dictonary of each set of reads found
+        reads_dict = self.runfiles.id_dict()
+
+        if trim:
+            print("Trimming reads before running MASH. . .")
+            self.trim_reads()
+
+        print("Performing taxonomic predictions with MASH. . .")
+        for id in reads_dict:
+            if os.path.isdir(self.path + "/AppResults"):
+                self.path = self.output_dir
+            else:
+                self.runfiles.link_reads(output_dir=self.output_dir)
+
+            #Capture read file and path names
+            fwd_read = os.path.basename(reads_dict[id].fwd)
+            rev_read = os.path.basename(reads_dict[id].fwd)
+
+            if trim:
+                fwd_read = f"{id}_1P.fq.gz"
+                rev_read = f"{id}_2P.fq.gz"
+                reads_dir = os.path.join("trimmomatic_output", id)
+
+            fwd_path = os.path.join(reads_dir, fwd_read)
+            rev_path = os.path.join(reads_dir, rev_read)
+
+            #create mash output directory
             pathlib.Path(os.path.join(self.output_dir,"mash_output")).mkdir(parents=True, exist_ok=True)
 
             #docker mounting dictonary
@@ -73,7 +116,7 @@ class MashSpecies():
 
             print(id)
             #create and run mash sketch object if it doesn't already exist
-            if not os.path.isfile(os.path.join(*[self.output_dir,"mash_output",id, id,"_sketch.msh"])):
+            if not os.path.isfile(os.path.join(*[self.output_dir,"mash_output",id, sketch_name])):
                 #create mash sketch object
                 mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash")
                 #run mash sketch
