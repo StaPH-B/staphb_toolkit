@@ -45,12 +45,14 @@ class MashSpecies():
         for id in reads_dict:
             if os.path.isdir(self.path + "/AppResults"):
                 self.path = self.output_dir
+                fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
+                rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
             else:
                 self.runfiles.link_reads(output_dir=self.output_dir)
+                fwd_path = os.path.join(os.path.basename(reads_dict[id].fwd))
+                rev_path = os.path.join(os.path.basename(reads_dict[id].rev))
 
-            fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
-            rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
-
+            print("LOCAL IN: " + self.path)
             #create trimmomatic output directory
             pathlib.Path(os.path.join(self.output_dir,"trimmomatic_output")).mkdir(parents=True, exist_ok=True)
 
@@ -58,7 +60,7 @@ class MashSpecies():
             trimmomatic_mounting = {self.path: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
 
             #command for creating the mash sketch
-            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fq.gz SLIDINGWINDOW:4:30; mv /datain/{id}* /dataout/{id}'"
+            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fq.gz SLIDINGWINDOW:4:30; mv /datain/{id}*.fq.gz /dataout/{id}'"
             #create and run mash sketch object if it doesn't already exist
             if not os.path.isfile(os.path.join(*[self.output_dir,"trimmomatic_output",id, id+"_2P.fq.gz"])):
                 #create trimmomatic object
