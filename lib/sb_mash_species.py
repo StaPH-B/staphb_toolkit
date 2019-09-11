@@ -30,6 +30,7 @@ class MashSpecies():
         else:
             self.path = path
             self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
+            self.runfiles.link_reads(output_dir=self.output_dir)
 
         if db:
             self.db=db
@@ -43,20 +44,14 @@ class MashSpecies():
         pathlib.Path(os.path.join(self.output_dir, "trimmomatic_output")).mkdir(parents=True, exist_ok=True)
 
         for id in reads_dict:
-            if os.path.isdir(self.path + "/AppResults"):
-                self.path = self.output_dir
-                fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
-                rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
-            else:
-                self.runfiles.link_reads(output_dir=self.output_dir)
-                fwd_path = os.path.join(os.path.basename(reads_dict[id].fwd))
-                rev_path = os.path.join(os.path.basename(reads_dict[id].rev))
+            fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
+            rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
 
             #create trimmomatic output directory
             pathlib.Path(os.path.join(self.output_dir,"trimmomatic_output")).mkdir(parents=True, exist_ok=True)
 
             #docker mounting dictonary
-            trimmomatic_mounting = {self.path: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
+            trimmomatic_mounting = {self.output_dir: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
 
             #command for creating the mash sketch
             trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fq.gz SLIDINGWINDOW:4:30; mv /datain/{id}*.fq.gz /dataout/{id}'"
@@ -79,23 +74,16 @@ class MashSpecies():
 
         print("Performing taxonomic predictions with MASH. . .")
         for id in reads_dict:
-            if os.path.isdir(self.path + "/AppResults"):
-                self.path = self.output_dir
-                reads_dir = "raw_reads"
-            else:
-                self.runfiles.link_reads(output_dir=self.output_dir)
-                reads_dir=self.path
+            reads_dir = "raw_reads"
 
             #Capture read file and path names
             fwd_read = os.path.basename(reads_dict[id].fwd)
             rev_read = os.path.basename(reads_dict[id].fwd)
-            read_mount=self.path
 
             if trim:
                 fwd_read = f"{id}_1P.fq.gz"
                 rev_read = f"{id}_2P.fq.gz"
                 reads_dir = os.path.join("trimmomatic_output", id)
-                read_mount=self.output_dir
 
             fwd_path = os.path.join(reads_dir, fwd_read)
             rev_path = os.path.join(reads_dir, rev_read)
@@ -104,7 +92,7 @@ class MashSpecies():
             pathlib.Path(os.path.join(self.output_dir,"mash_output")).mkdir(parents=True, exist_ok=True)
 
             #docker mounting dictonary
-            mash_mounting = {read_mount: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
+            mash_mounting = {self.output_dir: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
 
             #mash result and sketch file name
             mash_result="{id}_distance.tab".format(id=id)
