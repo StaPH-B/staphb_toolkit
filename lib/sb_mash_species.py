@@ -52,7 +52,6 @@ class MashSpecies():
                 fwd_path = os.path.join(os.path.basename(reads_dict[id].fwd))
                 rev_path = os.path.join(os.path.basename(reads_dict[id].rev))
 
-            print("LOCAL IN: " + self.path)
             #create trimmomatic output directory
             pathlib.Path(os.path.join(self.output_dir,"trimmomatic_output")).mkdir(parents=True, exist_ok=True)
 
@@ -68,8 +67,7 @@ class MashSpecies():
                 #run trimmomatic
                 trimmomatic_obj.run()
 
-
-    def run(self, trim=False, reads_dir="raw_reads"):
+    def run(self, trim=False):
         #Run MASH to get distances
         mash_species = {}
         #dictonary of each set of reads found
@@ -83,17 +81,21 @@ class MashSpecies():
         for id in reads_dict:
             if os.path.isdir(self.path + "/AppResults"):
                 self.path = self.output_dir
+                reads_dir = "raw_reads"
             else:
                 self.runfiles.link_reads(output_dir=self.output_dir)
+                reads_dir=self.path
 
             #Capture read file and path names
             fwd_read = os.path.basename(reads_dict[id].fwd)
             rev_read = os.path.basename(reads_dict[id].fwd)
+            read_mount=self.path
 
             if trim:
                 fwd_read = f"{id}_1P.fq.gz"
                 rev_read = f"{id}_2P.fq.gz"
                 reads_dir = os.path.join("trimmomatic_output", id)
+                read_mount=self.output_dir
 
             fwd_path = os.path.join(reads_dir, fwd_read)
             rev_path = os.path.join(reads_dir, rev_read)
@@ -102,7 +104,7 @@ class MashSpecies():
             pathlib.Path(os.path.join(self.output_dir,"mash_output")).mkdir(parents=True, exist_ok=True)
 
             #docker mounting dictonary
-            mash_mounting = {self.path: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
+            mash_mounting = {read_mount: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
 
             #mash result and sketch file name
             mash_result="{id}_distance.tab".format(id=id)
