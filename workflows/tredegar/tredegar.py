@@ -15,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from lib import sb_mash_species
 from core import sb_programs
 from core import fileparser
+import xml.etree.ElementTree as ET
 
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
@@ -63,7 +64,7 @@ def ecoli_serotype(output_dir,assembly,id,tredegar_config):
         serotype_result = h_type + ' ' + o_type
         return serotype_result
 
-def salmonella_serotype(output_dir,read_file_path,all_reads,id,tredegar_config):
+def salmonella_serotype(output_dir,read_file_path,all_reads,id):
     #seqsero ouput path
     seqsero2_output_path = os.path.join(output_dir,"seqsero2_output")
     pathlib.Path(seqsero2_output_path).mkdir(parents=True, exist_ok=True)
@@ -95,6 +96,38 @@ def salmonella_serotype(output_dir,read_file_path,all_reads,id,tredegar_config):
             except:
                 pass
     return serotype
+
+def gas_emmtype(output_dir,read_file_path,id,fwd,rev):
+    #seqsero ouput path
+    emmtyper_output_path = os.path.join(output_dir,"emmtyper_output")
+    pathlib.Path(emmtyper_output_path).mkdir(parents=True, exist_ok=True)
+    #container mounting dictonary
+    emmtyper_mounting = {read_file_path: '/datain',emmtyper_output_path: '/dataout'}
+
+    #container command
+    emmtyper_command = f"emm_typing.py -1 /datain/{fwd} -2 /datain/{rev} -m /db/ -o /dataout/{id}/"
+
+    #generate seqsero object
+    emmtyper_obj = sb_programs.Run(command=emmtyper_command, path=emmtyper_mounting, docker_image="emm-typing-tool")
+
+    #path to seqsero results, if it doesn't exist run the seqsero object
+    emmtyper_out = f"{emmtyper_output_path}/{id}/{id}_1.results.xml"
+    if not os.path.isfile(emmtyper_out):
+        print(f"Isolate {id} identified as identified as Streptococcus_pyogenes. Running emm-typing-tool for "
+              "emm-type prediction")
+        emmtyper_obj.run()
+
+    #read the result file and return the serotype
+    emm_type=""
+    tree=ET.parse(emmtyper_out)
+    root = tree.getroot()
+    for result in root[1].findall("result"):
+        if result.attrib['type'] == 'Final_EMM_type':
+
+            emm_type=(result.attrib['value'])
+    print(emm_type)
+    exit()
+    return emm_type
 
 ################################
 #main tredegar function
@@ -167,13 +200,13 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # rev_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
         # all_reads = os.path.join("raw_reads", reads_dict[id].fwd.replace("1.fastq", "*.fastq"))
 
-        fwd_read = os.path.join("trimmomatic_output", id, f"{id}_1P.fq.gz")
-        rev_read = os.path.join("trimmomatic_output", id, f"{id}_2P.fq.gz")
-        all_reads = os.path.join("trimmomatic_output", id, f"{id}_*P.fq.gz")
+        fwd_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
+        rev_read = os.path.join("raw_reads",  os.path.basename(reads_dict[id].rev))
+        all_reads = fwd_read.replace("_1.fastq", "*.fastq")
 
         #initalize result dictonary for this id
-        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "predicted_species": None, "predicted_serotype": "NA"}
-        isolate_qual[id]["predicted_species"] = mash_species[id]
+        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "species_prediction": None, "subspecies_predictions": "NA"}
+        isolate_qual[id]["species_prediction"] = mash_species[id]
 
         #create shovill_output directory
         pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
@@ -259,18 +292,22 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                     isolate_qual[id]["est_cvg"] += float(line["coverage"])
 
         #if the predicted species i ecoli run serotype finder
-        if "Escherichia_coli" in isolate_qual[id]["predicted_species"]:
-            isolate_qual[id]["predicted_serotype"] = ecoli_serotype(output_dir,assembly_result_file_path,id,tredegar_config)
+        if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
+            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly_result_file_path,id,tredegar_config)
 
-        #if the predicted species is salmonella run seqsero
-        if "Salmonella_enterica" in isolate_qual[id]["predicted_species"]:
-            isolate_qual[id]["predicted_serotype"] = salmonella_serotype(output_dir,read_file_path,all_reads,id,tredegar_config)
+        #if the predicted species is salmonella enterica run seqsero
+        if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
+            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,read_file_path,all_reads,id)
+
+        #if the predicted species is streptococcus pyogenes run seqsero
+        if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
+            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,read_file_path,id,fwd_read,rev_read)
 
     # Generate the Tredegar report
     report_path = os.path.join(output_dir,"reports")
     pathlib.Path(report_path).mkdir(parents=True, exist_ok=True)
     report_file = os.path.join(report_path, project+"_tredegar_report.tsv")
-    column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "predicted_species", "predicted_serotype"]
+    column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "species_prediction", "subspecies_predictions"]
 
     #if we don't have a report, let's write one
     if not os.path.isfile(report_path):
