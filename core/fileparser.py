@@ -39,12 +39,12 @@ class ProcessFastqs:
     #data dictonary containing all of the read objects
     reads = {}
 
-    def __init__(self,path, basespace_output_dir=''):
+    def __init__(self,path, output_dir=''):
         #Ensure input path exisits
         if not os.path.isdir(path):
             raise ValueError(path + " " + "not found.")
 
-        if not basespace_output_dir:
+        if not output_dir:
             output_dir = os.getcwd()
 
         if os.path.isdir(path+"/AppResults"):
@@ -124,8 +124,7 @@ class ProcessFastqs:
             dest = dest.replace("_001","")
 
             if not os.path.isfile(dest):
-                os.symlink(fastq, dest)
-                print("Symbolic link for", fastq, "made at", dest)
-            else:
-                print("Symbolic link for", fastq, "already exists at", dest)
+                os.link(fastq, dest)
+                print("Hard link for", fastq, "made at", dest)
+
         return None
