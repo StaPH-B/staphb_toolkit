@@ -113,18 +113,17 @@ class ProcessFastqs:
         out_path = os.path.abspath(output_dir)
         raw_reads_dir = os.path.join(out_path + "/raw_reads")
 
-        #check if output directory exists, if not create it
-        if not os.path.isdir(raw_reads_dir):
-            os.makedirs(raw_reads_dir)
-            print("Directory for raw reads made: ", raw_reads_dir)
-
         #for each fastq file create a symbolic link
         for fastq in self.fastq_paths():
 
             dest = os.path.join(raw_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
             dest = dest.replace("_001","")
 
-            if not os.path.isfile(dest):
+            # if output dest doesn't exists, if not create it
+            if not os.path.isdir(os.path.dirname(dest)):
+                os.makedirs(os.path.dirname(dest))
+
+            if not os.path.exists(dest):
                 os.link(fastq, dest)
                 print("Hard link for", fastq, "made at", dest)
 
