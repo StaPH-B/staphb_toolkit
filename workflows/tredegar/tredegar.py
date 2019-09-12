@@ -166,15 +166,21 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         fastq_files.link_reads(output_dir=output_dir)
         read_file_path=output_dir
 
+    # Path to trimmed and untrimmed reads
+    raw_read_file_path = os.path.join(read_file_path, "raw_reads")
+    trimmed_read_file_path = os.path.join(read_file_path, "trimmomatic_output")
+
     #Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
     genome_length = ""
-    mash_species_obj = sb_mash_species.MashSpecies(path=read_file_path, output_dir=output_dir)
+    mash_species_obj = sb_mash_species.MashSpecies(path=raw_read_file_path, output_dir=output_dir)
 
     #if we don't have mash species completed run it, otherwise parse the file and get the results
     mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
     if not os.path.isfile(mash_species_results):
-        mash_species = mash_species_obj.run(trim=True)
+        print('read_file_path: ' + raw_read_file_path)
+        mash_species = mash_species_obj.run()
+
     else:
         mash_species = {}
         with open(mash_species_results,'r') as csvin:
@@ -200,13 +206,33 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # rev_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
         # all_reads = os.path.join("raw_reads", reads_dict[id].fwd.replace("1.fastq", "*.fastq"))
 
-        fwd_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
-        rev_read = os.path.join("raw_reads",  os.path.basename(reads_dict[id].rev))
+        fwd_read = os.path.basename(reads_dict[id].fwd)
+        fwd_read_trimm = fwd_read.replace("_1.fastq", "_1P.fastq")
+        rev_read = os.path.basename(reads_dict[id].rev)
+        rev_read_trimm = rev_read.replace("_2.fastq", "_2P.fastq")
         all_reads = fwd_read.replace("_1.fastq", "*.fastq")
+
 
         #initalize result dictonary for this id
         isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "species_prediction": None, "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
+
+        # create trimmomatic output directory
+        pathlib.Path(os.path.join(output_dir, "trimmomatic_output")).mkdir(parents=True, exist_ok=True)
+
+        # docker mounting dictonary
+        trimmomatic_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "trimmomatic_output"): '/dataout'}
+
+        # command for creating the mash sketch
+        trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_read} /datain/{rev_read} -baseout {id}.fastq.gz SLIDINGWINDOW:4:2; mv /datain/{id}*.fastq.gz /dataout/'"
+        # create and run mash sketch object if it doesn't already exist
+        if not os.path.isfile(os.path.join(*[output_dir, "trimmomatic_output", fwd_read_trimm])):
+            # create trimmomatic object
+            trimmomatic_obj = sb_programs.Run(command=trimmomatic_command, path=trimmomatic_mounting, docker_image="trimmomatic")
+            # run trimmomatic
+            print(f"Trimming isolate {id} with Trimmomatic. . .")
+            trimmomatic_obj.run()
+
 
         #create shovill_output directory
         pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
