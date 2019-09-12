@@ -120,7 +120,8 @@ class ProcessFastqs:
 
         #for each fastq file create a symbolic link
         for fastq in self.fastq_paths():
-            dest = os.path.join(raw_reads_dir, re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
+
+            dest = os.path.join(raw_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
             dest = dest.replace("_001","")
 
             if not os.path.isfile(dest):
