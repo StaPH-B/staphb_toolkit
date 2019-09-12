@@ -123,7 +123,7 @@ def gas_emmtype(output_dir,read_file_path,id,fwd,rev):
         if result.attrib['type'] == 'Final_EMM_type':
 
             emm_type=(result.attrib['value'])
-    return emm_type(".")[0]
+    return emm_type.split(".")[0]
 
 ################################
 #main tredegar function
@@ -203,7 +203,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         rev_read = os.path.basename(reads_dict[id].rev)
         rev_read_clean = rev_read.replace("_2.fastq.gz", "_clean_PE2.fastq")
         all_reads = fwd_read.replace("_1.fastq", "*.fastq")
-        all_reads_clean = fwd_read_clean.replace("_PE1.fastq", "_PE*.fastq")
 
         # Change read dir since reads hardlinked/copied to an isolate sub dir
         raw_read_file_path = os.path.join(raw_read_file_path, id)
@@ -221,8 +220,8 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         # command for creating the mash sketch
         seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean'"
-        # create and run mash sketch object if it doesn't already exist
 
+        # create and run mash sketch object if it doesn't already exist
         if not os.path.isfile(os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])):
             # create seqyclean object
             seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
@@ -255,11 +254,11 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         pathlib.Path(quast_output_path).mkdir(parents=True, exist_ok=True)
 
         #quast mounting dictonary paths
-        quast_mounting = {output_dir: '/datain', quast_output_path: '/dataout'}
+        quast_mounting = {os.path.dirname(assembly_result_file_path): '/datain', quast_output_path: '/dataout'}
 
         #create the quast command
         assembly_file_name = os.path.basename(assembly_result_file_path)
-        quast_command = f"bash -c 'quast.py /datain/shovill_output/{id}/{assembly_file_name} -o /dataout/{id}'"
+        quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id}'"
 
         #create the quast object
         quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, docker_image="quast")
