@@ -54,52 +54,45 @@ class MashSpecies():
             trimmomatic_mounting = {self.output_dir: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
 
             #command for creating the mash sketch
-            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fq.gz SLIDINGWINDOW:4:30; mv /datain/{id}*.fq.gz /dataout/{id}'"
+            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fastq.gz SLIDINGWINDOW:4:2; mv /datain/{id}*.fastq.gz /dataout/{id}'"
             #create and run mash sketch object if it doesn't already exist
-            if not os.path.isfile(os.path.join(*[self.output_dir,"trimmomatic_output",id, id+"_2P.fq.gz"])):
+            if not os.path.isfile(os.path.join(*[self.output_dir,"trimmomatic_output",id, id+"_2P.fastq.gz"])):
                 #create trimmomatic object
                 trimmomatic_obj = sb_programs.Run(command=trimmomatic_command, path=trimmomatic_mounting, docker_image="trimmomatic")
                 #run trimmomatic
                 trimmomatic_obj.run()
 
-    def run(self, trim=False):
+    def run(self):
         #Run MASH to get distances
         mash_species = {}
         #dictonary of each set of reads found
         reads_dict = self.runfiles.id_dict()
 
-        if trim:
-            print("Trimming reads before running MASH. . .")
-            self.trim_reads()
-
         print("Performing taxonomic predictions with MASH. . .")
         for id in reads_dict:
-            reads_dir = "raw_reads"
 
             #Capture read file and path names
             fwd_read = os.path.basename(reads_dict[id].fwd)
             rev_read = os.path.basename(reads_dict[id].fwd)
 
-            if trim:
-                fwd_read = f"{id}_1P.fq.gz"
-                rev_read = f"{id}_2P.fq.gz"
-                reads_dir = os.path.join("trimmomatic_output", id)
-
-            fwd_path = os.path.join(reads_dir, fwd_read)
-            rev_path = os.path.join(reads_dir, rev_read)
+            #Change read dir if hardlinked/copied to raw_reads sub dir
+            if "raw_reads" in self.path:
+                reads_dir = os.path.join(self.path, id)
+            else:
+                reads_dir = self.path
 
             #create mash output directory
             pathlib.Path(os.path.join(self.output_dir,"mash_output")).mkdir(parents=True, exist_ok=True)
 
             #docker mounting dictonary
-            mash_mounting = {self.output_dir: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
+            mash_mounting = {reads_dir: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
 
             #mash result and sketch file name
             mash_result="{id}_distance.tab".format(id=id)
             sketch_name = id+"_sketch"
 
             #command for creating the mash sketch
-            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_path} /datain/{rev_path}'"
+            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read}'"
 
             #command for running mash distance
             sketch_name = id+"_sketch.msh"
