@@ -28,8 +28,7 @@ def ecoli_serotype(output_dir,assembly,id,tredegar_config):
 
     #setup container mounting
     assembly_path = os.path.dirname(assembly)
-    stf_mounting = {assembly_path: '/datain',
-                   serotypefinder_output_path: '/dataout'}
+    stf_mounting = {assembly_path: '/datain', serotypefinder_output_path: '/dataout'}
 
     #generate serotypefinder command
     assembly_name = os.path.basename(assembly)
@@ -64,7 +63,7 @@ def ecoli_serotype(output_dir,assembly,id,tredegar_config):
         serotype_result = h_type + ' ' + o_type
         return serotype_result
 
-def salmonella_serotype(output_dir,read_file_path,all_reads,id):
+def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id):
     #seqsero ouput path
     seqsero2_output_path = os.path.join(output_dir,"seqsero2_output")
     pathlib.Path(seqsero2_output_path).mkdir(parents=True, exist_ok=True)
@@ -81,8 +80,7 @@ def salmonella_serotype(output_dir,read_file_path,all_reads,id):
     #path to seqsero results, if it doesn't exist run the seqsero object
     seqsero2_out = f"{output_dir}/seqsero2_output/{id}/Seqsero_result.txt"
     if not os.path.isfile(seqsero2_out):
-        print(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for "
-              "serotype prediction")
+        print(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for serotype prediction")
         seqsero2_obj.run()
 
     #read the result file and return the serotype
@@ -125,9 +123,7 @@ def gas_emmtype(output_dir,read_file_path,id,fwd,rev):
         if result.attrib['type'] == 'Final_EMM_type':
 
             emm_type=(result.attrib['value'])
-    print(emm_type)
-    exit()
-    return emm_type
+    return emm_type(".")[0]
 
 ################################
 #main tredegar function
@@ -168,7 +164,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
     # Path to trimmed and untrimmed reads
     raw_read_file_path = os.path.join(read_file_path, "raw_reads")
-    trimmed_read_file_path = os.path.join(read_file_path, "trimmomatic_output")
+    clean_read_file_path = os.path.join(read_file_path, "seqyclean_output")
 
     #Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
@@ -202,46 +198,46 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         print("Assessing read quality for isolate: " + id)
 
         #get read names
-        # fwd_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
-        # rev_read = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
-        # all_reads = os.path.join("raw_reads", reads_dict[id].fwd.replace("1.fastq", "*.fastq"))
-
         fwd_read = os.path.basename(reads_dict[id].fwd)
-        fwd_read_trimm = fwd_read.replace("_1.fastq", "_1P.fastq")
+        fwd_read_clean = fwd_read.replace("_1.fastq.gz", "_clean_PE1.fastq")
         rev_read = os.path.basename(reads_dict[id].rev)
-        rev_read_trimm = rev_read.replace("_2.fastq", "_2P.fastq")
+        rev_read_clean = rev_read.replace("_2.fastq.gz", "_clean_PE2.fastq")
         all_reads = fwd_read.replace("_1.fastq", "*.fastq")
+        all_reads_clean = fwd_read_clean.replace("_PE1.fastq", "_PE*.fastq")
 
+        # Change read dir since reads hardlinked/copied to an isolate sub dir
+        raw_read_file_path = os.path.join(raw_read_file_path, id)
+        clean_read_file_path = os.path.join(clean_read_file_path, id)
 
         #initalize result dictonary for this id
         isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "species_prediction": None, "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
-        # create trimmomatic output directory
-        pathlib.Path(os.path.join(output_dir, "trimmomatic_output")).mkdir(parents=True, exist_ok=True)
+        # create seqyclean output directory
+        pathlib.Path(os.path.join(output_dir, "seqyclean_output")).mkdir(parents=True, exist_ok=True)
 
         # docker mounting dictonary
-        trimmomatic_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "trimmomatic_output"): '/dataout'}
+        seqyclean_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "seqyclean_output"): '/dataout'}
 
         # command for creating the mash sketch
-        trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_read} /datain/{rev_read} -baseout {id}.fastq.gz SLIDINGWINDOW:4:2; mv /datain/{id}*.fastq.gz /dataout/'"
+        seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean'"
         # create and run mash sketch object if it doesn't already exist
-        if not os.path.isfile(os.path.join(*[output_dir, "trimmomatic_output", fwd_read_trimm])):
-            # create trimmomatic object
-            trimmomatic_obj = sb_programs.Run(command=trimmomatic_command, path=trimmomatic_mounting, docker_image="trimmomatic")
-            # run trimmomatic
-            print(f"Trimming isolate {id} with Trimmomatic. . .")
-            trimmomatic_obj.run()
 
+        if not os.path.isfile(os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])):
+            # create seqyclean object
+            seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
+            # run seqyclean
+            print(f"Cleaning read data with seqyclean. . .")
+            seqyclean_obj.run()
 
         #create shovill_output directory
         pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
 
         #setup mounting in docker container
-        shovill_mounting = {read_file_path: '/datain', os.path.join(output_dir,"shovill_output"):'/dataout'}
+        shovill_mounting = {clean_read_file_path: '/datain', os.path.join(output_dir,"shovill_output"):'/dataout'}
 
         #generate command to run shovill on the id
-        shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read} -R2 /datain/{rev_read} --ram {memory} --cpus {cpus} --force"
+        shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force"
 
         #generate shovill object
         shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, docker_image="shovill")
@@ -288,7 +284,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         cg_pipeline_output_path = os.path.join(output_dir,"cg_pipeline_output")
         pathlib.Path(cg_pipeline_output_path).mkdir(parents=True, exist_ok=True)
         #generate path mounting for container
-        cg_mounting= {read_file_path: '/datain',cg_pipeline_output_path :'/dataout'}
+        cg_mounting= {raw_read_file_path: '/datain',cg_pipeline_output_path :'/dataout'}
 
         #generate command for cg_pipeline
         cg_params = tredegar_config["parameters"]["cg_pipeline"]
@@ -304,7 +300,8 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
             print(f"Getting {id} sequencing quality metrics with CG Pipeline")
             cg_obj.run()
             print("CG Pipeline complete.")
-        
+
+
         #parse cg_pipeline results and store them
         with open(cg_out) as tsv_file:
             tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
@@ -323,20 +320,20 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         #if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,read_file_path,all_reads,id)
+            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,raw_read_file_path,all_reads,id)
 
         #if the predicted species is streptococcus pyogenes run seqsero
         if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,read_file_path,id,fwd_read,rev_read)
+            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,raw_read_file_path,id,fwd_read,rev_read)
 
     # Generate the Tredegar report
-    report_path = os.path.join(output_dir,"reports")
-    pathlib.Path(report_path).mkdir(parents=True, exist_ok=True)
-    report_file = os.path.join(report_path, project+"_tredegar_report.tsv")
+    tredegar_output = os.path.join(output_dir,"tredegar_output")
+    pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
+    report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
     column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "species_prediction", "subspecies_predictions"]
 
     #if we don't have a report, let's write one
-    if not os.path.isfile(report_path):
+    if not os.path.isfile(tredegar_output):
         with open(report_file, "w") as csvfile:
             w = csv.DictWriter(csvfile, column_headers, dialect=csv.excel_tab)
             w.writeheader()
@@ -345,4 +342,4 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                 row.update(val)
                 w.writerow(row)
 
-    print(f"Tredegar is complete! Output saved as {report_path}")
+    print(f"Tredegar is complete! Output saved as {tredegar_output}")
