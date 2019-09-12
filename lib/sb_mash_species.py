@@ -39,29 +39,6 @@ class MashSpecies():
 
         self.mash_out_dir = os.path.join(self.output_dir,"mash_output")
 
-    def trim_reads(self):
-        reads_dict = self.runfiles.id_dict()
-        pathlib.Path(os.path.join(self.output_dir, "trimmomatic_output")).mkdir(parents=True, exist_ok=True)
-
-        for id in reads_dict:
-            fwd_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].fwd))
-            rev_path = os.path.join("raw_reads", os.path.basename(reads_dict[id].rev))
-
-            #create trimmomatic output directory
-            pathlib.Path(os.path.join(self.output_dir,"trimmomatic_output")).mkdir(parents=True, exist_ok=True)
-
-            #docker mounting dictonary
-            trimmomatic_mounting = {self.output_dir: '/datain', os.path.join(self.output_dir,"trimmomatic_output"):'/dataout'}
-
-            #command for creating the mash sketch
-            trimmomatic_command = f"bash -c 'mkdir -p /dataout/{id}; cd /datain/ && trimmomatic PE /datain/{fwd_path} /datain/{rev_path} -baseout {id}.fastq.gz SLIDINGWINDOW:4:2; mv /datain/{id}*.fastq.gz /dataout/{id}'"
-            #create and run mash sketch object if it doesn't already exist
-            if not os.path.isfile(os.path.join(*[self.output_dir,"trimmomatic_output",id, id+"_2P.fastq.gz"])):
-                #create trimmomatic object
-                trimmomatic_obj = sb_programs.Run(command=trimmomatic_command, path=trimmomatic_mounting, docker_image="trimmomatic")
-                #run trimmomatic
-                trimmomatic_obj.run()
-
     def run(self):
         #Run MASH to get distances
         mash_species = {}
