@@ -47,8 +47,10 @@ class Basemount:
                 dest = os.path.join(raw_reads_dir, re.sub('_(.*)', '', os.path.basename(read)), re.sub('S\d+_L\d+_R', "", os.path.basename(read)))
                 dest = dest.replace("_001","")
 
-                if os.path.isfile((dest)):
-                    pass
-                else:
+                #If dest dir doesn't exists, create it
+                if not os.path.isdir(os.path.dirname(dest)):
+                    os.makedirs(os.path.dirname(dest))
+
+                if not os.path.isfile(dest):
                     print("Copying " + read + " to: " + dest)
                     shutil.copyfile(read, dest)
