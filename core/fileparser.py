@@ -50,7 +50,7 @@ class ProcessFastqs:
         if os.path.isdir(path+"/AppResults"):
             basemount_project = Basemount(path, output_dir)
             basemount_project.copy_reads()
-            path = output_dir
+            path = os.path.join(output_dir, "raw_reads")
 
 
         for root,dirs,files in os.walk(path):
