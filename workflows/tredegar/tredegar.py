@@ -69,7 +69,7 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id):
     pathlib.Path(seqsero2_output_path).mkdir(parents=True, exist_ok=True)
 
     #container mounting dictonary
-    seqsero2_mounting = {read_file_path: '/datain',seqsero2_output_path: '/dataout'}
+    seqsero2_mounting = {raw_read_file_path: '/datain',seqsero2_output_path: '/dataout'}
 
     #container command
     seqsero2_command = f"bash -c 'SeqSero2_package.py -i /datain/{all_reads} -t2 -d /dataout/{id}'"
@@ -95,12 +95,12 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id):
                 pass
     return serotype
 
-def gas_emmtype(output_dir,read_file_path,id,fwd,rev):
+def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev):
     #seqsero ouput path
     emmtyper_output_path = os.path.join(output_dir,"emmtyper_output")
     pathlib.Path(emmtyper_output_path).mkdir(parents=True, exist_ok=True)
     #container mounting dictonary
-    emmtyper_mounting = {read_file_path: '/datain',emmtyper_output_path: '/dataout'}
+    emmtyper_mounting = {raw_read_file_path: '/datain',emmtyper_output_path: '/dataout'}
 
     #container command
     emmtyper_command = f"emm_typing.py -1 /datain/{fwd} -2 /datain/{rev} -m /db/ -o /dataout/{id}/"
@@ -162,19 +162,18 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         fastq_files.link_reads(output_dir=output_dir)
         read_file_path=output_dir
 
-    # Path to trimmed and untrimmed reads
-    raw_read_file_path = os.path.join(read_file_path, "raw_reads")
-    clean_read_file_path = os.path.join(read_file_path, "seqyclean_output")
+    # Path to untrimmed reads
+    read_file_path = os.path.join(read_file_path, "raw_reads")
 
     #Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
     genome_length = ""
-    mash_species_obj = sb_mash_species.MashSpecies(path=raw_read_file_path, output_dir=output_dir)
+    mash_species_obj = sb_mash_species.MashSpecies(path=read_file_path, output_dir=output_dir)
 
     #if we don't have mash species completed run it, otherwise parse the file and get the results
     mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
     if not os.path.isfile(mash_species_results):
-        print('read_file_path: ' + raw_read_file_path)
+        print('read_file_path: ' + read_file_path)
         mash_species = mash_species_obj.run()
 
     else:
@@ -205,8 +204,8 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         all_reads = fwd_read.replace("_1.fastq", "*.fastq")
 
         # Change read dir since reads hardlinked/copied to an isolate sub dir
-        raw_read_file_path = os.path.join(raw_read_file_path, id)
-        clean_read_file_path = os.path.join(clean_read_file_path, id)
+        raw_read_file_path = os.path.join(read_file_path, id)
+        clean_read_file_path = os.path.join(read_file_path.replace("raw_reads","seqyclean_output"), id)
 
         #initalize result dictonary for this id
         isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "species_prediction": None, "subspecies_predictions": "NA"}
@@ -221,10 +220,14 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # command for creating the mash sketch
         seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean'"
 
+        #generate command to run seqyclean on the id
+        seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
+
+        #path for the seqy clean result file
+        seqy_clean_result = os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])
+
         # create and run mash sketch object if it doesn't already exist
-        if not os.path.isfile(os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])):
-            # create seqyclean object
-            seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
+        if not os.path.isfile(seqy_clean_result):
             # run seqyclean
             print(f"Cleaning read data with seqyclean. . .")
             seqyclean_obj.run()
