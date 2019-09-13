@@ -1,0 +1,8 @@
+{
+  "parameters":
+    {
+      "comment": "Mash, Quast, and Seqsero are run using default parameters",
+      "ksnp3": "-k 19 -core -NF",
+      "cg_pipeline": "--fast"
+    }
+}
