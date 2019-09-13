@@ -345,3 +345,4 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                 w.writerow(row)
 
     print(f"Tredegar is complete! Output saved as {tredegar_output}")
+    return isolate_qual
