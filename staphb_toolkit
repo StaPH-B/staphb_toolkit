@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
     #parser for applications
     #-----------------------------------------
+    parser_bwa = subparsers.add_parser('bwa', help='BWA - mapping low-divergent sequences against a large reference genome', add_help=False)
     parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
     parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
     parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis', add_help=False)
@@ -113,6 +114,11 @@ if __name__ == '__main__':
         command = "serotypefinder.pl "+arg_string
         serotypefinder = sb_prog.Run(command=command, path=path_map,docker_image="serotypefinder")
         serotypefinder.run()
+
+    if program == 'bwa':
+        command = "bwa "+arg_string
+        bwa = sb_prog.Run(command=command, path=path_map,docker_image="bwa")
+        bwa.run()
 
     if program == 'unicycler':
         command = "unicycler "+arg_string
