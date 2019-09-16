@@ -37,7 +37,6 @@ def group_by_emm(isolate_qual):
             emm_types.append((isolate_qual[id]["subspecies_predictions"]))
         else:
             emm_groups[isolate_qual[id]["subspecies_predictions"]].append(id)
-    print(emm_groups)
     return emm_groups
 
 
@@ -49,7 +48,20 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
     print("First run tredegar")
     isolate_qual=tredegar(memory=memory,cpus=cpus,read_file_path=read_file_path,output_dir=output_dir,configuration=configuration)
 
-    group_by_emm(isolate_qual)
+    emm_groups = group_by_emm(isolate_qual)
+
+    for group in emm_groups.keys():
+        if len(emm_groups[group]) > 1:
+            print(f"{group}_assemblies.txt")
+            for isolate in emm_groups[group]:
+                assembly_path = os.path.join(*["shovill_output", isolate, "contigs.fa"])
+                print(assembly_path)
+        else:
+            print("Only one isolate identified as "+ group)
+
+
+
+
 
 
 
