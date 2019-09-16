@@ -13,6 +13,7 @@
       "abricate": "0.8.13",
       "iqtree": "1.6.7",
       "roary": "3.12.0",
-      "unicycler": "0.4.7"
+      "unicycler": "0.4.7",
+      "bwa":"0.7.17"
     }
 }
