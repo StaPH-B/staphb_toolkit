@@ -135,25 +135,13 @@ class ProcessFastqs:
                 if '.fastq' in file or '.fastq.gz' in file:
                     # get id and check if we have seen this id before by adding to id list and creating a new read object
                     id = file.split('_')[0]
-                    if id not in self.ids:
-                        self.ids.append(id)
-                        self.reads[id] = self.Fastqs(id)
-
                     # if fastq file is foward reads add path to .fwd
                     if '_R1' in file or '_1' in file:
                         del self.reads[id].fwd
                         self.reads[id].fwd = root + '/' + file
-                        print(self.reads[id].fwd)
                     # if fastq file is reverese reads add path to .rev
                     elif '_R2' in file or '_2' in file:
                         del self.reads[id].rev
                         self.reads[id].rev = root + '/' + file
-                    # if fastq file is unpaired or interleaved add path to .path
-                    # TODO consider the impact of this and determine best method
-                    else:
-                        if not self.reads[id].path:
-                            self.reads[id].paired = False
-                            self.reads[id].path = root + '/' + file
-
 
         return None
