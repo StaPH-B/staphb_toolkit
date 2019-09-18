@@ -29,8 +29,8 @@ import xml.etree.ElementTree as ET
 def group_by_emm(isolate_qual):
     '''
     create data dictionary of emm groups in the format:
-        {emm_groupX: [list of isolates ID'ed as emm_groupX],
-        emm_groupY: [list of isolates ID'ed as emm_groupY],
+        {emm_typeX: [list of isolates ID'ed as emm_typeX],
+        emm_typeY: [list of isolates ID'ed as emm_typeY],
         ...
         }
     '''
