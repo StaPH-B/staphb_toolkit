@@ -16,6 +16,8 @@
       "unicycler": "0.4.7",
       "trimmomatic": "0.39",
       "seqsero2": "1.0.0",
-      "emm-typing-tool": "0.0.1"
+      "emm-typing-tool": "0.0.1",
+      "ksnp3": "3.1",
+      "snp-dists": "0.6.2"
     }
 }
