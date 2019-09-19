@@ -81,6 +81,10 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
         ksnp3_config = json.load(config_file)
     ksnp3_params=ksnp3_config["parameters"]["ksnp3"]
 
+    # create foushee output dir
+    foushee_output = os.path.join(output_dir, "foushee_output")
+    pathlib.Path(foushee_output).mkdir(parents=True, exist_ok=True)
+
     # create emm_group dict
     emm_groups = group_by_emm(isolate_qual)
 
@@ -110,8 +114,11 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         #run the SNP analysis process using ksnp3
         if not os.path.isfile(ksnp3_result):
-             print(f"Performing SNP analysis for isolates identified as {group}")
-             ksnp3_obj.run()
+            print(f"Performing SNP analysis for isolates identified as {group}")
+            ksnp3_obj.run()
+            ksnp3_tree = ksnp3_result.replace("core_SNPS_matrix.fasta", "tree.core.tre")
+            ksnp3_tree_dest = os.path.join(*[output_dir, "foushee_output", f"{group}_core_SNPs_matrix.fasta"])
+            os.link(ksnp3_tree, ksnp3_tree_dest)
 
         # create snp-dists output dir:
         snp_dists_output = os.path.join(os.path.abspath(output_dir), "snp_dists_output")
@@ -121,18 +128,21 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
         snp_dists_mounting = {os.path.join(os.path.abspath(output_dir), "ksnp3_output", group): '/datain', snp_dists_output: '/dataout'}
 
         # generate command to run shovill on the id
-        snp_dists_command = f"bash -c 'snp-dists /datain/core_SNPs_matrix.fasta > /dataout/{group}_snp-distance_matrix.tsv'"
+        snp_dists_command = f"bash -c 'snp-dists /datain/core_SNPs_matrix.fasta > /dataout/{group}_snp_distance_matrix.tsv'"
 
         # # generate snp_dists object
         snp_dists_obj = sb_programs.Run(command=snp_dists_command, path=snp_dists_mounting, docker_image="snp-dists")
 
         # path for the snp_dists result file
-        snp_dists_result = os.path.join(*[snp_dists_output, f"{group}_snp-distance_matrix.tsv"])
+        snp_dists_result = os.path.join(*[snp_dists_output, f"{group}_snp_distance_matrix.tsv"])
 
         #run the SNP analysis process using snp_dists
         if not os.path.isfile(snp_dists_result):
-             print(f"Performing SNP analysis for isolates identified as {group}")
-             snp_dists_obj.run()
+            print(f"Performing SNP analysis for isolates identified as {group}")
+            snp_dists_obj.run()
+            os.link(snp_dists_result, snp_dists_result.replace("snp_dists_output", "foushee_output"))
+
+        print(f"Done! Hard links for the ksnp3 core tree and snps-dists distance matrix made at {foushee_output}")
 
 
 
