@@ -66,7 +66,6 @@ class ProcessFastqs:
                     #if fastq file is foward reads add path to .fwd
                     if '_R1' in file or '_1' in file:
                         if not self.reads[id].fwd:
-                            print(str(root + '/' + file))
                             self.reads[id].fwd = root + '/' + file
                     #if fastq file is reverese reads add path to .rev
                     elif '_R2' in file or '_2' in file:
