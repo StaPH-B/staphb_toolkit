@@ -173,7 +173,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     #if we don't have mash species completed run it, otherwise parse the file and get the results
     mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
     if not os.path.isfile(mash_species_results):
-        print('read_file_path: ' + read_file_path)
         mash_species = mash_species_obj.run()
 
     else:
@@ -344,5 +343,5 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                 row.update(val)
                 w.writerow(row)
 
-    print(f"Tredegar is complete! Output saved as {tredegar_output}")
+    print(f"Tredegar is complete! Output saved to {tredegar_output}")
     return isolate_qual
