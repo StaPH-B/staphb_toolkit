@@ -9,12 +9,7 @@ import sys
 import csv
 import datetime
 import pathlib
-import sys,os,re
-import core.calldocker as cd
-import core.sb_programs as sb_prog
-import pprint
-import itertools
-from operator import itemgetter
+import sys,os
 from workflows.tredegar.tredegar import tredegar
 
 
@@ -63,10 +58,18 @@ def ksnp3_input_file(emm_groups, out_dir):
         else:
             print("Only one isolate identified as "+ group)
 
+
 ################################
-#main foushee function
+# main foushee function
 ################################
 def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
+
+    #if we don't have an output dir, use the cwd with a tredegar_output dir
+    #if we do get the absolute path
+    if not output_dir:
+        output_dir = os.path.join(os.getcwd(),"foushee_output")
+    else:
+        output_dir = os.path.abspath(output_dir)
     print("First run tredegar")
     isolate_qual=tredegar(memory=memory,cpus=cpus,read_file_path=read_file_path,output_dir=output_dir,configuration=configuration)
 
