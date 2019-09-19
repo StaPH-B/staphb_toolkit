@@ -3,23 +3,16 @@
 #author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import os
 import json
-import sys
 import csv
-import datetime
 import pathlib
 import sys,os
 from workflows.tredegar.tredegar import tredegar
-
-
+from core import sb_programs
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
-#load staphb libaries
-from lib import sb_mash_species
-from core import sb_programs
-from core import fileparser
-import xml.etree.ElementTree as ET
+
+
 
 def group_by_emm(isolate_qual):
     '''
@@ -40,6 +33,7 @@ def group_by_emm(isolate_qual):
         else:
             emm_groups[isolate_qual[id]["subspecies_predictions"]].append(id)
     return emm_groups
+
 
 def ksnp3_input_file(emm_groups, out_dir):
     for group in emm_groups.keys():
