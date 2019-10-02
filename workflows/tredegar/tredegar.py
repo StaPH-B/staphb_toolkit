@@ -44,8 +44,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
 
 # define function for running shovill
 def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_read_clean, memory, cpus, assembly):
-
-    # create and run shovill object if it results don't already exist
+    # create and run shovill object if results don't already exist
     if not os.path.isfile(assembly):
 
         # create shovill_output directory
@@ -64,6 +63,26 @@ def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_re
         print("Assemblying {id} with shovill. . .".format(id=id))
         shovill_obj.run()
 
+def assembly_metrics(id, output_dir, assembly, quast_out_file):
+    # create and run quast object if results don't already exist
+    if not os.path.isfile(quast_out_file):
+
+        # generate the path for quast output
+        quast_output_path = os.path.join(output_dir, "quast_output")
+        pathlib.Path(quast_output_path).mkdir(parents=True, exist_ok=True)
+
+        # quast mounting dictonary paths
+        quast_mounting = {os.path.dirname(assembly): '/datain', quast_output_path: '/dataout'}
+
+        # create the quast command
+        assembly_file_name = os.path.basename(assembly)
+        quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id}'"
+
+        # create the quast object
+        quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, docker_image="quast")
+
+        print(f"Gathering {id} assembly quality metrics with Quast. . .")
+        quast_obj.run()
 
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
@@ -280,27 +299,9 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # Assmeble contigs using cleaned read data
         assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly)
 
-        
-
-        #generate the path for quast output
-        quast_output_path = os.path.join(output_dir,"quast_output")
-        pathlib.Path(quast_output_path).mkdir(parents=True, exist_ok=True)
-
-        #quast mounting dictonary paths
-        quast_mounting = {os.path.dirname(assembly): '/datain', quast_output_path: '/dataout'}
-
-        #create the quast command
-        assembly_file_name = os.path.basename(assembly)
-        quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id}'"
-
-        #create the quast object
-        quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, docker_image="quast")
-
-        #check for quast output, if it doesn't exist run the quast object
+        # Get assmely metrics using quast
         quast_out_file = f"{output_dir}/quast_output/{id}/report.tsv"
-        if not os.path.isfile(quast_out_file):
-            print(f"Gathering {id} assembly quality metrics with Quast. . .")
-            quast_obj.run()
+        assembly_metrics(id, output_dir, assembly, quast_out_file)
 
         #open the output file and read in the genome length
         with open(quast_out_file) as tsv_file:
