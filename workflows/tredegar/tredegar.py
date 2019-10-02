@@ -19,6 +19,10 @@ import xml.etree.ElementTree as ET
 
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
+    # ambiguous allele calls
+    matched_wzx = ["O2","O50","O17","O77","O118","O151","O169","O141ab","O141ac"]
+    matched_wzy = ["O13","O135","O17","O44","O123","O186"]
+
     #output path for serotypefinder
     serotypefinder_output_path = os.path.join(output_dir,"serotypefinder_output")
     pathlib.Path(serotypefinder_output_path).mkdir(parents=True, exist_ok=True)
@@ -46,22 +50,35 @@ def ecoli_serotype(output_dir,assembly,id,tredegar_config):
     #process the results of the serotype finder file
     with open(stf_out) as tsv_file:
         tsv_reader = csv.reader(tsv_file, delimiter="\t")
-        h_type = ''
-        o_type = ''
-        oh_dict = {}
+        wzx_allele = ""
+        wzy_allele = ""
+        wzm_allele = ""
+        h_type = ""
 
-        #parse each line of the result file and get the H and O type
         for line in tsv_reader:
-            if 'Gene' not in line[0]:
-                oh_dict[line[5]] = line[0]
+            if "fl" in line [0]:
+                h_type = line[5]
 
-        for oh_key in oh_dict:
-            if 'H' in oh_key:
-                h_type = h_type + oh_key + ' '
-            if 'O' in oh_key:
-                o_type = o_type + oh_key + ' '
-        serotype_result = h_type + ' ' + o_type
-        return serotype_result
+            if line[0] == "wzx":
+                wzx_allele = line[5]
+            if line[0] == "wzy":
+                wzy_allele = line[5]
+            if line[0] == "wzm":
+                wzm_allele = line[5]
+
+        o_type = wzx_allele
+        if not wzx_allele:
+            o_type = wzy_allele
+        if not wzx_allele and not wzy_allele:
+            o_type = wzm_allele
+
+        if o_type in matched_wzx:
+            o_type = wzy_allele
+        if o_type in matched_wzy:
+            o_type = wzx_allele
+        serotype = f"{o_type}:{h_type}"
+
+    return serotype
 
 def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id):
     #seqsero ouput path
@@ -182,10 +199,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
             for row in reader:
                 mash_species[row[0]] = row[1]
 
-    #TODO add comment here on what this is/does
-    matched_wzx = ["O2","O50","O17","O77","O118","O151","O169","O141ab","O141ac"]
-    matched_wzy = ["O13","O135","O17","O44","O123","O186"]
-
     #dictonary of each set of reads found
     reads_dict = fastq_files.id_dict()
 
@@ -207,7 +220,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         clean_read_file_path = os.path.join(read_file_path.replace("raw_reads","seqyclean_output"), id)
 
         #initalize result dictonary for this id
-        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "species_prediction": None, "subspecies_predictions": "NA"}
+        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "number_contigs": None, "species_prediction": None, "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
         # create seqyclean output directory
@@ -278,6 +291,9 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                 if "Total length" in line[0]:
                     genome_length = line[1]
                     isolate_qual[id]["est_genome_length"] = genome_length
+                if "# contigs" in line[0]:
+                    contigs = line[1]
+                    isolate_qual[id]["number_contigs"] = contigs
             if not genome_length:
                 raise ValueError("Unable to predict genome length for isolate" + id)
 
@@ -315,7 +331,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                     isolate_qual[id]["r2_q"] = line["avgQuality"]
                     isolate_qual[id]["est_cvg"] += float(line["coverage"])
 
-        #if the predicted species i ecoli run serotype finder
+        # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
             isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly_result_file_path,id,tredegar_config)
 
@@ -331,7 +347,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     tredegar_output = os.path.join(output_dir,"tredegar_output")
     pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
-    column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "species_prediction", "subspecies_predictions"]
+    column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
 
     #if we don't have a report, let's write one
     if not os.path.isfile(tredegar_output):
