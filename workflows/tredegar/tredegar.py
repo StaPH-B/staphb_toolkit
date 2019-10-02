@@ -63,7 +63,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_re
         print("Assemblying {id} with shovill. . .".format(id=id))
         shovill_obj.run()
 
-def assembly_metrics(id, output_dir, assembly, quast_out_file):
+def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual):
     # create and run quast object if results don't already exist
     if not os.path.isfile(quast_out_file):
 
@@ -83,6 +83,60 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file):
 
         print(f"Gathering {id} assembly quality metrics with Quast. . .")
         quast_obj.run()
+
+    # open the quast results to capture relevant metrics
+    with open(quast_out_file) as tsv_file:
+        tsv_reader = csv.reader(tsv_file, delimiter="\t")
+        for line in tsv_reader:
+            if "Total length" in line[0]:
+                genome_length=line[1]
+                isolate_qual[id]["est_genome_length"] = genome_length
+            if "# contigs" in line[0]:
+                number_contigs=line[1]
+                isolate_qual[id]["number_contigs"] = number_contigs
+        if not genome_length:
+            raise ValueError("Unable to predict genome length for isolate" + id)
+        if not number_contigs:
+            raise ValueError("Unable to predict number of contigs for isolate" + id)
+
+def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, tredegar_config, cgp_out):
+    # check for cg_pipeline output file if not exists run the cg_pipeline object
+    if not os.path.isfile(cgp_out):
+        # set  genome length
+        genome_length = isolate_qual[id]["est_genome_length"]
+
+        # capture cg pipeline params
+        cgp_params = tredegar_config["parameters"]["cg_pipeline"]
+
+        # create cg_pipeline output path
+        cg_pipeline_output_path = os.path.join(output_dir, "cg_pipeline_output")
+        pathlib.Path(cg_pipeline_output_path).mkdir(parents=True, exist_ok=True)
+        # generate path mounting for container
+        cg_mounting = {raw_read_file_path: '/datain', cg_pipeline_output_path: '/dataout'}
+
+        # generate command for cg_pipeline
+        cg_params = tredegar_config["parameters"]["cg_pipeline"]
+        cgp_result_file = id + "_readMetrics.tsv"
+        cg_command = f"bash -c \'run_assembly_readMetrics.pl {cgp_params} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
+
+        # generate the cg_pipeline object
+        cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, docker_image="lyveset")
+
+
+        print(f"Getting {id} sequencing quality metrics with CG Pipeline")
+        cg_obj.run()
+
+    # open cg_pipeline results and capture relevant metrics
+    with open(cgp_out) as tsv_file:
+        tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
+
+        for line in tsv_reader:
+            if any(fwd_format in line["File"] for fwd_format in ["_1.fastq", "_R1.fastq", "_1P.fq.gz"]):
+                isolate_qual[id]["r1_q"] = line["avgQuality"]
+                isolate_qual[id]["est_cvg"] = float(line["coverage"])
+            if any(rev_format in line["File"] for rev_format in ["_2.fastq", "_R2.fastq", "_2P.fq.gz"]):
+                isolate_qual[id]["r2_q"] = line["avgQuality"]
+                isolate_qual[id]["est_cvg"] += float(line["coverage"])
 
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
@@ -213,31 +267,30 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev):
 #main tredegar function
 ################################
 def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
-    #get the configuration file
+    # get the configuration file
     if configuration:
         config_file_path = os.path.absolute(configuration)
     else:
-        #use default
+        # use default
         config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),"tredegar_config.json")
-    #pull in configuration parameters
+    # pull in configuration parameters
     with open(config_file_path) as config_file:
         tredegar_config = json.load(config_file)
 
     #get the absolute path for the read_file_path
     read_file_path = os.path.abspath(read_file_path)
 
-    #if we don't have an output dir, use the cwd with a tredegar_output dir
-    #if we do get the absolute path
+    # if we don't have an output dir, use the cwd with a tredegar_output dir
     if not output_dir:
         output_dir = os.path.join(os.getcwd(),"tredegar_output")
         project = datetime.datetime.today().strftime('%Y-%m-%d')
     else:
+        # if we do, get the absolute path
         output_dir = os.path.abspath(output_dir)
         project = os.path.basename(output_dir)
 
     #process the raw reads
     fastq_files = fileparser.ProcessFastqs(read_file_path, output_dir=output_dir)
-
 
     #Set the read_file_path equal to the output_dir since reads have been copied/hard linked there
     if os.path.isdir(os.path.join(read_file_path,"AppResults")):
@@ -296,59 +349,16 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # path for the assembly result file
         assembly = os.path.join(*[output_dir, "shovill_output", id, "contigs.fa"])
 
-        # Assmeble contigs using cleaned read data
+        # Assemble contigs using cleaned read data
         assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly)
 
-        # Get assmely metrics using quast
+        # Get assembly metrics using quast
         quast_out_file = f"{output_dir}/quast_output/{id}/report.tsv"
-        assembly_metrics(id, output_dir, assembly, quast_out_file)
+        assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual)
 
-        #open the output file and read in the genome length
-        with open(quast_out_file) as tsv_file:
-            tsv_reader = csv.reader(tsv_file, delimiter="\t")
-            for line in tsv_reader:
-                if "Total length" in line[0]:
-                    genome_length = line[1]
-                    isolate_qual[id]["est_genome_length"] = genome_length
-                if "# contigs" in line[0]:
-                    contigs = line[1]
-                    isolate_qual[id]["number_contigs"] = contigs
-            if not genome_length:
-                raise ValueError("Unable to predict genome length for isolate" + id)
-
-        # create cg_pipeline output path
-        cg_pipeline_output_path = os.path.join(output_dir,"cg_pipeline_output")
-        pathlib.Path(cg_pipeline_output_path).mkdir(parents=True, exist_ok=True)
-        # generate path mounting for container
-        cg_mounting= {raw_read_file_path: '/datain',cg_pipeline_output_path :'/dataout'}
-
-        # generate command for cg_pipeline
-        cg_params = tredegar_config["parameters"]["cg_pipeline"]
-        cgp_result_file = id + "_readMetrics.tsv"
-        cg_command = f"bash -c \'run_assembly_readMetrics.pl {cg_params} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
-
-        # generate the cg_pipeline object
-        cg_obj= sb_programs.Run(command=cg_command, path=cg_mounting, docker_image="lyveset")
-
-        # check for cg_pipeline output file if not exists run the cg_pipeline object
-        cg_out = f"{output_dir}/cg_pipeline_output/{id}_readMetrics.tsv"
-        if not os.path.isfile(cg_out):
-            print(f"Getting {id} sequencing quality metrics with CG Pipeline")
-            cg_obj.run()
-            print("CG Pipeline complete.")
-
-
-        #parse cg_pipeline results and store them
-        with open(cg_out) as tsv_file:
-            tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
-
-            for line in tsv_reader:
-                if any(fwd_format in line["File"] for fwd_format in ["_1.fastq", "_R1.fastq", "_1P.fq.gz"]):
-                    isolate_qual[id]["r1_q"] = line["avgQuality"]
-                    isolate_qual[id]["est_cvg"] = float(line["coverage"])
-                if any(rev_format in line["File"] for rev_format in ["_2.fastq", "_R2.fastq", "_2P.fq.gz"]):
-                    isolate_qual[id]["r2_q"] = line["avgQuality"]
-                    isolate_qual[id]["est_cvg"] += float(line["coverage"])
+        # Get read metrics using CG Pipeline
+        cgp_out = f"{output_dir}/cg_pipeline_output/{id}_readMetrics.tsv"
+        read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, tredegar_config, cgp_out)
 
         # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
@@ -368,7 +378,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
     column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
 
-    #if we don't have a report, let's write one
+    # If we don't have a report, write one
     if not os.path.isfile(tredegar_output):
         with open(report_file, "w") as csvfile:
             w = csv.DictWriter(csvfile, column_headers, dialect=csv.excel_tab)
