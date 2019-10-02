@@ -42,6 +42,28 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         print(f"Cleaning read data with seqyclean. . .")
         seqyclean_obj.run()
 
+# define function for running shovill
+def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_read_clean, memory, cpus, assembly):
+
+    # create and run shovill object if it results don't already exist
+    if not os.path.isfile(assembly):
+
+        # create shovill_output directory
+        pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
+
+        # setup mounting in docker container
+        shovill_mounting = {clean_read_file_path: '/datain', os.path.join(output_dir, "shovill_output"): '/dataout'}
+
+        # generate command to run shovill on the id
+        shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force"
+
+        # generate shovill object
+        shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, docker_image="shovill")
+
+
+        print("Assemblying {id} with shovill. . .".format(id=id))
+        shovill_obj.run()
+
 
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
@@ -252,35 +274,23 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         # Clean read data with SeqyClean before assembling
         clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean)
 
-        #create shovill_output directory
-        pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
+        # path for the assembly result file
+        assembly = os.path.join(*[output_dir, "shovill_output", id, "contigs.fa"])
 
-        #setup mounting in docker container
-        shovill_mounting = {clean_read_file_path: '/datain', os.path.join(output_dir,"shovill_output"):'/dataout'}
+        # Assmeble contigs using cleaned read data
+        assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly)
 
-        #generate command to run shovill on the id
-        shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force"
-
-        #generate shovill object
-        shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, docker_image="shovill")
-
-        #path for the assembly result file
-        assembly_result_file_path = os.path.join(*[output_dir,"shovill_output",id,"contigs.fa"])
-
-        #run the assembly process using shovill
-        if not os.path.isfile(assembly_result_file_path):
-            print("Assemblying {id} with shovill. . .".format(id=id))
-            shovill_obj.run()
+        
 
         #generate the path for quast output
         quast_output_path = os.path.join(output_dir,"quast_output")
         pathlib.Path(quast_output_path).mkdir(parents=True, exist_ok=True)
 
         #quast mounting dictonary paths
-        quast_mounting = {os.path.dirname(assembly_result_file_path): '/datain', quast_output_path: '/dataout'}
+        quast_mounting = {os.path.dirname(assembly): '/datain', quast_output_path: '/dataout'}
 
         #create the quast command
-        assembly_file_name = os.path.basename(assembly_result_file_path)
+        assembly_file_name = os.path.basename(assembly)
         quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id}'"
 
         #create the quast object
@@ -341,7 +351,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly_result_file_path,id,tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly,id,tredegar_config)
 
         # if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
