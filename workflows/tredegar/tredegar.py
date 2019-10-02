@@ -17,6 +17,32 @@ from core import sb_programs
 from core import fileparser
 import xml.etree.ElementTree as ET
 
+
+
+# define function for running seqyclean
+def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean):
+    # path for the seqy clean result file
+    seqy_clean_result = os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])
+
+    # create and run seqyclean object if it results don't already exist
+    if not os.path.isfile(seqy_clean_result):
+
+        # create seqyclean output directory
+        pathlib.Path(os.path.join(output_dir, "seqyclean_output")).mkdir(parents=True, exist_ok=True)
+
+        # docker mounting dictonary
+        seqyclean_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "seqyclean_output"): '/dataout'}
+
+        # command for creating the mash sketch
+        seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean'"
+
+        # generate command to run seqyclean on the id
+        seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
+
+        print(f"Cleaning read data with seqyclean. . .")
+        seqyclean_obj.run()
+
+
 #define functions for determining ecoli serotype and sal serotype
 def ecoli_serotype(output_dir,assembly,id,tredegar_config):
     # ambiguous allele calls
@@ -223,26 +249,8 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "number_contigs": None, "species_prediction": None, "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
-        # create seqyclean output directory
-        pathlib.Path(os.path.join(output_dir, "seqyclean_output")).mkdir(parents=True, exist_ok=True)
-
-        # docker mounting dictonary
-        seqyclean_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "seqyclean_output"): '/dataout'}
-
-        # command for creating the mash sketch
-        seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean'"
-
-        #generate command to run seqyclean on the id
-        seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, docker_image="seqyclean")
-
-        #path for the seqy clean result file
-        seqy_clean_result = os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])
-
-        # create and run mash sketch object if it doesn't already exist
-        if not os.path.isfile(seqy_clean_result):
-            # run seqyclean
-            print(f"Cleaning read data with seqyclean. . .")
-            seqyclean_obj.run()
+        # Clean read data with SeqyClean before assembling
+        clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean)
 
         #create shovill_output directory
         pathlib.Path(os.path.join(output_dir, "shovill_output")).mkdir(parents=True, exist_ok=True)
@@ -297,21 +305,21 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
             if not genome_length:
                 raise ValueError("Unable to predict genome length for isolate" + id)
 
-        #create cg_pipeline output path
+        # create cg_pipeline output path
         cg_pipeline_output_path = os.path.join(output_dir,"cg_pipeline_output")
         pathlib.Path(cg_pipeline_output_path).mkdir(parents=True, exist_ok=True)
-        #generate path mounting for container
+        # generate path mounting for container
         cg_mounting= {raw_read_file_path: '/datain',cg_pipeline_output_path :'/dataout'}
 
-        #generate command for cg_pipeline
+        # generate command for cg_pipeline
         cg_params = tredegar_config["parameters"]["cg_pipeline"]
         cgp_result_file = id + "_readMetrics.tsv"
         cg_command = f"bash -c \'run_assembly_readMetrics.pl {cg_params} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
 
-        #generate the cg_pipeline object
+        # generate the cg_pipeline object
         cg_obj= sb_programs.Run(command=cg_command, path=cg_mounting, docker_image="lyveset")
 
-        #check for cg_pipeline output file if not exists run the cg_pipeline object
+        # check for cg_pipeline output file if not exists run the cg_pipeline object
         cg_out = f"{output_dir}/cg_pipeline_output/{id}_readMetrics.tsv"
         if not os.path.isfile(cg_out):
             print(f"Getting {id} sequencing quality metrics with CG Pipeline")
@@ -335,11 +343,11 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
             isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly_result_file_path,id,tredegar_config)
 
-        #if the predicted species is salmonella enterica run seqsero
+        # if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
             isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,raw_read_file_path,all_reads,id)
 
-        #if the predicted species is streptococcus pyogenes run seqsero
+        # if the predicted species is streptococcus pyogenes run seqsero
         if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
             isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,raw_read_file_path,id,fwd_read,rev_read)
 
