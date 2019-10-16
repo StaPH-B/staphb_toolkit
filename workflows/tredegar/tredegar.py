@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
-#author: Kevin Libuit
-#email: kevin.libuit@dgs.virginia.gov
+# author: Kevin Libuit
+# email: kevin.libuit@dgs.virginia.gov
 
 import os
-import json
+import yaml
 import sys
 import csv
 import datetime
 import pathlib
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
-#load staphb libaries
+# load staphb libaries
 from lib import sb_mash_species
 from core import sb_programs
 from core import fileparser
 import xml.etree.ElementTree as ET
-
 
 
 # define function for running seqyclean
@@ -42,6 +41,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         print(f"Cleaning read data with seqyclean. . .")
         seqyclean_obj.run()
 
+
 # define function for running shovill
 def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_read_clean, memory, cpus, assembly):
     # create and run shovill object if results don't already exist
@@ -62,6 +62,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_re
 
         print("Assemblying {id} with shovill. . .".format(id=id))
         shovill_obj.run()
+
 
 def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual):
     # create and run quast object if results don't already exist
@@ -121,7 +122,6 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, tr
 
         # generate the cg_pipeline object
         cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, docker_image="lyveset")
-
 
         print(f"Getting {id} sequencing quality metrics with CG Pipeline")
         cg_obj.run()
@@ -269,15 +269,15 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev):
 def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # get the configuration file
     if configuration:
-        config_file_path = os.path.absolute(configuration)
+        config_file_path = os.path.abspath(configuration)
     else:
         # use default
-        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),"tredegar_config.json")
+        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "tredegar_config.yaml")
     # pull in configuration parameters
-    with open(config_file_path) as config_file:
-        tredegar_config = json.load(config_file)
+    with open(config_file_path, 'r') as config_file:
+        tredegar_config = yaml.safe_load(config_file)
 
-    #get the absolute path for the read_file_path
+    # get the absolute path for the read_file_path
     read_file_path = os.path.abspath(read_file_path)
 
     # if we don't have an output dir, use the cwd with a tredegar_output dir
@@ -305,7 +305,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     #Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
     genome_length = ""
-    mash_species_obj = sb_mash_species.MashSpecies(path=read_file_path, output_dir=output_dir)
+    mash_species_obj = sb_mash_species.MashSpecies(path=read_file_path, output_dir=output_dir, configuration=config_file_path)
 
     #if we don't have mash species completed run it, otherwise parse the file and get the results
     mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
@@ -318,6 +318,8 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
             reader = csv.reader(csvin,delimiter=',')
             for row in reader:
                 mash_species[row[0]] = row[1]
+
+    exit()
 
     #dictonary of each set of reads found
     reads_dict = fastq_files.id_dict()
