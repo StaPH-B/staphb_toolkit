@@ -1,0 +1,114 @@
+provenance_domain:
+  name: "SB default config files"
+  created: "2019-10-10"
+  license: "https://www.apache.org/licenses/LICENSE-2.0"
+  contributors:
+    contributor_01:
+      name: "Kevin G. Libuit"
+      affiliation: "Division of Consolidated Laboratory Services Richmond VA"
+      email: "kevin.libuit@dgs.virginia.gov"
+    contributor_02:
+      name: "Kelsey Florek"
+      affiliation: "Wisconsin State Laboratory of Hygiene Madison WI"
+      email: "Kelsey.Florek@slh.wisc.edu"
+
+# use all tools with default parameters
+parameter_domain:
+  mash:
+    docker_container: "staphb/mash"
+    tag: "2.1"
+    mash_dist:
+      db: "/db/RefSeqSketchesDefaults.msh"
+      dist_params: ""
+    mash_sketch:
+      sketch_params: ""
+
+  spades:
+    docker_container: "staphb/spades"
+    tag: "3.13.0"
+    params: ""
+
+  seqyclean:
+    docker_container: "staphb/seqyclean"
+    tag: "1.10.09"
+    params: ""
+
+  shovill:
+    docker_container: "staphb/shovill"
+    tag: "1.0.4"
+    params: ""
+
+  quast:
+    docker_container: "staphb/quast"
+    tag: "5.0.2"
+    params: ""
+
+  lyveset:
+    docker_container: "staphb/lyveset"
+    tag: "1.1.4f"
+    params: ""
+
+  prokka:
+    docker_container: "staphb/prokka"
+    tag: "1.13"
+    params: ""
+
+  serotypefinder:
+    docker_container: "staphb/serotypefinder"
+    tag: "1.1"
+    params: ""
+
+  seqsero:
+    docker_container: "staphb/seqsero"
+    tag: "1.0.1"
+    params: ""
+
+  abricate:
+    docker_container: "staphb/abricate"
+    tag: "0.8.13"
+    params: ""
+
+  iqtree:
+    docker_container: "staphb/iqtree"
+    tag: "1.6.7"
+    params: ""
+
+  roary:
+    docker_container: "staphb/roary"
+    tag: "3.12.0"
+    params: ""
+
+  unicycler:
+    docker_container: "staphb/unicycler"
+    tag: "0.4.7"
+    params: ""
+
+  trimmomatic:
+    docker_container: "staphb/trimmomatic"
+    tag: "0.39"
+    params: ""
+
+  seqsero2:
+    docker_container: "staphb/seqsero2"
+    tag: "1.0.0"
+    params: ""
+
+  emm-typing-tool":
+    docker_container: "staphb/emm-typing-tool"
+    tag: "0.0.1"
+    params: ""
+
+  ksnp3:
+    docker_container: "staphb/ksnp3"
+    tag: "3.1"
+    params: ""
+
+  snp-dists:
+    docker_container: "staphb/snp-dists"
+    tag: "0.6.2"
+    params: ""
+
+
+io_domain:
+  input_subdomain:
+  output_subdomain:
