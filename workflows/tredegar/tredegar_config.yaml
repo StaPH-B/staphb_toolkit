@@ -23,17 +23,14 @@ provenance_domain:
       email: "rachael.stjacques@dgs.virginia.gov"
 
 parameter_domain: 
-  mash_dist:
+  mash:
     docker_container: "staphb/mash"
     tag: "2.1"
-    #Tredegar v2.0.1 uses mash dist with default parameters
-    params: ""
-
-  mash_sketch:
-    #Tredegar v2.0.1 uses mash sketch with default parameters
-    docker_container: "staphb/mash"
-    tag: "2.1"
-    params: ""
+    mash_dist:
+      db: "/db/RefSeqSketchesDefaults.msh"
+      dist_params: ""
+    mash_sketch:
+      sketch_params: ""
 
   seqy_clean:
     docker_container: "staphb/mash"
