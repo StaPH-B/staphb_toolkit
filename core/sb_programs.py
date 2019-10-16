@@ -18,23 +18,25 @@ else:
     sys.exit(1)
 
 class Run:
-    def __init__(self, command, path, docker_image):
+    def __init__(self, command, path, docker_image, docker_tag=None):
         self.path=path
         self.docker_image = docker_image
         self.command = command
+        self.docker_tag = docker_tag
         # TODO: Find a better way to grab json file
         docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
-        docker_tag = ""
 
         with open(docker_config) as config_file:
             config_file = json.load(config_file)
-            try:
-                docker_tag = config_file['images'][docker_image]
-            except KeyError:
-                print(f"The docker image for {docker_image} does not exist.")
-                sys.exit()
 
-        self.docker_tag = docker_tag
+            if not self.docker_tag:
+                try:
+                    docker_tag = config_file['images'][docker_image]
+                except KeyError:
+                    print(f"The docker image for {docker_image} does not exist.")
+                    sys.exit()
+
+                self.docker_tag = docker_tag
 
     def run(self):
         try:
@@ -44,23 +46,25 @@ class Run:
             sys.exit()
 
 class Run_multi:
-    def __init__(self, command_list, path, docker_image):
+    def __init__(self, command_list, path, docker_image, docker_tag=None):
         self.path = path
         self.docker_image = docker_image
         self.command_list = command_list
+        self.docker_tag = docker_tag
         # TODO: Find a better way to grab json file
         docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
-        docker_tag = ""
 
         with open(docker_config) as config_file:
             config_file = json.load(config_file)
-            try:
-                docker_tag = config_file['images'][docker_image]
-            except KeyError:
-                print(f"The docker image for {docker_image} does not exist.")
-                sys.exit()
 
-        self.docker_tag = docker_tag
+            if not self.docker_tag:
+                try:
+                    docker_tag = config_file['images'][docker_image]
+                except KeyError:
+                    print(f"The docker image for {docker_image} does not exist.")
+                    sys.exit()
+
+                self.docker_tag = docker_tag
 
     def run(self,jobs):
         #initalize all workers to ignore signal int since we are handeling the keyboard interrupt ourself
