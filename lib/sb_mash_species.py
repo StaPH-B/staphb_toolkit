@@ -14,18 +14,20 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from core import fileparser
 from core import sb_programs
 
-
 class MashSpecies():
     def __init__(self, runfiles=None, path=None, output_dir = None, configuration=None):
-        if configuration:
+
+        # set configuration file variables
+        self.configuration = configuration
+        if self.configuration:
             config_file_path = os.path.abspath(configuration)
         else:
-            # use default
-            config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "sb_libs_config.yaml")
+            config_file_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.yaml"
 
         with open(config_file_path, 'r') as config_file:
             self.config = yaml.safe_load(config_file)
 
+        # create output dir if it doesn't already exist
         if output_dir:
             self.output_dir = os.path.abspath(output_dir)
         else:
@@ -34,6 +36,7 @@ class MashSpecies():
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
 
+        # set runfiles variable using fileparser if runfiles not provided
         if runfiles:
             self.runfiles = runfiles
         else:
@@ -47,11 +50,11 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, sketch_name])):
 
             # command for creating the mash sketch
-            mash_sketch_params = self.config["parameter_domain"]["mash_sketch"]["params"]
+            mash_sketch_params = self.config["parameter_domain"]["mash"]["mash_sketch"]["sketch_params"]
             mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_params}'"
 
             # create mash sketch object
-            mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash", docker_tag=self.config["parameter_domain"]["mash_sketch"]["tag"])
+            mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash", configuration=self.configuration)
             # run mash sketch
             mash_sketch.run()
 
@@ -59,12 +62,12 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, mash_result])):
 
             # command for calculating mash distance
-            db = self.config["parameter_domain"]["mash_dist"]["db"]
-            mash_dist_params = self.config["parameter_domain"]["mash_dist"]["params"]
+            db = self.config["parameter_domain"]["mash"]["mash_dist"]["db"]
+            mash_dist_params = self.config["parameter_domain"]["mash"]["mash_dist"]["dist_params"]
             mash_dist_command = f"bash -c 'mash dist {db} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_params}'"
 
             # create mash distance object
-            mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, docker_image="mash", docker_tag=self.config["parameter_domain"]["mash_sketch"]["tag"])
+            mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, docker_image="mash", configuration=self.configuration)
             # run mash distance
             mash_dist.run()
 
