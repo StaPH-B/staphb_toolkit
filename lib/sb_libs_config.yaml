@@ -16,6 +16,7 @@ parameter_domain:
   mash_dist:
     docker_container: "staphb/mash"
     tag: "2.1"
+    db: "/db/RefSeqSketchesDefaults.msh"
     #lib files will use mash dist with default parameters
     params: ""
 
