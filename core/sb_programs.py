@@ -2,7 +2,7 @@
 
 import os
 import sys
-import json
+import yaml
 from shutil import which
 import multiprocessing as mp
 import signal,psutil
@@ -18,29 +18,28 @@ else:
     sys.exit(1)
 
 class Run:
-    def __init__(self, command, path, docker_image, docker_tag=None):
+    def __init__(self, command, path, docker_image, configuration=None):
         self.path=path
         self.docker_image = docker_image
         self.command = command
-        self.docker_tag = docker_tag
-        # TODO: Find a better way to grab json file
-        docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
+        self.docker_config = configuration
 
-        with open(docker_config) as config_file:
-            config_file = json.load(config_file)
+        if not self.docker_config:
+            # TODO: Find a better way to grab json file
+            self.docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.yaml"
 
-            if not self.docker_tag:
-                try:
-                    docker_tag = config_file['images'][docker_image]
-                except KeyError:
-                    print(f"The docker image for {docker_image} does not exist.")
-                    sys.exit()
-
-                self.docker_tag = docker_tag
+        with open(self.docker_config) as config_file:
+            config_file = yaml.safe_load(config_file)
+            try:
+                self.docker_container = config_file["parameter_domain"][docker_image]["docker_container"]
+                self.docker_tag = config_file["parameter_domain"][docker_image]["tag"]
+            except KeyError:
+                print(f"The docker image for {docker_image} does not exist.")
+                sys.exit()
 
     def run(self):
         try:
-            print(container_engine.call(f"staphb/{self.docker_image}:{self.docker_tag}", self.command, '/data', self.path))
+            print(container_engine.call(f"{self.docker_container}:{self.docker_tag}", self.command, '/data', self.path))
         except KeyboardInterrupt:
             container_engine.shutdown()
             sys.exit()
