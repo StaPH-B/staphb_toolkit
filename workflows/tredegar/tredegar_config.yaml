@@ -32,8 +32,8 @@ parameter_domain:
     mash_sketch:
       sketch_params: ""
 
-  seqy_clean:
-    docker_container: "staphb/mash"
+  seqyclean:
+    docker_container: "staphb/seqyclean"
     tag: "1.10.09"
     params: "-minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta"
 
