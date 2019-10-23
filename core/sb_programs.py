@@ -18,28 +18,15 @@ else:
     sys.exit(1)
 
 class Run:
-    def __init__(self, command, path, docker_image, configuration=None):
+    def __init__(self, command, path, image, tag):
         self.path=path
-        self.docker_image = docker_image
         self.command = command
-        self.docker_config = configuration
-
-        if not self.docker_config:
-            # TODO: Find a better way to grab json file
-            self.docker_config = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.yaml"
-
-        with open(self.docker_config) as config_file:
-            config_file = yaml.safe_load(config_file)
-            try:
-                self.docker_container = config_file["parameter_domain"][docker_image]["docker_container"]
-                self.docker_tag = config_file["parameter_domain"][docker_image]["tag"]
-            except KeyError:
-                print(f"The docker image for {docker_image} does not exist.")
-                sys.exit()
+        self.image = image
+        self.tag = tag
 
     def run(self):
         try:
-            print(container_engine.call(f"{self.docker_container}:{self.docker_tag}", self.command, '/data', self.path))
+            print(container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path))
         except KeyboardInterrupt:
             container_engine.shutdown()
             sys.exit()
