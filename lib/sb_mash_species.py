@@ -50,11 +50,12 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, sketch_name])):
 
             # command for creating the mash sketch
-            mash_sketch_params = self.config["parameter_domain"]["mash"]["mash_sketch"]["sketch_params"]
-            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_params}'"
+            mash_configuration = self.config["parameter_domain"]["mash"]
+            mash_sketch_configuration = mash_configuration["mash_sketch"]
+            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_configuration['sketch_params']}'"
 
             # create mash sketch object
-            mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, docker_image="mash", configuration=self.configuration)
+            mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
             # run mash sketch
             mash_sketch.run()
 
@@ -62,12 +63,12 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, mash_result])):
 
             # command for calculating mash distance
-            db = self.config["parameter_domain"]["mash"]["mash_dist"]["db"]
-            mash_dist_params = self.config["parameter_domain"]["mash"]["mash_dist"]["dist_params"]
-            mash_dist_command = f"bash -c 'mash dist {db} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_params}'"
+            mash_configuration = self.config["parameter_domain"]["mash"]
+            mash_dist_configuration = mash_configuration["mash_dist"]
+            mash_dist_command = f"bash -c 'mash dist {mash_dist_configuration['db']} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_configuration['dist_params']}'"
 
             # create mash distance object
-            mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, docker_image="mash", configuration=self.configuration)
+            mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
             # run mash distance
             mash_dist.run()
 
