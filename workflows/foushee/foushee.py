@@ -126,7 +126,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
 
     #get the configuration file
     if configuration:
-        config_file_path = os.path.absolute(configuration)
+        config_file_path = os.path.abspath(configuration)
     else:
         #use default
         config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),"foushee_config.yaml")
