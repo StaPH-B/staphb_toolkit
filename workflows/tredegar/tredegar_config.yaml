@@ -1,6 +1,6 @@
 provenance_domain:
   name: "Tredegar: Bioinformatics pipeline for infectious disease WGS data QC"
-  version: "v2.0"
+  version: "v2.0.1"
   created: "2019-10-10"
   license: "https://www.apache.org/licenses/LICENSE-2.0"
   contributors:
@@ -24,51 +24,67 @@ provenance_domain:
 
 parameter_domain: 
   mash:
-    docker_container: "staphb/mash"
+    image: "staphb/mash"
     tag: "2.1"
-    mash_dist:
-      db: "/db/RefSeqSketchesDefaults.msh"
-      dist_params: ""
+
+    # mash commands
     mash_sketch:
+      # Tredegar uses mash sketch with default parameters
       sketch_params: ""
 
+    mash_dist:
+      dist_params: ""
+      db: "/db/RefSeqSketchesDefaults.msh"
+
   seqyclean:
-    docker_container: "staphb/seqyclean"
+    image: "staphb/seqyclean"
     tag: "1.10.09"
-    params: "-minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta"
+    params:
+      minimum_read_length: "25"
+      quality_trimming: "-qual"
+      contaminants: "/Adapters_plus_PhiX_174.fasta"
 
   shovill:
-    docker_container: "staphb/shovill"
+    image: "staphb/shovill"
     tag: "1.0.4"
-    #Tredegar v2.0 uses shovill with default parameters
+    # Tredegar uses shovill with default parameters
     params: ""
 
   quast:
-    docker_container: "staphb/quast"
+    image: "staphb/quast"
     tag: "5.0.2"
     #Tredegar v2.0 uses quast with default parameters
     params: ""
 
   cg_pipeline:
-    docker_container: "staphb/lyveset"
+    image: "staphb/lyveset"
     tag: "1.1.4f"
-    params: "--fast"
+    params:
+      subsample: "--fast"
 
-  serotypefinder: 
-    docker_container: "staphb/serotypefinder"
+  serotypefinder:
+    image: "staphb/serotypefinder"
     tag: "1.1"
-    params: "-s ecoli -k 95.00 -l 0.60"
+    params:
+      species: "ecoli"
+      # comment here
+      nucleotide_agreement: "95.00"
+      percent_coverage: "0.60"
+      # Using serotype database made available within the staphb/serotypefinder docker image
+      database: "/serotypefinder/database/"
 
   seqsero:
-    docker_container: "staphb/seqsero"
+    image: "staphb/seqsero"
     tag: "1.0.1"
     #Tredegar v2.0.1 uses SeqSero with default parameters
     params: ""
 
   emm-typing-tool:
     docker_comtainer: "staphb/emm-typing-tool"
-    #Tredegar v2.0.1 uses the emm typing allele database available at ftp://ftp.cdc.gov/pub/infectious_diseases/biotech/tsemm/trimmed.tfa
-    tag: "-m /db/"
+    tag: "0.0.1"
+    params:
+      #Tredegar uses the emm typing allele database made available within the staphb/emm-typing-tool docker image
+      database: "/db/"
 
 io_domain:
   input_subdomain:
