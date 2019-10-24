@@ -80,11 +80,11 @@ parameter_domain:
     params: ""
 
   emm-typing-tool:
-    docker_comtainer: "staphb/emm-typing-tool"
+    image: "staphb/emm-typing-tool"
     tag: "0.0.1"
     params:
       #Tredegar uses the emm typing allele database made available within the staphb/emm-typing-tool docker image
-      database: "/db/"
+      database: "/db"
 
 io_domain:
   input_subdomain:
