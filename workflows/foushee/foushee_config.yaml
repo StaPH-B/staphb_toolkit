@@ -15,7 +15,7 @@ provenance_domain:
     date: "2019-10-10"
     reviewer:
       name: "Jake Garfin"
-      affiliation: "Minnesota Public Health Laboratory, Saint Paul MN "
+      affiliation: "Minnesota Public Health Laboratory, Saint Paul MN"
       email: "jake.garfin@state.mn.us"
 
 parameter_domain: 
@@ -77,18 +77,22 @@ parameter_domain:
 
   emm-typing-tool:
     image: "staphb/emm-typing-tool"
-    tag: "-m /db/"
-    #Foushee uses default parameters and the emm typing allele database available at ftp://ftp.cdc.gov/pub/infectious_diseases/biotech/tsemm/trimmed.tfa
-    params: ""
+    tag: "0.0.1"
+    params:
+      #Foushee uses the emm typing allele database made available within the staphb/emm-typing-tool docker image
+      database: "/db/"
 
   ksnp3:
     image: "staphb/ksnp3"
     tag: "3.1"
-    params: ""
+    params:
+      kmer_length: "19"
+      core_snps_only: "-core"
 
   snp-dists:
     image: "staphb/snp-dists"
     tag: "0.6.2"
+    #Foushee uses snp-dists with default parameters
     params: ""
 
 io_domain:
