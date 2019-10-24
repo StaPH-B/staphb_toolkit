@@ -247,7 +247,7 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_con
 
 def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
     # path to seqsero results, if it doesn't exist run the seqsero object
-    emmtyper_out = f"{emmtyper_output_path}/{id}/{id}_1.results.xml"
+    emmtyper_out = f"{output_dir}/emmtyper_output/{id}/{id}_1.results.xml"
     if not os.path.isfile(emmtyper_out):
         # seqsero ouput path
         emmtyper_output_path = os.path.join(output_dir, "emmtyper_output")
@@ -258,7 +258,7 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
         # container command
         emmtyper_configuration = tredegar_config["parameter_domain"]["emm-typing-tool"]
         emmtyper_params = emmtyper_configuration["params"]
-        emmtyper_command = f"emm_typing.py -1 /datain/{fwd} -2 /datain/{rev} -m {emmtyper_params['database']} /db/ -o /dataout/{id}/ {emmtyper_params}"
+        emmtyper_command = f"emm_typing.py -1 /datain/{fwd} -2 /datain/{rev} -m {emmtyper_params['database']} -o /dataout/{id}/"
 
         # generate seqsero object
         emmtyper_obj = sb_programs.Run(command=emmtyper_command, path=emmtyper_mounting, image=emmtyper_configuration["image"], tag=emmtyper_configuration["tag"])
@@ -358,29 +358,29 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
         # Clean read data with SeqyClean before assembling
-        clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, config_file_path, tredegar_config)
+        clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, tredegar_config)
 
         # path for the assembly result file
         assembly = os.path.join(*[output_dir, "shovill_output", id, "contigs.fa"])
 
         # Assemble contigs using cleaned read data
-        assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, config_file_path, tredegar_config)
+        assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config)
 
         # Get assembly metrics using quast
         quast_out_file = f"{output_dir}/quast_output/{id}/report.tsv"
-        assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, config_file_path, tredegar_config)
+        assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tredegar_config)
 
         # Get read metrics using CG Pipeline
         cgp_out = f"{output_dir}/cg_pipeline_output/{id}_readMetrics.tsv"
-        read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, config_file_path, tredegar_config)
+        read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config)
 
         # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly,id, config_file_path, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly,id, tredegar_config)
 
         # if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, config_file_path, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_config)
 
         # if the predicted species is streptococcus pyogenes run seqsero
         if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
