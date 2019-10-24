@@ -1,5 +1,5 @@
 provenance_domain:
-  name: "SB default config files"
+  name: "SB default config file"
   created: "2019-10-10"
   license: "https://www.apache.org/licenses/LICENSE-2.0"
   contributors:
@@ -15,7 +15,7 @@ provenance_domain:
 # use all tools with default parameters
 parameter_domain:
   mash:
-    docker_container: "staphb/mash"
+    image: "staphb/mash"
     tag: "2.1"
     mash_dist:
       db: "/db/RefSeqSketchesDefaults.msh"
@@ -24,87 +24,87 @@ parameter_domain:
       sketch_params: ""
 
   spades:
-    docker_container: "staphb/spades"
+    image: "staphb/spades"
     tag: "3.13.0"
     params: ""
 
   seqyclean:
-    docker_container: "staphb/seqyclean"
+    image: "staphb/seqyclean"
     tag: "1.10.09"
     params: ""
 
   shovill:
-    docker_container: "staphb/shovill"
+    image: "staphb/shovill"
     tag: "1.0.4"
     params: ""
 
   quast:
-    docker_container: "staphb/quast"
+    image: "staphb/quast"
     tag: "5.0.2"
     params: ""
 
   lyveset:
-    docker_container: "staphb/lyveset"
+    image: "staphb/lyveset"
     tag: "1.1.4f"
     params: ""
 
   prokka:
-    docker_container: "staphb/prokka"
+    image: "staphb/prokka"
     tag: "1.13"
     params: ""
 
   serotypefinder:
-    docker_container: "staphb/serotypefinder"
+    image: "staphb/serotypefinder"
     tag: "1.1"
     params: ""
 
   seqsero:
-    docker_container: "staphb/seqsero"
+    image: "staphb/seqsero"
     tag: "1.0.1"
     params: ""
 
   abricate:
-    docker_container: "staphb/abricate"
+    image: "staphb/abricate"
     tag: "0.8.13"
     params: ""
 
   iqtree:
-    docker_container: "staphb/iqtree"
+    image: "staphb/iqtree"
     tag: "1.6.7"
     params: ""
 
   roary:
-    docker_container: "staphb/roary"
+    image: "staphb/roary"
     tag: "3.12.0"
     params: ""
 
   unicycler:
-    docker_container: "staphb/unicycler"
+    image: "staphb/unicycler"
     tag: "0.4.7"
     params: ""
 
   trimmomatic:
-    docker_container: "staphb/trimmomatic"
+    image: "staphb/trimmomatic"
     tag: "0.39"
     params: ""
 
   seqsero2:
-    docker_container: "staphb/seqsero2"
+    image: "staphb/seqsero2"
     tag: "1.0.0"
     params: ""
 
   emm-typing-tool":
-    docker_container: "staphb/emm-typing-tool"
+    image: "staphb/emm-typing-tool"
     tag: "0.0.1"
     params: ""
 
   ksnp3:
-    docker_container: "staphb/ksnp3"
+    image: "staphb/ksnp3"
     tag: "3.1"
     params: ""
 
   snp-dists:
-    docker_container: "staphb/snp-dists"
+    image: "staphb/snp-dists"
     tag: "0.6.2"
     params: ""
 
