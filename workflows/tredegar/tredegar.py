@@ -340,7 +340,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     for id in reads_dict:
         if "seqsero_output" in os.path.abspath(reads_dict[id].fwd):
             continue
-        print("Assessing read quality for isolate: " + id)
 
         # get read names
         fwd_read = os.path.basename(reads_dict[id].fwd)
