@@ -35,7 +35,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         # command for creating the mash sketch
         seqyclean_configuration = tredegar_config["parameter_domain"]["seqyclean"]
         seqyclean_params = seqyclean_configuration["params"]
-        seqyclean_command = f"bash -c 'seqyclean -minlen 25 -qual -c /Adapters_plus_PhiX_174.fasta -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean -minlen {seqyclean_params['minimum_read_length']} -c {seqyclean_params['contaminants']} {seqyclean_params['quality_trimming']}'"
+        seqyclean_command = f"bash -c 'seqyclean -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean -minlen {seqyclean_params['minimum_read_length']} -c {seqyclean_params['contaminants']} {seqyclean_params['quality_trimming']}'"
 
         # generate command to run seqyclean on the id
         seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, image=seqyclean_configuration["image"], tag=seqyclean_configuration["tag"])
