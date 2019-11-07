@@ -43,6 +43,7 @@ parameter_domain:
       minimum_read_length: "25"
       quality_trimming: "-qual"
       contaminants: "/Adapters_plus_PhiX_174.fasta"
+      additional_params: ""
 
   shovill:
     image: "staphb/shovill"
