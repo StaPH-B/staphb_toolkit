@@ -4,7 +4,7 @@ python:
   - "3.8"
 #install dependencies
 install:
-  -pip install -r requirements.txt
+  - pip install -r requirements.txt
 #command to run the testing
 script:
   - staphb_toolkit
