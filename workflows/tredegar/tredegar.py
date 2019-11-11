@@ -307,6 +307,9 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # process the raw reads
     fastq_files = fileparser.ProcessFastqs(read_file_path, output_dir=output_dir)
 
+    #update configuration object with input files
+    tredegar_config = fastq_files.inputSubdomain(tredegar_config)
+
     # Set the read_file_path equal to the output_dir since reads have been copied/hard linked there
     if os.path.isdir(os.path.join(read_file_path,"AppResults")):
         read_file_path = output_dir
