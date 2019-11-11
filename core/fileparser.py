@@ -144,3 +144,19 @@ class ProcessFastqs:
                         self.reads[id].rev = root + '/' + file
 
         return None
+
+    def inputSubdomain(self,config_object={}):
+        #see if we got a config object
+        if not config_object:
+            config_object = {}
+
+        #create io_domain if it doesn't exists
+        if 'io_domain' not in config_object:
+            config_object['io_domain'] = {}
+        if 'input_subdomain' not in config_object['io_domain'] or config_object['io_domain']['input_subdomain'] == None :
+            config_object['io_domain']['input_subdomain'] = {}
+
+        for fastqs in self.reads:
+            config_object['io_domain']['input_subdomain'][self.reads[fastqs].id] = [self.reads[fastqs].fwd,self.reads[fastqs].rev]
+
+        return config_object
