@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.7"
+  - "3.8"
+#install dependencies
+install:
+  -pip install -r requirements.txt
+#command to run the testing
+script:
+  - staphb_toolkit
+  - staphb_toolkit_workflows
+  - staphb_toolkit spades -v
