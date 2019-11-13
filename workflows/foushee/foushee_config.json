@@ -1,8 +1,103 @@
 {
-  "parameters":
-    {
-      "comment": "Mash, Quast, and Seqsero are run using default parameters",
-      "cg_pipeline": "--fast",
-      "ksnp3": "-k 19 -core"
-    }
+   "provenance_domain": {
+      "name": "Foushee: Bioinformatics pipeline for SNP analysis of Group A Streptococcus isolates",
+      "version": "v1.0",
+      "created": "2019-10-10",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "contributors": {
+         "contributor_01": {
+            "name": "Kevin G. Libuit",
+            "affiliation": "Division of Consolidated Laboratory Services, Richmond VA",
+            "email": "kevin.libuit@dgs.virginia.gov"
+         }
+      },
+      "review": {
+         "status": "in-review",
+         "reviewer_comment": "",
+         "date": "2019-10-10",
+         "reviewer": {
+            "name": "Jake Garfin",
+            "affiliation": "Minnesota Public Health Laboratory, Saint Paul MN",
+            "email": "jake.garfin@state.mn.us"
+         }
+      }
+   },
+   "parameter_domain": {
+      "mash": {
+         "image": "staphb/mash",
+         "tag": "2.1",
+         "mash_sketch": {
+            "sketch_params": ""
+         },
+         "mash_dist": {
+            "dist_params": "",
+            "db": "/db/RefSeqSketchesDefaults.msh"
+         }
+      },
+      "seqyclean": {
+         "image": "staphb/seqyclean",
+         "tag": "1.10.09",
+         "params": {
+            "minimum_read_length": "25",
+            "quality_trimming": "-qual",
+            "contaminants": "/Adapters_plus_PhiX_174.fasta"
+         }
+      },
+      "shovill": {
+         "image": "staphb/shovill",
+         "tag": "1.0.4",
+         "params": ""
+      },
+      "quast": {
+         "image": "staphb/quast",
+         "tag": "5.0.2",
+         "params": ""
+      },
+      "cg_pipeline": {
+         "image": "staphb/lyveset",
+         "tag": "1.1.4f",
+         "params": {
+            "subsample": "--fast"
+         }
+      },
+      "serotypefinder": {
+         "image": "staphb/serotypefinder",
+         "tag": "1.1",
+         "params": {
+            "species": "ecoli",
+            "nucleotide_agreement": "95.00",
+            "percent_coverage": "0.60",
+            "database": "/serotypefinder/database/"
+         }
+      },
+      "seqsero": {
+         "image": "staphb/seqsero",
+         "tag": "1.0.1",
+         "params": ""
+      },
+      "emm-typing-tool": {
+         "image": "staphb/emm-typing-tool",
+         "tag": "0.0.1",
+         "params": {
+            "database": "/db/"
+         }
+      },
+      "ksnp3": {
+         "image": "staphb/ksnp3",
+         "tag": "3.1",
+         "params": {
+            "kmer_length": "19",
+            "core_snps_only": "-core"
+         }
+      },
+      "snp-dists": {
+         "image": "staphb/snp-dists",
+         "tag": "0.6.2",
+         "params": ""
+      }
+   },
+   "io_domain": {
+      "input_subdomain": null,
+      "output_subdomain": null
+   }
 }
