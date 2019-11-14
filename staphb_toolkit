@@ -6,7 +6,7 @@
 
 import sys,os,re
 import argparse
-import yaml
+import json
 import core.calldocker as cd
 import core.sb_programs as sb_prog
 from core.autopath import path_replacer
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser = MyParser(usage="staphb_toolkit [optional arguments] <application> [application arguments]")
     subparsers = parser.add_subparsers(title='application',metavar='',dest="subparser_name",required=True,parser_class=MyParser)
     parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet operational)")
-    parser.add_argument("--configuration", default="/core/docker_config.yaml", help="Configuration file for container images and tags; if none provided, confiugraiton will be set to staphb_toolkit/core/docker_config.yaml")
+    parser.add_argument("--configuration", default="/core/docker_config.json", help="Configuration file for container images and tags; if none provided, confiugraiton will be set to staphb_toolkit/core/docker_config.json")
 
     #parser for applications
     #-----------------------------------------
@@ -54,14 +54,14 @@ if __name__ == '__main__':
     if not parser_args[0].overide_path:
         arg_string,path_map = path_replacer(args,os.getcwd())
     # set the configuration file
-    if parser_args[0].configuration == "/core/docker_config.yaml":
+    if parser_args[0].configuration == "/core/docker_config.json":
         # use default
         config_file_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + parser_args[0].configuration
     else:
         config_file_path = os.path.abspath(parser_args[0].configuration)
 
     with open(config_file_path, 'r') as config_file:
-        config = yaml.safe_load(config_file)
+        config = json.load(config_file)
 
     #Program specific execution code
     #-----------------------------------------

@@ -3,7 +3,7 @@
 #author: Kevin Libuit
 #email: kevin.libuit@dgs.virginia.gov
 
-import yaml
+import json
 import csv
 import pathlib
 import sys,os
@@ -129,10 +129,10 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
         config_file_path = os.path.abspath(configuration)
     else:
         #use default
-        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),"foushee_config.yaml")
+        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),"foushee_config.json")
 
     with open(config_file_path, 'r') as config_file:
-        foushee_config = yaml.safe_load(config_file)
+        foushee_config = json.load(config_file)
 
     # create foushee output dir
     foushee_output = os.path.join(output_dir, "foushee_output")
