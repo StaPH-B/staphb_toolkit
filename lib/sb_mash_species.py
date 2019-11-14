@@ -6,7 +6,7 @@
 import os
 import os.path
 import sys
-import yaml
+import json
 import re
 import pathlib
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
@@ -22,10 +22,10 @@ class MashSpecies():
         if self.configuration:
             config_file_path = os.path.abspath(configuration)
         else:
-            config_file_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.yaml"
+            config_file_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))[:-4] + "/core/docker_config.json"
 
         with open(config_file_path, 'r') as config_file:
-            self.config = yaml.safe_load(config_file)
+            self.config = json.load(config_file)
 
         # create output dir if it doesn't already exist
         if output_dir:

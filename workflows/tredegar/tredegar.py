@@ -4,7 +4,7 @@
 # email: kevin.libuit@dgs.virginia.gov
 
 import os
-import yaml
+import json
 import sys
 import csv
 import datetime
@@ -287,10 +287,10 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         config_file_path = os.path.abspath(configuration)
     else:
         # use default
-        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "tredegar_config.yaml")
+        config_file_path = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))), "tredegar_config.json")
     # pull in configuration parameters
-    with open(config_file_path, 'r') as config_file:
-        tredegar_config = yaml.safe_load(config_file)
+    with open(config_file_path) as config_file:
+        tredegar_config = json.load(config_file)
 
     # get the absolute path for the read_file_path
     read_file_path = os.path.abspath(read_file_path)
