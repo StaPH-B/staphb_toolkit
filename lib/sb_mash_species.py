@@ -50,7 +50,7 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, sketch_name])):
 
             # command for creating the mash sketch
-            mash_configuration = self.config["parameter_domain"]["mash"]
+            mash_configuration = self.config["parameters"]["mash"]
             mash_sketch_configuration = mash_configuration["mash_sketch"]
             mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_configuration['sketch_params']}'"
 
@@ -63,7 +63,7 @@ class MashSpecies():
         if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, mash_result])):
 
             # command for calculating mash distance
-            mash_configuration = self.config["parameter_domain"]["mash"]
+            mash_configuration = self.config["parameters"]["mash"]
             mash_dist_configuration = mash_configuration["mash_dist"]
             mash_dist_command = f"bash -c 'mash dist {mash_dist_configuration['db']} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_configuration['dist_params']}'"
 
