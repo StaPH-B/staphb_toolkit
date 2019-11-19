@@ -65,7 +65,7 @@ def ref_free_snp(output_dir, group, foushee_config):
                           os.path.join(os.path.abspath(output_dir), "ksnp3_output", group): '/dataout'}
 
         # generate command to run shovill on the id
-        ksnp3_configuration = foushee_config["parameter_domain"]["ksnp3"]
+        ksnp3_configuration = foushee_config["parameters"]["ksnp3"]
         ksnp3_params = ksnp3_configuration["params"]
         ksnp3_command = f"kSNP3 -in /datain/ksnp3_output/{group}/{group}_assemblies.txt -outdir /dataout/ -k {ksnp3_params['kmer_length']} {ksnp3_params['core_snps_only']} "
 
@@ -97,7 +97,7 @@ def snp_matrix(output_dir, group, foushee_config):
                               snp_dists_output: '/dataout'}
 
         # generate command to run shovill on the id
-        snp_dists_configuration = foushee_config["parameter_domain"]["snp-dists"]
+        snp_dists_configuration = foushee_config["parameters"]["snp-dists"]
         snp_dists_params = snp_dists_configuration["params"]
         snp_dists_command = f"bash -c 'snp-dists /datain/core_SNPs_matrix.fasta > /dataout/{group}_snp_distance_matrix.tsv {snp_dists_params}'"
 
