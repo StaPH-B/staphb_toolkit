@@ -33,7 +33,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         seqyclean_mounting = {raw_read_file_path: '/datain', os.path.join(output_dir, "seqyclean_output"): '/dataout'}
 
         # command for creating the mash sketch
-        seqyclean_configuration = tredegar_config["parameter_domain"]["seqyclean"]
+        seqyclean_configuration = tredegar_config["parameters"]["seqyclean"]
         seqyclean_params = seqyclean_configuration["params"]
         seqyclean_command = f"bash -c 'seqyclean -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean -minlen {seqyclean_params['minimum_read_length']} -c {seqyclean_params['contaminants']} {seqyclean_params['quality_trimming']}'"
 
@@ -56,7 +56,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_re
         shovill_mounting = {clean_read_file_path: '/datain', os.path.join(output_dir, "shovill_output"): '/dataout'}
 
         # generate command to run shovill on the id
-        shovill_configuration = tredegar_config["parameter_domain"]["shovill"]
+        shovill_configuration = tredegar_config["parameters"]["shovill"]
         shovill_params = shovill_configuration["params"]
         shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force {shovill_params}"
 
@@ -80,7 +80,7 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
 
         # create the quast command
         assembly_file_name = os.path.basename(assembly)
-        quast_configuration = tredegar_config["parameter_domain"]["quast"]
+        quast_configuration = tredegar_config["parameters"]["quast"]
         quast_params = quast_configuration["params"]
         quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id} {quast_params}'"
 
@@ -120,7 +120,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
         cg_mounting = {raw_read_file_path: '/datain', cg_pipeline_output_path: '/dataout'}
 
         # generate command for cg_pipeline
-        cgp_configuration = tredegar_config["parameter_domain"]["cg_pipeline"]
+        cgp_configuration = tredegar_config["parameters"]["cg_pipeline"]
         cgp_params = cgp_configuration["params"]
         cgp_result_file = id + "_readMetrics.tsv"
         cg_command = f"bash -c \'run_assembly_readMetrics.pl {cgp_params['subsample']} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
@@ -163,7 +163,7 @@ def ecoli_serotype(output_dir,assembly,id, tredegar_config):
 
         # generate serotypefinder command
         assembly_name = os.path.basename(assembly)
-        stf_configuration = tredegar_config["parameter_domain"]["serotypefinder"]
+        stf_configuration = tredegar_config["parameters"]["serotypefinder"]
         stf_params = stf_configuration["params"]
         stf_command = f"serotypefinder.pl -d {stf_params['database']} -i /datain/{assembly_name} -b /blast-2.2.26/ -o /dataout/{id} -s {stf_params['species']} -k {stf_params['nucleotide_agreement']} -l {stf_params['percent_coverage']}"
 
@@ -222,7 +222,7 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_con
         seqsero_mounting = {raw_read_file_path: '/datain', seqsero_output_path: '/dataout'}
 
         # container command
-        seqsero_configuration = tredegar_config["parameter_domain"]["seqsero"]
+        seqsero_configuration = tredegar_config["parameters"]["seqsero"]
         seqsero_params = seqsero_configuration["params"]
         seqsero_command = f"bash -c 'SeqSero.py -m2 -i /datain/{all_reads} -d /dataout/{id} {seqsero_params}'"
 
@@ -256,7 +256,7 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
         emmtyper_mounting = {raw_read_file_path: '/datain', emmtyper_output_path: '/dataout'}
 
         # container command
-        emmtyper_configuration = tredegar_config["parameter_domain"]["emm-typing-tool"]
+        emmtyper_configuration = tredegar_config["parameters"]["emm-typing-tool"]
         emmtyper_params = emmtyper_configuration["params"]
         emmtyper_command = f"emm_typing.py -1 /datain/{fwd} -2 /datain/{rev} -m {emmtyper_params['database']} -o /dataout/{id}/"
 
