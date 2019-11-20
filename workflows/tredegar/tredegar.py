@@ -10,6 +10,8 @@ import csv
 import datetime
 import pathlib
 import getpass
+import logging
+
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 # load staphb libaries
@@ -41,7 +43,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         # generate command to run seqyclean on the id
         seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, image=seqyclean_configuration["image"], tag=seqyclean_configuration["tag"])
 
-        print(f"Cleaning read data with seqyclean. . .")
+        logging.info(f"Cleaning read data with seqyclean. . .")
         seqyclean_obj.run()
 
 
@@ -64,7 +66,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_re
         # generate shovill object
         shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, image=shovill_configuration["image"], tag=shovill_configuration["tag"])
 
-        print("Assemblying {id} with shovill. . .".format(id=id))
+        logging.info(f"Assemblying {id} with shovill. . .")
         shovill_obj.run()
 
 
@@ -88,7 +90,7 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
         # create the quast object
         quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, image = quast_configuration["image"], tag = quast_configuration["tag"])
 
-        print(f"Gathering {id} assembly quality metrics with Quast. . .")
+        logging.info(f"Gathering {id} assembly quality metrics with Quast. . .")
         quast_obj.run()
 
     # open the quast results to capture relevant metrics
@@ -102,9 +104,11 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
                 number_contigs=line[1]
                 isolate_qual[id]["number_contigs"] = number_contigs
         if not genome_length:
-            raise ValueError("Unable to predict genome length for isolate" + id)
+            logging.ERROR(f"ERROR: No genome length predicted for isolate {id}")
+            raise ValueError(f"Unable to predict genome length for isolate {id}")
         if not number_contigs:
-            raise ValueError("Unable to predict number of contigs for isolate" + id)
+            logging.ERROR("No number of contigs predicted")
+            raise ValueError(f"ERROR: Unable to predict number of contigs for isolate {id}")
 
 
 def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config):
@@ -129,7 +133,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
         # generate the cg_pipeline object
         cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, image=cgp_configuration["image"], tag=cgp_configuration["tag"])
 
-        print(f"Getting {id} sequencing quality metrics with CG Pipeline")
+        logging.info(f"Getting {id} sequencing quality metrics with CG Pipeline")
         cg_obj.run()
 
     # open cg_pipeline results and capture relevant metrics
@@ -170,7 +174,7 @@ def ecoli_serotype(output_dir,assembly,id, tredegar_config):
 
         # create serotypefinder object
         stf_obj = sb_programs.Run(command=stf_command, path=stf_mounting, image=stf_configuration["image"], tag=stf_configuration["tag"])
-        print("Isolate {id} identified as E.coli. Running SerotypeFinder for serotype prediction".format(id=id))
+        logging.info(f"Isolate {id} identified as E.coli. Running SerotypeFinder for serotype prediction")
         stf_obj.run()
 
     # process the results of serotypefinder as per literature guidelines (Joensen, et al. 2015, DOI: 10.1128/JCM.00008-15)
@@ -230,7 +234,7 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_con
         # generate seqsero object
         seqsero_obj = sb_programs.Run(command=seqsero_command, path=seqsero_mounting, image=seqsero_configuration["image"], tag=seqsero_configuration["tag"])
 
-        print(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for serotype prediction")
+        logging.info(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for serotype prediction")
         seqsero_obj.run()
 
     # read the result file and return the serotype
@@ -264,8 +268,7 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
         # generate seqsero object
         emmtyper_obj = sb_programs.Run(command=emmtyper_command, path=emmtyper_mounting, image=emmtyper_configuration["image"], tag=emmtyper_configuration["tag"])
 
-        print(f"Isolate {id} identified as identified as Streptococcus_pyogenes. Running emm-typing-tool for "
-              "emm-type prediction")
+        logging.info(f"Isolate {id} identified as identified as Streptococcus_pyogenes. Running emm-typing-tool for emm-type prediction")
         emmtyper_obj.run()
 
     # read the result file and return the serotype
@@ -306,6 +309,28 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
         output_dir = os.path.abspath(output_dir)
         project = os.path.basename(output_dir)
 
+    # create tredegar output subdirectory
+    tredegar_output = os.path.join(output_dir,"tredegar_output")
+    pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
+
+    # set logging file
+    tredegar_log_file = os.path.join(tredegar_output, project + "_tredegar.log")
+    logFormatter = logging.Formatter("%(asctime)s: %(message)s")
+    rootLogger = logging.getLogger()
+
+    fileHandler = logging.FileHandler(tredegar_log_file)
+    fileHandler.setFormatter((logFormatter))
+    rootLogger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    rootLogger.addHandler(consoleHandler)
+
+    rootLogger.setLevel(logging.INFO)
+
+#    logging.basicConfig(level=logging.INFO,filename=tredegar_log_file,format="%(asctime)s:%(levelname)s:%(message)s")
+    logging.info(f"{getpass.getuser()} ran Tredegar as: tredegar(memory={memory}, cpus={cpus}, read_file_path={read_file_path}, output_dir={output_dir}, configuration={configuration})")
+
     # process the raw reads
     fastq_files = fileparser.ProcessFastqs(read_file_path, output_dir=output_dir)
 
@@ -332,6 +357,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # if we don't have mash species completed run it, otherwise parse the file and get the results
     mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
     if not os.path.isfile(mash_species_results):
+        logging.info(f"Making taxonomic predictions with sb_mash_species")
         mash_species = mash_species_obj.run()
 
     else:
@@ -394,8 +420,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
             isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,raw_read_file_path,id,fwd_read,rev_read, tredegar_config)
 
     # Generate the Tredegar report
-    tredegar_output = os.path.join(output_dir,"tredegar_output")
-    pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
     tredegar_config_file = os.path.join(tredegar_output, project+"_tredegar_config.json")
     column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
@@ -412,11 +436,12 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
     # update config file to include tredegar report
     tredegar_config["file_io"]["output_files"]["tredegar_report"]= report_file
+    tredegar_config["file_io"]["output_files"]["log_file"] = tredegar_log_file
 
     # write yaml file to tredegar_ourput subdirectory
     f = open(tredegar_config_file, "w")
     f.write(json.dumps(tredegar_config, indent=3))
     f.close
 
-    print(f"Tredegar is complete! Output saved to {tredegar_output}")
+    logging.info(f"Tredegar is complete! Output saved to {tredegar_output}")
     return isolate_qual
