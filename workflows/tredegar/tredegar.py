@@ -11,6 +11,7 @@ import datetime
 import pathlib
 import getpass
 import logging
+import xml.etree.ElementTree as ET
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
@@ -18,7 +19,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 from lib import sb_mash_species
 from core import sb_programs
 from core import fileparser
-import xml.etree.ElementTree as ET
 
 
 # define function for running seqyclean
@@ -48,7 +48,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
 
 
 # define function for running shovill
-def assemble_contigs(id, output_dir, clean_read_file_path,fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config):
+def assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config):
     # create and run shovill object if results don't already exist
     if not os.path.isfile(assembly):
 
@@ -150,10 +150,10 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
 
 
 # define functions for determining ecoli serotype and sal serotype
-def ecoli_serotype(output_dir,assembly,id, tredegar_config):
+def ecoli_serotype(output_dir, assembly, id, tredegar_config):
     # ambiguous allele calls
-    matched_wzx = ["O2","O50","O17","O77","O118","O151","O169","O141ab","O141ac"]
-    matched_wzy = ["O13","O135","O17","O44","O123","O186"]
+    matched_wzx = ["O2", "O50", "O17", "O77", "O118", "O151", "O169", "O141ab", "O141ac"]
+    matched_wzy = ["O13", "O135", "O17", "O44", "O123", "O186"]
 
     # path to serotypefinder results file, if it doesn't exist run the serotypefinder
     stf_out = f"{output_dir}/serotypefinder_output/{id}/results_tab.txt"
@@ -215,7 +215,7 @@ def ecoli_serotype(output_dir,assembly,id, tredegar_config):
     return serotype
 
 
-def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_config):
+def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config):
     # path to seqsero results, if it doesn't exist run the seqsero object
     seqsero_out = f"{output_dir}/seqsero_output/{id}/Seqsero_result.txt"
     if not os.path.isfile(seqsero_out):
@@ -250,7 +250,7 @@ def salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_con
     return serotype
 
 
-def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
+def gas_emmtype(output_dir, raw_read_file_path, id, fwd, rev,  tredegar_config):
     # path to seqsero results, if it doesn't exist run the seqsero object
     emmtyper_out = f"{output_dir}/emmtyper_output/{id}/{id}_1.results.xml"
     if not os.path.isfile(emmtyper_out):
@@ -283,9 +283,9 @@ def gas_emmtype(output_dir,raw_read_file_path,id,fwd,rev, tredegar_config):
 
 
 ################################
-# main tredegar function
+# main Tredegar function
 ################################
-def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
+def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
     # get the configuration file
     if configuration:
         config_file_path = os.path.abspath(configuration)
@@ -302,15 +302,15 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # if we don't have an output dir, use the cwd with a tredegar_output dir
     if not output_dir:
         project = f"tredegar_run_{datetime.datetime.today().strftime('%Y-%m-%d')}"
-        output_dir = os.path.join(os.getcwd(),project)
+        output_dir = os.path.join(os.getcwd(), project)
 
     else:
         # if we do, get the absolute path
         output_dir = os.path.abspath(output_dir)
         project = os.path.basename(output_dir)
 
-    # create tredegar output subdirectory
-    tredegar_output = os.path.join(output_dir,"tredegar_output")
+    # create Tredegar output subdirectory
+    tredegar_output = os.path.join(output_dir, "tredegar_output")
     pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
 
     # set logging file
@@ -328,7 +328,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
     rootLogger.setLevel(logging.INFO)
 
-#    logging.basicConfig(level=logging.INFO,filename=tredegar_log_file,format="%(asctime)s:%(levelname)s:%(message)s")
     logging.info(f"{getpass.getuser()} ran Tredegar as: tredegar(memory={memory}, cpus={cpus}, read_file_path={read_file_path}, output_dir={output_dir}, configuration={configuration})")
 
     # process the raw reads
@@ -340,30 +339,30 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     tredegar_config["execution_info"]["user"] = getpass.getuser()
     tredegar_config["execution_info"]["datetime"] = datetime.datetime.today().strftime('%Y-%m-%d')
 
-    # Set the read_file_path equal to the output_dir since reads have been copied/hard linked there
-    if os.path.isdir(os.path.join(read_file_path,"AppResults")):
+    # set the read_file_path equal to the output_dir since reads have been copied/hard linked there
+    if os.path.isdir(os.path.join(read_file_path, "AppResults")):
         read_file_path = output_dir
     else:
         fastq_files.link_reads(output_dir=output_dir)
         read_file_path=output_dir
 
-    # Path to untrimmed reads
+    # path to untrimmed reads
     read_file_path = os.path.join(read_file_path, "raw_reads")
 
-    # Run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
+    # run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
     mash_species_obj = sb_mash_species.MashSpecies(path=read_file_path, output_dir=output_dir, configuration=config_file_path)
 
     # if we don't have mash species completed run it, otherwise parse the file and get the results
-    mash_species_results = os.path.join(*[output_dir,'mash_output','mash_species.csv'])
+    mash_species_results = os.path.join(*[output_dir, 'mash_output', 'mash_species.csv'])
     if not os.path.isfile(mash_species_results):
         logging.info(f"Making taxonomic predictions with sb_mash_species")
         mash_species = mash_species_obj.run()
 
     else:
         mash_species = {}
-        with open(mash_species_results,'r') as csvin:
-            reader = csv.reader(csvin,delimiter=',')
+        with open(mash_species_results, 'r') as csvin:
+            reader = csv.reader(csvin, delimiter=', ')
             for row in reader:
                 mash_species[row[0]] = row[1]
 
@@ -384,10 +383,10 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         # Change read dir since reads hardlinked/copied to an isolate sub dir
         raw_read_file_path = os.path.join(read_file_path, id)
-        clean_read_file_path = os.path.join(read_file_path.replace("raw_reads","seqyclean_output"), id)
+        clean_read_file_path = os.path.join(read_file_path.replace("raw_reads", "seqyclean_output"), id)
 
         # Initialize result dictionary for this id
-        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None,"est_cvg": None, "number_contigs": None, "species_prediction": None, "subspecies_predictions": "NA"}
+        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None, "est_cvg": None, "number_contigs": None, "species_prediction": None, "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
         # Clean read data with SeqyClean before assembling
@@ -409,27 +408,27 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir,assembly,id, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir, assembly, id, tredegar_config)
 
         # if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir,raw_read_file_path,all_reads,id, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config)
 
         # if the predicted species is streptococcus pyogenes run seqsero
         if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir,raw_read_file_path,id,fwd_read,rev_read, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir, raw_read_file_path, id, fwd_read, rev_read, tredegar_config)
 
-    # Generate the Tredegar report
+    # generate the Tredegar report
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
     tredegar_config_file = os.path.join(tredegar_output, project+"_tredegar_config.json")
-    column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
+    column_headers = ["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
 
-    # If we don't have a report, write one
+    # if we don't have a report, write one
     if not os.path.isfile(tredegar_output):
         with open(report_file, "w") as csvfile:
             w = csv.DictWriter(csvfile, column_headers, dialect=csv.excel_tab)
             w.writeheader()
-            for key,val in sorted(isolate_qual.items()):
+            for key, val in sorted(isolate_qual.items()):
                 row = {"sample":key}
                 row.update(val)
                 w.writerow(row)
@@ -441,7 +440,6 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # write yaml file to tredegar_ourput subdirectory
     f = open(tredegar_config_file, "w")
     f.write(json.dumps(tredegar_config, indent=3))
-    f.close
 
     logging.info(f"Tredegar is complete! Output saved to {tredegar_output}")
     return isolate_qual
