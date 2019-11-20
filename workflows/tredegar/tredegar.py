@@ -9,6 +9,7 @@ import sys
 import csv
 import datetime
 import pathlib
+import getpass
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 # load staphb libaries
@@ -297,8 +298,9 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
 
     # if we don't have an output dir, use the cwd with a tredegar_output dir
     if not output_dir:
-        output_dir = os.path.join(os.getcwd(),"tredegar_output")
-        project = datetime.datetime.today().strftime('%Y-%m-%d')
+        project = f"tredegar_run_{datetime.datetime.today().strftime('%Y-%m-%d')}"
+        output_dir = os.path.join(os.getcwd(),project)
+
     else:
         # if we do, get the absolute path
         output_dir = os.path.abspath(output_dir)
@@ -307,8 +309,11 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     # process the raw reads
     fastq_files = fileparser.ProcessFastqs(read_file_path, output_dir=output_dir)
 
-    #update configuration object with input files
+    # update configuration object with input files
     tredegar_config = fastq_files.inputSubdomain(tredegar_config)
+    tredegar_config["execution_info"]["run_id"] = project
+    tredegar_config["execution_info"]["user"] = getpass.getuser()
+    tredegar_config["execution_info"]["datetime"] = datetime.datetime.today().strftime('%Y-%m-%d')
 
     # Set the read_file_path equal to the output_dir since reads have been copied/hard linked there
     if os.path.isdir(os.path.join(read_file_path,"AppResults")):
@@ -392,6 +397,7 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
     tredegar_output = os.path.join(output_dir,"tredegar_output")
     pathlib.Path(tredegar_output).mkdir(parents=True, exist_ok=True)
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
+    tredegar_config_file = os.path.join(tredegar_output, project+"_tredegar_config.json")
     column_headers=["sample", "r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_predictions"]
 
     # If we don't have a report, write one
@@ -403,6 +409,14 @@ def tredegar(memory,cpus,read_file_path,output_dir="",configuration=""):
                 row = {"sample":key}
                 row.update(val)
                 w.writerow(row)
+
+    # update config file to include tredegar report
+    tredegar_config["file_io"]["output_files"]["tredegar_report"]= report_file
+
+    # write yaml file to tredegar_ourput subdirectory
+    f = open(tredegar_config_file, "w")
+    f.write(json.dumps(tredegar_config, indent=3))
+    f.close
 
     print(f"Tredegar is complete! Output saved to {tredegar_output}")
     return isolate_qual
