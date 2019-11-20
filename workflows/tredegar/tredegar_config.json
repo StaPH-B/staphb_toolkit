@@ -99,7 +99,8 @@
    "file_io": {
       "input_files": null,
       "output_files": {
-         "tredegar_report": ""
+         "tredegar_report": "",
+         "log_file": ""
       }
 
    }
