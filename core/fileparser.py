@@ -150,13 +150,13 @@ class ProcessFastqs:
         if not config_object:
             config_object = {}
 
-        #create io_domain if it doesn't exists
-        if 'io_domain' not in config_object:
-            config_object['io_domain'] = {}
-        if 'input_subdomain' not in config_object['io_domain'] or config_object['io_domain']['input_subdomain'] == None :
-            config_object['io_domain']['input_subdomain'] = {}
+        #create file_io if it doesn't exists
+        if 'file_io' not in config_object:
+            config_object['file_io'] = {}
+        if 'input_files' not in config_object['file_io'] or config_object['file_io']['input_files'] == None :
+            config_object['file_io']['input_files'] = {}
 
         for fastqs in self.reads:
-            config_object['io_domain']['input_subdomain'][self.reads[fastqs].id] = [self.reads[fastqs].fwd,self.reads[fastqs].rev]
+            config_object['file_io']['input_files'][self.reads[fastqs].id] = [self.reads[fastqs].fwd,self.reads[fastqs].rev]
 
         return config_object
