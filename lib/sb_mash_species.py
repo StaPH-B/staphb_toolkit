@@ -78,7 +78,7 @@ class MashSpecies():
         # dictionary of each set of reads found
         reads_dict = self.runfiles.id_dict()
 
-        print("Performing taxonomic predictions with MASH. . .")
+        print("Running MASH. . .")
         for id in reads_dict:
 
             # capture read file and path names
