@@ -43,7 +43,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         # generate command to run seqyclean on the id
         seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, image=seqyclean_configuration["image"], tag=seqyclean_configuration["tag"])
 
-        logging.info(f"Cleaning read data with seqyclean. . .")
+        logging.info(f"Cleaning {id} read data with seqyclean. . .")
         seqyclean_obj.run()
 
 
@@ -133,7 +133,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
         # generate the cg_pipeline object
         cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, image=cgp_configuration["image"], tag=cgp_configuration["tag"])
 
-        logging.info(f"Getting {id} sequencing quality metrics with CG Pipeline")
+        logging.info(f"Getting {id} sequencing quality metrics with CG Pipeline. . .")
         cg_obj.run()
 
     # open cg_pipeline results and capture relevant metrics
@@ -234,7 +234,7 @@ def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_
         # generate seqsero object
         seqsero_obj = sb_programs.Run(command=seqsero_command, path=seqsero_mounting, image=seqsero_configuration["image"], tag=seqsero_configuration["tag"])
 
-        logging.info(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for serotype prediction")
+        logging.info(f"Isolate {id} identified as identified as S.enterica. Running SeqSero for serotype prediction. . .")
         seqsero_obj.run()
 
     # read the result file and return the serotype
@@ -327,7 +327,6 @@ def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
     rootLogger.addHandler(consoleHandler)
 
     rootLogger.setLevel(logging.INFO)
-
     logging.info(f"{getpass.getuser()} ran Tredegar as: tredegar(memory={memory}, cpus={cpus}, read_file_path={read_file_path}, output_dir={output_dir}, configuration={configuration})")
 
     # process the raw reads
@@ -362,7 +361,7 @@ def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
     else:
         mash_species = {}
         with open(mash_species_results, 'r') as csvin:
-            reader = csv.reader(csvin, delimiter=', ')
+            reader = csv.reader(csvin, delimiter=',')
             for row in reader:
                 mash_species[row[0]] = row[1]
 
