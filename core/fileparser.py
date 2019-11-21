@@ -118,6 +118,8 @@ class ProcessFastqs:
 
             dest = os.path.join(raw_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
             dest = dest.replace("_001","")
+            dest = dest.replace("R1", "1")
+            dest = dest.replace("R2", "2")
 
             # If dest dir doesn't exists, create it
             if not os.path.isdir(os.path.dirname(dest)):
