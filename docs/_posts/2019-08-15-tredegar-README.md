@@ -19,17 +19,6 @@ For *Salmonella enterica*, *Escherichia coli*, and Group A *Streptoccus* isolate
 ## Read Quality
 De novo assemblies are performed using [Shovill](https://github.com/tseemann/shovill) and assembly metrics are collected using [Quast](https://github.com/ablab/quast). Quast calculations for assembly length are used to gauge genome coverage using the CDC's CG Pipeline--Q-score averages for the forward and reverse reads are also gauged using the [CG Pipeline](https://github.com/lskatz/CG-Pipeline).
 
-
-## Sample Tredegar Report
-![Sample output](../assets/tred2_sample_out.png)
-- sample: isolate ID pulled from the fastq file
-- r1_q and r2_q: Average Q-score for the forward and reverse reads, respectively, calculated by CG Pipeline
-- est_genome_length: Shovill assembly length calculated by Quast
-- est_cvg: Calculated genome coverage calculated by CG Pipeline
-- number_contigs: Total number of contigs in assembly calculated by Quast
-- predicted_species: Genus and species prediction by Mash
-- predicted_serotype: Serotype predictions by SeqSero, SerotypeFinder, and PHE's emm typer for *Salmonella enterica* and *Escherichia coli* and Group A *Streptoccus* isolates, respectively. If a subspecies prediction cannot be made this field will be populated with "NA".  
-
 ---
 
 ## Quick Start: 
@@ -39,7 +28,7 @@ $ staphb_toolkit_workflows tredegar.py <input_dir> -o <output_dir>
 ````
 
 `<input_dir>` can be the path to an input directory containing paired-end fastq read data or path to a mounted BaseSpace project.
-If an `<output_dir>` is not provided, results will be written to a `tredegar_output` directory.
+If an `<output_dir>` is not provided, results will be written to a `tredegar_run_<date>` directory.
 
 
 ## Other Options
@@ -56,13 +45,13 @@ E.g. SerotypeFinder results for a Tredegar run on Sample001, and Sample002 will 
 $tree serotypefinder_output
 
 serotypefinder_output/
-├── Sample001
+├── isolate001
 │   ├── Hit_in_genome_seq.fsa
 │   ├── results_table.txt
 │   ├── results_tab.txt
 │   ├── results.txt
 │   └── Serotype_gene_seq.fsa
-├── Sample002
+├── isolate002
 │   ├── Hit_in_genome_seq.fsa
 │   ├── results_table.txt
 │   ├── results_tab.txt
@@ -73,9 +62,21 @@ serotypefinder_output/
 
 A `mash_species.csv` file will also be generated and written within the `mash_output` directory. This file consists of the species predictions for each isolated made by MASH.
 
+The final Tredegar Report will be written to a `tredegar_output` subdirectory within the `<output_dir>` along with a log file to assist in troubleshooting and output config file detailing run parameters.
 
-The final Tredegar report, as well as a log file and output config file will be written to a `tredegar_output` subdirectory within the `<output_dir>`. 
 
+## Sample Tredegar Report
+![Sample_tredegar report](../assets/tred2_sample_out.png)
+- sample: isolate ID pulled from the fastq file
+- r1_q and r2_q: Average Q-score for the forward and reverse reads, respectively, calculated by CG Pipeline
+- est_genome_length: Shovill assembly length calculated by Quast
+- est_cvg: Calculated genome coverage calculated by CG Pipeline
+- number_contigs: Total number of contigs in assembly calculated by Quast
+- predicted_species: Genus and species prediction by Mash
+- predicted_serotype: Serotype predictions by SeqSero, SerotypeFinder, and PHE's emm typer for *Salmonella enterica* and *Escherichia coli* and Group A *Streptoccus* isolates, respectively. If a subspecies prediction cannot be made this field will be populated with "NA".  
+
+
+---
 ## Version History
 
 <b>Current version: v2.1 September 04, 2019</b>
