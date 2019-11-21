@@ -1,13 +1,15 @@
 {
-   "provenance_domain": {
-      "name": "Foushee: Bioinformatics pipeline for SNP analysis of Group A Streptococcus isolates",
+   "workflow": {
+      "name": "Tredegar",
+      "description": "Foushee: Bioinformatics pipeline for SNP analysis of Group A Streptococcus isolates",
+      "documentation": "https://staph-b.github.io/staphb_toolkit/foushee",
       "version": "v1.0",
       "created": "2019-10-10",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "contributors": {
          "contributor_01": {
             "name": "Kevin G. Libuit",
-            "affiliation": "Division of Consolidated Laboratory Services, Richmond VA",
+            "affiliation": "Division of Consolidated Laboratory Services Richmond VA",
             "email": "kevin.libuit@dgs.virginia.gov"
          }
       },
@@ -22,7 +24,7 @@
          }
       }
    },
-   "parameter_domain": {
+   "parameters": {
       "mash": {
          "image": "staphb/mash",
          "tag": "2.1",
@@ -96,8 +98,18 @@
          "params": ""
       }
    },
-   "io_domain": {
-      "input_subdomain": null,
-      "output_subdomain": null
+   "execution_info":{
+     "run_id": null,
+     "user": null,
+     "datetime": null
+   },
+   "file_io": {
+      "input_files": null,
+      "output_files": {
+         "ksnp_core_tree": "",
+         "pairwise_snps_dists_matrix":  "",
+         "log_file": ""
+      }
+
    }
 }
