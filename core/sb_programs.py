@@ -2,7 +2,6 @@
 
 import os
 import sys
-import yaml
 from shutil import which
 import multiprocessing as mp
 import signal,psutil
@@ -16,6 +15,7 @@ elif which('singularity'):
 else:
     print('Singularity or Docker is not installed or not in found in PATH')
     sys.exit(1)
+
 
 class Run:
     def __init__(self, command, path, image, tag):
