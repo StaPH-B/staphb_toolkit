@@ -47,22 +47,22 @@ def ksnp3_input_file(emm_groups, out_dir):
             isolates_in_group=", ".join(emm_groups[group])
             ksnp3_in_file= os.path.join(out_dir, group, f"{group}_assemblies.txt")
             pathlib.Path(os.path.dirname(ksnp3_in_file)).mkdir(parents=True, exist_ok=True)
-            logging.info(f"{group_length} isolates identified as {group}: {isolates_in_group}")
-            logging.info(f"Creating ksnp3 input file: {ksnp3_in_file}")
+            logger.info(f"{group_length} isolates identified as {group}: {isolates_in_group}")
+            logger.info(f"Creating ksnp3 input file: {ksnp3_in_file}")
             with open(ksnp3_in_file, "w") as tsvfile:
                 writer = csv.writer(tsvfile, delimiter='\t')
                 for isolate in emm_groups[group]:
                     assembly_path = os.path.join(*["/datain", "shovill_output", isolate, "contigs.fa"])
                     writer.writerow([assembly_path, isolate])
         else:
-            logging.info(f"Only one isolate identified as {group}: {''.join(emm_groups[group])}")
+            logger.info(f"Only one isolate identified as {group}: {''.join(emm_groups[group])}")
 
 
 def ref_free_snp(output_dir, group, foushee_config, ksnp3_matrix):
 
     # run the SNP analysis process using ksnp3 if output does not already exist
     if not os.path.isfile(ksnp3_matrix):
-        logging.info(f"Performing SNP analysis for isolates identified as {group}")
+        logger.info(f"Performing SNP analysis for isolates identified as {group}")
 
         # setup mounting in docker container
         ksnp3_mounting = {os.path.abspath(output_dir): '/datain',
@@ -81,7 +81,7 @@ def ref_free_snp(output_dir, group, foushee_config, ksnp3_matrix):
 def snp_matrix(output_dir, group, foushee_config, snp_dists_output_dir, snp_dists_result):
      #  run the SNP analysis process using snp_dists if output does not already exist
     if not os.path.isfile(snp_dists_result):
-        logging.info(f"Performing SNP analysis for isolates identified as {group}")
+        logger.info(f"Performing SNP analysis for isolates identified as {group}")
 
         # create snp-dists output dir:
         pathlib.Path(os.path.join(snp_dists_output_dir)).mkdir(parents=True, exist_ok=True)
@@ -129,18 +129,18 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
     # set logging file
     foushee_log_file = os.path.join(foushee_output, project + "_foushee.log")
     logFormatter = logging.Formatter("%(asctime)s: %(message)s")
-    rootLogger = logging.getLogger()
+    logger = logging.getLogger(__name__)
 
     fileHandler = logging.FileHandler(foushee_log_file)
     fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
+    logger.addHandler(fileHandler)
 
     consoleHandler = logging.StreamHandler()
     consoleHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(consoleHandler)
+    logger.addHandler(consoleHandler)
 
-    rootLogger.setLevel(logging.INFO)
-    logging.info(
+    logger.setLevel(logging.INFO)
+    logger.info(
         f"{getpass.getuser()} ran Foushee as: foushee(memory={memory}, cpus={cpus}, read_file_path={read_file_path}, output_dir={output_dir}, configuration={configuration})")
 
     # process the raw reads
@@ -152,7 +152,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
     foushee_config["execution_info"]["user"] = getpass.getuser()
     foushee_config["execution_info"]["datetime"] = datetime.datetime.today().strftime('%Y-%m-%d')
 
-    logging.info("First run tredegar")
+    logger.info("First run tredegar")
     isolate_qual=tredegar(memory=memory,cpus=cpus,read_file_path=read_file_path,output_dir=output_dir,configuration=configuration)
 
     # create emm_group dict
@@ -195,7 +195,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
         foushee_config["file_io"]["output_files"]["pairwise_snps_dists_matrix"] = os.path.join(foushee_output, f"{group}_pairwise_snp_distance_matrix.tsv")
         foushee_config["file_io"]["output_files"]["log_file"] =foushee_log_file
 
-        logging.info(f"Done! Hard links for the ksnp3 core tree and snps-dists distance matrix made at {foushee_output}")
+        logger.info(f"Done! Hard links for the ksnp3 core tree and snps-dists distance matrix made at {foushee_output}")
 
 
 
