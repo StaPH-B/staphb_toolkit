@@ -58,7 +58,7 @@ def ksnp3_input_file(emm_groups, out_dir):
             logger.info(f"Only one isolate identified as {group}: {''.join(emm_groups[group])}")
 
 
-def ref_free_snp(output_dir, group, foushee_config, ksnp3_matrix):
+def ref_free_snp(output_dir, group, ksnp3_matrix, foushee_config, logger):
 
     # run the SNP analysis process using ksnp3 if output does not already exist
     if not os.path.isfile(ksnp3_matrix):
@@ -78,7 +78,7 @@ def ref_free_snp(output_dir, group, foushee_config, ksnp3_matrix):
         ksnp3_obj.run()
 
 
-def snp_matrix(output_dir, group, foushee_config, snp_dists_output_dir, snp_dists_result):
+def snp_matrix(output_dir, group, snp_dists_output_dir, snp_dists_result, foushee_config, logger):
      #  run the SNP analysis process using snp_dists if output does not already exist
     if not os.path.isfile(snp_dists_result):
         logger.info(f"Performing SNP analysis for isolates identified as {group}")
@@ -172,7 +172,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
 
         # run reference free SNP calling with ksnp3
         ksnp3_matrix = os.path.join(*[output_dir, "ksnp3_output", group, "core_SNPs_matrix.fasta"])
-        ref_free_snp(output_dir, group, foushee_config, ksnp3_matrix)
+        ref_free_snp(output_dir, group, ksnp3_matrix, foushee_config, logger)
 
         # hard link ksnp3 output into foushee directory
         ksnp3_tree = ksnp3_matrix.replace("core_SNPs_matrix.fasta", "tree.core.tre")
@@ -183,7 +183,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
         # generate snp distance matrix with snp-dists
         snp_dists_output_dir = os.path.join(os.path.abspath(output_dir), "snp_dists_output")
         snp_dists_result = os.path.join(*[snp_dists_output_dir, f"{group}_pairwise_snp_distance_matrix.tsv"])
-        snp_matrix(output_dir, group, foushee_config, snp_dists_output_dir, snp_dists_result)
+        snp_matrix(output_dir, group, snp_dists_output_dir, snp_dists_result, foushee_config, logger)
 
         # hard link snp-dists output into foushee directory
         snp_dists_dest= os.path.join(foushee_output, f"{group}_pairwise_snp_distance_matrix.tsv")
