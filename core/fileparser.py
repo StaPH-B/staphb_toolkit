@@ -39,18 +39,18 @@ class ProcessFastqs:
     #data dictonary containing all of the read objects
     reads = {}
 
-    def __init__(self,path, basespace_output_dir=''):
+    def __init__(self,path, output_dir=''):
         #Ensure input path exisits
         if not os.path.isdir(path):
             raise ValueError(path + " " + "not found.")
 
-        if not basespace_output_dir:
+        if not output_dir:
             output_dir = os.getcwd()
 
         if os.path.isdir(path+"/AppResults"):
             basemount_project = Basemount(path, output_dir)
             basemount_project.copy_reads()
-            path = output_dir
+            path = os.path.join(output_dir, "raw_reads")
 
 
         for root,dirs,files in os.walk(path):
@@ -113,19 +113,52 @@ class ProcessFastqs:
         out_path = os.path.abspath(output_dir)
         raw_reads_dir = os.path.join(out_path + "/raw_reads")
 
-        #check if output directory exists, if not create it
-        if not os.path.isdir(raw_reads_dir):
-            os.makedirs(raw_reads_dir)
-            print("Directory for raw reads made: ", raw_reads_dir)
-
         #for each fastq file create a symbolic link
         for fastq in self.fastq_paths():
-            dest = os.path.join(raw_reads_dir, re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
-            dest = dest.replace("_001","")
 
-            if not os.path.isfile(dest):
-                os.symlink(fastq, dest)
-                print("Symbolic link for", fastq, "made at", dest)
-            else:
-                print("Symbolic link for", fastq, "already exists at", dest)
+            dest = os.path.join(raw_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
+            dest = dest.replace("_001","")
+            dest = dest.replace("R1", "1")
+            dest = dest.replace("R2", "2")
+
+            # If dest dir doesn't exists, create it
+            if not os.path.isdir(os.path.dirname(dest)):
+                os.makedirs(os.path.dirname(dest))
+
+            if not os.path.exists(dest):
+                os.link(fastq, dest)
+                print("Hard link for", fastq, "made at", dest)
+
+        # reset fwd/rev paths
+        for root, dirs, files in os.walk(output_dir):
+            # scan path and look for fastq files then gather ids and store in temp lists
+            for file in files:
+                if '.fastq' in file or '.fastq.gz' in file:
+                    # get id and check if we have seen this id before by adding to id list and creating a new read object
+                    id = file.split('_')[0]
+                    # if fastq file is foward reads add path to .fwd
+                    if '_R1' in file or '_1' in file:
+                        del self.reads[id].fwd
+                        self.reads[id].fwd = root + '/' + file
+                    # if fastq file is reverese reads add path to .rev
+                    elif '_R2' in file or '_2' in file:
+                        del self.reads[id].rev
+                        self.reads[id].rev = root + '/' + file
+
         return None
+
+    def inputSubdomain(self,config_object={}):
+        #see if we got a config object
+        if not config_object:
+            config_object = {}
+
+        #create file_io if it doesn't exists
+        if 'file_io' not in config_object:
+            config_object['file_io'] = {}
+        if 'input_files' not in config_object['file_io'] or config_object['file_io']['input_files'] == None :
+            config_object['file_io']['input_files'] = {}
+
+        for fastqs in self.reads:
+            config_object['file_io']['input_files'][self.reads[fastqs].id] = [self.reads[fastqs].fwd,self.reads[fastqs].rev]
+
+        return config_object
