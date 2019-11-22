@@ -22,7 +22,7 @@ from core import fileparser
 
 
 # define function for running seqyclean
-def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, tredegar_config):
+def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, tredegar_config, logger):
     # path for the seqy clean result file
     seqy_clean_result = os.path.join(*[output_dir, "seqyclean_output", id, fwd_read_clean])
 
@@ -48,7 +48,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
 
 
 # define function for running shovill
-def assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config):
+def assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config, logger):
     # create and run shovill object if results don't already exist
     if not os.path.isfile(assembly):
 
@@ -70,7 +70,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_r
         shovill_obj.run()
 
 
-def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tredegar_config):
+def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tredegar_config, logger):
     # create and run quast object if results don't already exist
     if not os.path.isfile(quast_out_file):
 
@@ -111,7 +111,7 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
             raise ValueError(f"ERROR: Unable to predict number of contigs for isolate {id}")
 
 
-def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config):
+def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config, logger):
     # check for cg_pipeline output file if not exists run the cg_pipeline object
     if not os.path.isfile(cgp_out):
         # set  genome length
@@ -150,7 +150,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
 
 
 # define functions for determining ecoli serotype and sal serotype
-def ecoli_serotype(output_dir, assembly, id, tredegar_config):
+def ecoli_serotype(output_dir, assembly, id, tredegar_config, logger):
     # ambiguous allele calls
     matched_wzx = ["O2", "O50", "O17", "O77", "O118", "O151", "O169", "O141ab", "O141ac"]
     matched_wzy = ["O13", "O135", "O17", "O44", "O123", "O186"]
@@ -215,7 +215,7 @@ def ecoli_serotype(output_dir, assembly, id, tredegar_config):
     return serotype
 
 
-def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config):
+def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config, logger):
     # path to seqsero results, if it doesn't exist run the seqsero object
     seqsero_out = f"{output_dir}/seqsero_output/{id}/Seqsero_result.txt"
     if not os.path.isfile(seqsero_out):
@@ -250,7 +250,7 @@ def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_
     return serotype
 
 
-def gas_emmtype(output_dir, raw_read_file_path, id, fwd, rev,  tredegar_config):
+def gas_emmtype(output_dir, raw_read_file_path, id, fwd, rev,  tredegar_config, logger):
     # path to seqsero results, if it doesn't exist run the seqsero object
     emmtyper_out = f"{output_dir}/emmtyper_output/{id}/{id}_1.results.xml"
     if not os.path.isfile(emmtyper_out):
@@ -389,33 +389,33 @@ def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
         # Clean read data with SeqyClean before assembling
-        clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, tredegar_config)
+        clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read_clean, tredegar_config, logger)
 
         # path for the assembly result file
         assembly = os.path.join(*[output_dir, "shovill_output", id, "contigs.fa"])
 
         # Assemble contigs using cleaned read data
-        assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config)
+        assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_read_clean, memory, cpus, assembly, tredegar_config, logger)
 
         # Get assembly metrics using quast
         quast_out_file = f"{output_dir}/quast_output/{id}/report.tsv"
-        assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tredegar_config)
+        assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tredegar_config, logger)
 
         # Get read metrics using CG Pipeline
         cgp_out = f"{output_dir}/cg_pipeline_output/{id}_readMetrics.tsv"
-        read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config)
+        read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cgp_out, tredegar_config, logger)
 
         # if the predicted species is ecoli run serotype finder
         if "Escherichia_coli" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir, assembly, id, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = ecoli_serotype(output_dir, assembly, id, tredegar_config, logger)
 
         # if the predicted species is salmonella enterica run seqsero
         if "Salmonella_enterica" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_config, logger)
 
         # if the predicted species is streptococcus pyogenes run seqsero
         if "Streptococcus_pyogenes" in isolate_qual[id]["species_prediction"]:
-            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir, raw_read_file_path, id, fwd_read, rev_read, tredegar_config)
+            isolate_qual[id]["subspecies_predictions"] = gas_emmtype(output_dir, raw_read_file_path, id, fwd_read, rev_read, tredegar_config, logger)
 
     # generate the Tredegar report
     report_file = os.path.join(tredegar_output, project+"_tredegar_report.tsv")
