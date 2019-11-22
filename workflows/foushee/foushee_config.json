@@ -1,9 +1,9 @@
 {
    "workflow": {
       "name": "Tredegar",
-      "description": "Bioinformatics pipeline for infectious disease WGS data QC",
-      "documentation": "https://staph-b.github.io/staphb_toolkit/tredegar",
-      "version": "v2.1",
+      "description": "Foushee: Bioinformatics pipeline for SNP analysis of Group A Streptococcus isolates",
+      "documentation": "https://staph-b.github.io/staphb_toolkit/foushee",
+      "version": "v1.0",
       "created": "2019-10-10",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
       "contributors": {
@@ -11,11 +11,6 @@
             "name": "Kevin G. Libuit",
             "affiliation": "Division of Consolidated Laboratory Services Richmond VA",
             "email": "kevin.libuit@dgs.virginia.gov"
-         },
-         "contributor_02": {
-            "name": "Kelsey Florek",
-            "affiliation": "Wisconsin State Laboratory of Hygiene Madison WI",
-            "email": "Kelsey.Florek@slh.wisc.edu"
          }
       },
       "review": {
@@ -23,9 +18,9 @@
          "reviewer_comment": "",
          "date": "2019-10-10",
          "reviewer": {
-            "name": "Rachael St. Jacques",
-            "affiliation": "Division of Consolidated Laboratory Services Richmond VA",
-            "email": "rachael.stjacques@dgs.virginia.gov"
+            "name": "Jake Garfin",
+            "affiliation": "Minnesota Public Health Laboratory, Saint Paul MN",
+            "email": "jake.garfin@state.mn.us"
          }
       }
    },
@@ -47,8 +42,7 @@
          "params": {
             "minimum_read_length": "25",
             "quality_trimming": "-qual",
-            "contaminants": "/Adapters_plus_PhiX_174.fasta",
-            "additional_params": ""
+            "contaminants": "/Adapters_plus_PhiX_174.fasta"
          }
       },
       "shovill": {
@@ -87,8 +81,21 @@
          "image": "staphb/emm-typing-tool",
          "tag": "0.0.1",
          "params": {
-            "database": "/db"
+            "database": "/db/"
          }
+      },
+      "ksnp3": {
+         "image": "staphb/ksnp3",
+         "tag": "3.1",
+         "params": {
+            "kmer_length": "19",
+            "core_snps_only": "-core"
+         }
+      },
+      "snp-dists": {
+         "image": "staphb/snp-dists",
+         "tag": "0.6.2",
+         "params": ""
       }
    },
    "execution_info":{
@@ -99,7 +106,8 @@
    "file_io": {
       "input_files": null,
       "output_files": {
-         "tredegar_report": "",
+         "ksnp_core_tree": "",
+         "pairwise_snps_dists_matrix":  "",
          "log_file": ""
       }
 
