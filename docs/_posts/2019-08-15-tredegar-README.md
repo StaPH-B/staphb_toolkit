@@ -10,7 +10,7 @@ layout: nil
 Bioinformatics pipeline for infectious disease WGS data QC
 
 ## Data workflow:
-![Tredegar pipeline](../assets/Tredegar_v2.1.png)
+![Tredegar pipeline](/assets/Tredegar_v2.1.png)
 
 ## Taxonomic Prediction:
 Tredegar uses [Mash](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0997-x), a fast genome distance estimation algorithm, to predict the taxonomic identity of all isolates by querying input read data aginst the entire RefSeq databse. This method allows for accurate taxonomic identification up to the species level. 
@@ -66,7 +66,7 @@ The final Tredegar Report will be written to a `tredegar_output` subdirectory wi
 
 
 ## Sample Tredegar Report
-![Sample_tredegar report](../assets/tred2_sample_out.png)
+![Sample_tredegar report](/assets/tred2_sample_out.png)
 - sample: isolate ID pulled from the fastq file
 - r1_q and r2_q: Average Q-score for the forward and reverse reads, respectively, calculated by CG Pipeline
 - est_genome_length: Shovill assembly length calculated by Quast
