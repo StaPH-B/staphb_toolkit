@@ -5,7 +5,7 @@
       "documentation": "https://staph-b.github.io/staphb_toolkit/tredegar",
       "version": "v2.1",
       "created": "2019-10-10",
-      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
       "contributors": {
          "contributor_01": {
             "name": "Kevin G. Libuit",
