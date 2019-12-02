@@ -10,7 +10,7 @@ layout: nil
 Bioinformatics pipeline for reference-free SNP analysis of Group-A *Streptococcus* (GAS) isolates
 
 ## Data workflow:
-![Foushee pipeline](../assets/Foushee_v1.0.png)
+![Foushee pipeline](/assets/Foushee_v1.0.png)
 
 ## Reference-free SNP analysis for GAS isolates of same emm-type
 Read quality assessment, genome assembly, and taxonomic predictions (including GAS emm-type) are performed for all input data using [Tredegar](https://staph-b.github.io/staphb_toolkit/#/tredegar-README), a QC workflow within the StaPH-B tookit. Tredegar results are used to group isolates by emm-type before performing reference-free Single-Nucleotide Polymorphism (SNP) analysis on each emm-type group independently using [kSNP3](https://www.ncbi.nlm.nih.gov/pubmed/25913206). The resulting core_SNPs_matrix.fasta file is used to generate a pairwise SNP distance matrix using [snp-dists](https://github.com/tseemann/snp-dists). 
@@ -84,12 +84,12 @@ The ksnp3 core tree files (`<emm_group>_tree.core.tre`) and snps-dists pairwise 
  Visualization of the ksnp3 core tree file can be done using phylogenetic tree viewers such as the web-accessible [Interacative Tree of Life](https://itol.embl.de) or a local copy of [FigTree](http://tree.bio.ed.ac.uk/software/figtree/). The snps-dists pairwise SNP distance matrix file can be viewed on any spreadsheet software (e.g. Microsoft Excel or LibreOffice Calc).
 
 ## Sample Outpt
-![ITOL_Tree](../assets/foushee_tree.png)
+![ITOL_Tree](/assets/foushee_tree.png)
 
 **Sample kSNP Core Tree:** visualized with the Interact of Tree of Life web application
 
 
-![SNP_Matrix](../assets/foushee_matrix.png)
+![SNP_Matrix](/assets/foushee_matrix.png)
 
 
 **Sample snp-dists pairwise SNP distance matrix:** visualized with LiberOffice Calc
