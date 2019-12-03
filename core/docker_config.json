@@ -1,5 +1,5 @@
 {
-   "provenance_domain": {
+   "provenance": {
       "name": "SB default config file",
       "created": "2019-10-10",
       "license": "https://www.apache.org/licenses/LICENSE-2.0",
@@ -16,7 +16,7 @@
          }
       }
    },
-   "parameter_domain": {
+   "parameters": {
       "mash": {
          "image": "staphb/mash",
          "tag": "2.1",
@@ -114,8 +114,18 @@
          "params": ""
       }
    },
-   "io_domain": {
-      "input_subdomain": null,
-      "output_subdomain": null
+   "execution_info":{
+     "run_id": null,
+     "user": null,
+     "datetime": null
+   },
+   "file_io": {
+      "input_files": null,
+      "output_files": {
+         "ksnp_core_tree": "",
+         "pairwise_snps_dists_matrix":  "",
+         "log_file": ""
+      }
+
    }
 }
