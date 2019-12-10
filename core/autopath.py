@@ -18,8 +18,9 @@ def path_replacer(args,cwd):
         #if it is add a path mapping
         if re_obj:
             path = re_obj.group()
-            basename = os.path.basename(path)
-            dirname = os.path.dirname(path)
+            abs_path = os.path.abspath(path)
+            basename = os.path.basename(abs_path)
+            dirname = os.path.dirname(abs_path)
             #check if we have already created a mount point for this location
             if dirname in path_map.keys():
                 mountname = os.path.dirname(path_map[dirname])
