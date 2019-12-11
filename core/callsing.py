@@ -28,9 +28,8 @@ def call(container,command,cwd='',paths={},remove=True):
     command_list = shlex.split(command)
 
     ###run the container
-    output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd])
+    output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd],stream=True)
 
-    ###format output as string
-    output = ''.join(output)
-    #once container is finished return output as a string
-    return output
+    ###stream the output
+    for line in output:
+        yield line.strip()
