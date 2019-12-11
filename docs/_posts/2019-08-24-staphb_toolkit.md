@@ -5,7 +5,7 @@ title: 'Running staphb_toolkit'
 layout: nil
 ---
 **staphb_toolkit** allows the user access to all of the configured containerized programs hosted on the [StaPH-B Docker Repository](https://github.com/StaPH-B/docker-builds). The usage of the executable is shown below:
-```     
+```
 usage: staphb_toolkit [optional arguments] <application> [application arguments]
 
 optional arguments:
@@ -38,6 +38,20 @@ application:
 
 **staphb_toolkit_workflows** allows the user access to the workflows and pipelines that have been developed by members of StaPH-B through a single executable. The usage of the executable is shown below:
 
-```     
+```
 usage: staphb_toolkit_workflows [optional arguments] <application> [application arguments]
+```
+
+As an example, using the assembler SPAdes would look like this:
+
+```
+staphb_toolkit spades -1 sample001_R1.fastq.gz -2 sample001_R2.fastq.gz -o sample001_spades -t 8
+```
+
+Workflows that have multiple scripts can be used by calling each script individually. Here is an example calling a few different scripts from Lyve-SET:
+
+```
+staphb_toolkit lyveset shuffleSplitReads.pl --numcpus 8 -o interleaved *.fastq.gz
+staphb_toolkit lyveset set_manage.pl --create setTest
+staphb_toolkit lyveset launch_set.pl --numcpus 8 -ref yourProject/ref/reference.fasta yourProject
 ```
