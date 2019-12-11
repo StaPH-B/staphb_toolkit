@@ -11,8 +11,6 @@ Public health bioinformatics is dependent on open-source software that require c
 ## Installing and Usage
 The full documentation can be found here: [https://staph-b.github.io/staphb_toolkit](https://staph-b.github.io/staphb_toolkit).
 
-Installing the pipeline is done with two simple commands. Note this does not include the installation of Docker or Singularity. One of these container engines must be present for the Toolkit to function.
-
 ### Installing dependencies
 The toolkit requires **either** singularity or docker. To install these on a debian based system use the following commands:
 
@@ -41,7 +39,7 @@ bash Anaconda3-2019.10-Linux-x86_64.sh
 ```
 When prompted with “Do you wish the installer to initialize Anaconda3 by running conda init?” We recommend “yes”.
 
-#### Installing the ToolKit
+### Installing the ToolKit
 First download the Toolkit using git:  
 `git clone https://github.com/StaPH-B/staphb_toolkit.git`
 
