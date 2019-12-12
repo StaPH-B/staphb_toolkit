@@ -42,7 +42,6 @@ class MashSpecies():
         else:
             self.path = path
             self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
-            self.runfiles.link_reads(output_dir=self.output_dir)
 
         self.mash_out_dir = os.path.join(self.output_dir, "mash_output")
 
