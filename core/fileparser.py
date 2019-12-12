@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import argparse
-import glob
 import re
-import sys
 from core.basemount import Basemount
 
 #class for containing all sequencing run information
