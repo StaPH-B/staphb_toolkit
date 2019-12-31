@@ -81,6 +81,12 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
         # quast mounting dictionary paths
         quast_mounting = {os.path.dirname(assembly): '/datain', quast_output_path: '/dataout'}
 
+        # ensure an assembly was generated
+        if not os.path.isfile(assembly):
+            isolate_qual[id]["est_genome_length"] = "ASSEMBLY_FAILED"
+            isolate_qual[id]["number_contigs"] = "ASSEMBLY_FAILED"
+            return
+
         # create the quast command
         assembly_file_name = os.path.basename(assembly)
         quast_configuration = tredegar_config["parameters"]["quast"]
@@ -163,6 +169,8 @@ def ecoli_serotype(output_dir, assembly, id, tredegar_config, logger):
         pathlib.Path(serotypefinder_output_path).mkdir(parents=True, exist_ok=True)
 
         # setup container mounting
+        if not os.path.isfile(assembly):
+            return
         assembly_path = os.path.dirname(assembly)
         stf_mounting = {assembly_path: '/datain', serotypefinder_output_path: '/dataout'}
 
@@ -346,7 +354,7 @@ def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
         read_file_path=output_dir
 
     # path to untrimmed reads
-    read_file_path = os.path.join(read_file_path, "raw_reads")
+    read_file_path = os.path.join(read_file_path, "input_reads")
 
     # run MASH, CG_Pipeline, SeqSero, and SerotypeFinder results
     isolate_qual = {}
@@ -382,10 +390,10 @@ def tredegar(memory, cpus, read_file_path, output_dir="", configuration=""):
 
         # Change read dir since reads hardlinked/copied to an isolate sub dir
         raw_read_file_path = os.path.join(read_file_path, id)
-        clean_read_file_path = os.path.join(read_file_path.replace("raw_reads", "seqyclean_output"), id)
+        clean_read_file_path = os.path.join(read_file_path.replace("input_reads", "seqyclean_output"), id)
 
         # Initialize result dictionary for this id
-        isolate_qual[id] = {"r1_q": None, "r2_q": None, "est_genome_length": None, "est_cvg": None, "number_contigs": None, "species_prediction": None, "subspecies_predictions": "NA"}
+        isolate_qual[id] = {"r1_q": "NA", "r2_q": "NA", "est_genome_length": "NA", "est_cvg": "NA", "number_contigs": "NA", "species_prediction": "NA", "subspecies_predictions": "NA"}
         isolate_qual[id]["species_prediction"] = mash_species[id]
 
         # Clean read data with SeqyClean before assembling
