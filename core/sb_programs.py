@@ -26,7 +26,8 @@ class Run:
 
     def run(self):
         try:
-            print(container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path))
+            for line in container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path):
+                print(line)
         except KeyboardInterrupt:
             container_engine.shutdown()
             sys.exit()
