@@ -47,7 +47,7 @@ class ProcessFastqs:
         if os.path.isdir(path+"/AppResults"):
             basemount_project = Basemount(path, output_dir)
             basemount_project.copy_reads()
-            path = os.path.join(output_dir, "raw_reads")
+            path = os.path.join(output_dir, "input_reads")
 
 
         for root,dirs,files in os.walk(path):
@@ -108,12 +108,12 @@ class ProcessFastqs:
     def link_reads(self, output_dir):
         #get output directory
         out_path = os.path.abspath(output_dir)
-        raw_reads_dir = os.path.join(out_path + "/raw_reads")
+        input_reads_dir = os.path.join(out_path + "/input_reads")
 
         #for each fastq file create a symbolic link
         for fastq in self.fastq_paths():
 
-            dest = os.path.join(raw_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
+            dest = os.path.join(input_reads_dir, os.path.basename(fastq).split('_')[0], re.sub('S\d+_L\d+_R', "", os.path.basename(fastq)))
             dest = dest.replace("_001","")
             dest = dest.replace("_R1", "_1")
             dest = dest.replace("_R2", "_2")
