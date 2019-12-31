@@ -42,7 +42,6 @@ class MashSpecies():
         else:
             self.path = path
             self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
-            self.runfiles.link_reads(output_dir=self.output_dir)
 
         self.mash_out_dir = os.path.join(self.output_dir, "mash_output")
 
@@ -85,8 +84,8 @@ class MashSpecies():
             fwd_read = os.path.basename(reads_dict[id].fwd)
             rev_read = os.path.basename(reads_dict[id].fwd)
 
-            # change read dir if hardlinked/copied to raw_reads sub dir
-            if "raw_reads" in self.path:
+            # change read dir if hardlinked/copied to input_reads sub dir
+            if "input_reads" in self.path:
                 reads_dir = os.path.join(self.path, id)
             else:
                 reads_dir = self.path

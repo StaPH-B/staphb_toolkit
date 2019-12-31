@@ -35,16 +35,16 @@ class Basemount:
         self.reads = glob.glob(self.path + "/Samples/*/Files/*.fastq.gz")
 
     def copy_reads(self):
-        raw_reads_dir = self.out + "/raw_reads/"
+        input_reads_dir = self.out + "/input_reads/"
         if not self.reads:
             raise ValueError("No reads found in %s"%self.path)
         else:
-            if not os.path.isdir(raw_reads_dir):
-                os.makedirs(raw_reads_dir)
-                print("Directory made for raw read files: " + raw_reads_dir)
+            if not os.path.isdir(input_reads_dir):
+                os.makedirs(input_reads_dir)
+                print("Directory made for raw read files: " + input_reads_dir)
 
             for read in self.reads:
-                dest = os.path.join(raw_reads_dir, re.sub('_(.*)', '', os.path.basename(read)), re.sub('S\d+_L\d+_R', "", os.path.basename(read)))
+                dest = os.path.join(input_reads_dir, re.sub('_(.*)', '', os.path.basename(read)), re.sub('S\d+_L\d+_R', "", os.path.basename(read)))
                 dest = dest.replace("_001","")
 
                 #If dest dir doesn't exists, create it
