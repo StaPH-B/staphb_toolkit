@@ -11,15 +11,43 @@ Public health bioinformatics is dependent on open-source software that require c
 ## Installing and Usage
 The full documentation can be found here: [https://staph-b.github.io/staphb_toolkit](https://staph-b.github.io/staphb_toolkit).
 
-Installing the pipeline is done with two simple commands. Note this does not include the installation of Docker or Singularity. One of these container engines must be present for the Toolkit to function. The documentation above has instructions for installing the container engine.
+### Installing dependencies
+The toolkit requires **either** singularity or docker. To install these on a debian based system use the following commands:
 
+#### Docker
+```
+sudo apt-get update
+sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+#### Singularity
+```
+sudo wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
+sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
+sudo apt-get update
+sudo apt-get install singularity-container
+```
+#### Python 3.7 or greater
+Python can be installed a number of ways but we recommend using Anaconda:
+```
+apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
+bash Anaconda3-2019.10-Linux-x86_64.sh
+```
+When prompted with “Do you wish the installer to initialize Anaconda3 by running conda init?” We recommend “yes”.
+
+### Installing the ToolKit
 First download the Toolkit using git:  
 `git clone https://github.com/StaPH-B/staphb_toolkit.git`
 
 Then install the python dependencies using pip:  
 `pip install -r staphb_toolkit/requirements.txt`  
-There will only ever be two python dependencies, which are the libraries to interact with either [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/).
 
 Run the pipeline with either of the following commands:  
-`staphb_toolkit`  
-`staphb_toolkit_workflows`
+```
+staphb_toolkit
+staphb_toolkit_workflows
+```
