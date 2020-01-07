@@ -126,6 +126,7 @@ class MashSpecies():
                     top_hit=top_hit.split()
                     top_hit=top_hit[0]
                     top_hit=re.match(r'^[^_]*_[^_]*', top_hit).group(0)
+                    top_hit=re.sub(r'.fna', '', top_hit)
 
                     # Ensure top hit has a definitive species assignment
                     if "_sp." not in top_hit:
