@@ -43,22 +43,22 @@ if __name__ == '__main__':
 
     #dryad-----------------------------------------
     #cg pipeline
-    parser_cg = subparsers.add_parser('dryad_cg', help='A pipeline for constructing reference free phylogenies.', add_help=False)
-    parser_cg.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
-    parser_cg.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
-    parser_cg.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
+    #parser_cg = subparsers.add_parser('dryad_cg', help='A pipeline for constructing reference free phylogenies.', add_help=False)
+    #parser_cg.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
+    #parser_cg.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    #parser_cg.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
     #snp pipeline
-    parser_snp = subparsers.add_parser('dryad_snp', help='A pipeline for SNP phylogenies using CFSAN SNP pipeline.', add_help=False)
-    parser_snp.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
-    parser_snp.add_argument('reference_sequence', type=str,help="reference fasta for SNP tree")
-    parser_snp.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
-    parser_snp.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
+    #parser_snp = subparsers.add_parser('dryad_snp', help='A pipeline for SNP phylogenies using CFSAN SNP pipeline.', add_help=False)
+    #parser_snp.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
+    #parser_snp.add_argument('reference_sequence', type=str,help="reference fasta for SNP tree")
+    #parser_snp.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    #parser_snp.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
     #all pipelines
-    parser_all = subparsers.add_parser('dryad_all', help='A pipeline for both SNP phylogenies using CFSAN SNP pipeline and reference free phylogenies.', add_help=False)
-    parser_all.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
-    parser_all.add_argument('reference_sequence', type=str,help="reference fasta for SNP tree")
-    parser_all.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
-    parser_all.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
+    #parser_all = subparsers.add_parser('dryad_all', help='A pipeline for both SNP phylogenies using CFSAN SNP pipeline and reference free phylogenies.', add_help=False)
+    #parser_all.add_argument('reads', type=str,help="text file listing the location of paired reads to be included in the analysis")
+    #parser_all.add_argument('reference_sequence', type=str,help="reference fasta for SNP tree")
+    #parser_all.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    #parser_all.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
 
     parser_args = parser.parse_known_args()
     program = parser_args[0].subparser_name
