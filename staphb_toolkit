@@ -166,12 +166,11 @@ if __name__ == '__main__':
     # -----------------------------------------
     if program == 'sb_mash_species':
         # get output dir if supplied, if not set it to cwd
-        try:
-            output_dir = parser_args[0].o
-        except AttributeError:
+        if parser_args[0].o:
+            output_dir = os.path.abspath(parser_args[0].o)
+        else:
             output_dir = os.getcwd()
-        if not output_dir:
-            output_dir = os.getcwd()
+
         # get input path, if not supplied print help
         try:
             path = os.path.abspath(parser_args[0].input)
@@ -192,10 +191,10 @@ if __name__ == '__main__':
     if program == 'sb_cfsan_snp':
         # set reference based on user input
         reference = parser_args[0].r
-        
+
         #get output dir if supplied, if not set it to cwd
         if parser_args[0].o:
-            output_dir = parser_args[0].o
+            output_dir = os.path.abspath(parser_args[0].o)
         else:
             output_dir = os.getcwd()
 
