@@ -165,39 +165,40 @@ if __name__ == '__main__':
     # Lib File specific execution code
     # -----------------------------------------
     if program == 'sb_mash_species':
-        #get output dir if supplied, if not set it to cwd
+        # get output dir if supplied, if not set it to cwd
         try:
             output_dir = parser_args[0].o
         except AttributeError:
             output_dir = os.getcwd()
         if not output_dir:
             output_dir = os.getcwd()
-        #get input path, if not supplied print help
+        # get input path, if not supplied print help
         try:
             path = os.path.abspath(parser_args[0].input)
         except AttributeError as e:
             parser_sb_mash_species.print_help()
             sys.exit(2)
 
-        #set config file if given
+        # set config file if given
         if parser_args[0].c:
             config=parser_args[0].c
         else:
             config=None
 
-        #create and run the mash species object
+        # create and run the mash species object
         sb_mash_species_obj = MashSpecies(path=path,output_dir=output_dir, configuration=config)
         sb_mash_species_obj.run()
 
     if program == 'sb_cfsan_snp':
-        #get output dir if supplied, if not set it to cwd
+        # set reference based on user input
         reference = parser_args[0].r
-        try:
-            output_dir = args.o
-        except AttributeError:
+        
+        #get output dir if supplied, if not set it to cwd
+        if parser_args[0].o:
+            output_dir = parser_args[0].o
+        else:
             output_dir = os.getcwd()
-        if not output_dir:
-            output_dir = os.getcwd()
+
         #get input path, if not supplied print help
         try:
             path = os.path.abspath(parser_args[0].input)
