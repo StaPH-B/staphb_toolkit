@@ -54,7 +54,8 @@ class CFSAN_SNP():
         if os.path.isdir(os.path.join(self.path, "AppResults")):
             self.path = output_dir
         else:
-            fastq_files.link_reads(output_dir=output_dir)
+
+            self.runfiles.link_reads(output_dir=output_dir)
             self.path = output_dir
 
     def run(self):
