@@ -112,6 +112,13 @@
          "image": "staphb/snp-dists",
          "tag": "0.6.2",
          "params": ""
+      },
+      "cfsan-snp-pipeline": {
+         "image": "staphb/cfsan-snp-pipeline",
+         "tag": "2.0.2",
+         "params": {
+            "mirrored_input": "soft"
+         }
       }
    },
    "execution_info":{
