@@ -50,14 +50,14 @@ if __name__ == '__main__':
     parser_sb_mash_species = subparsers.add_parser('sb_mash_species', help='Using MASH to query read data against the RefSeq database using to identify the isolate species.', usage="sb_mash_species <input> [options]")
     parser_sb_mash_species.add_argument("input", type=str, help="path to dir containing read files")
     parser_sb_mash_species.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
-    parser_sb_mash_species.add_argument("-c", type=str, help="path to alternative configuration file")
+    parser_sb_mash_species.add_argument("-c", type=str, help="path to alternative configuration file", required=False)
 
     ## sb_cfsan_snp
     parser_sb_cfsan_snp = subparsers.add_parser('sb_cfsan_snp', help='Running CFSAN SNP on directory of read files.', usage="sb_cfsan_snp -i <input_dir> -r <reference_genome> [options]")
     parser_sb_cfsan_snp.add_argument("input", type=str, help="path to dir containing read files")
     parser_sb_cfsan_snp.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
     parser_sb_cfsan_snp.add_argument("-r",metavar='path', default="", type=str, help="Path to reference genome", required=True)
-    parser_sb_cfsan_snp.add_argument("-c", type=str, help="path to alternative configuration file")
+    parser_sb_cfsan_snp.add_argument("-c", type=str, help="path to alternative configuration file", required=False)
     #-----------------------------------------
 
     #handel the arguments and perform automatic path replacement
@@ -162,6 +162,8 @@ if __name__ == '__main__':
         unicycler = sb_prog.Run(command=command, path=path_map, image=unicycler_configuration["image"], tag=unicycler_configuration["tag"])
         unicycler.run()
 
+    # Lib File specific execution code
+    # -----------------------------------------
     if program == 'sb_mash_species':
         #get output dir if supplied, if not set it to cwd
         try:
