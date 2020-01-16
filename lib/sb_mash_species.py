@@ -43,6 +43,16 @@ class MashSpecies():
             self.path = path
             self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
 
+        # set the read_file_path equal to the output_dir since reads have been copied/hard linked there
+        if os.path.isdir(os.path.join(self.path, "AppResults")):
+            self.path = output_dir
+        else:
+            fastq_files.link_reads(output_dir=output_dir)
+            self.path = output_dir
+
+        # path to untrimmed reads
+        self.path = os.path.join(self.path, "input_reads")
+
         self.mash_out_dir = os.path.join(self.output_dir, "mash_output")
 
     def create_mash_sketch(self, id, mash_mounting, fwd_read, rev_read, sketch_name):
@@ -132,5 +142,7 @@ class MashSpecies():
             f.write("Isolate,Predicted Species\n")
             for key in mash_species.keys():
                 f.write("%s,%s\n"%(key,mash_species[key]))
+
+        print(f"sb_mash_species complete! Output saved to {self.mash_out_dir}/mash_species.csv")
 
         return mash_species
