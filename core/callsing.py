@@ -30,6 +30,11 @@ def call(container,command,cwd='',paths={},remove=True):
     ###run the container
     output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd],stream=True)
 
-    ###stream the output
-    for line in output:
-        yield line.strip()
+    try:
+        ###stream the output
+        for line in output:
+            yield line.strip()
+    #catch singularity errors from non-zero exit
+    #TODO figure out how to read them
+    except subprocess.CalledProcessError:
+        pass
