@@ -40,7 +40,7 @@ def group_by_emm(isolate_qual):
     return emm_groups
 
 
-def ksnp3_input_file(emm_groups, out_dir):
+def ksnp3_input_file(emm_groups, logger, out_dir):
     for group in emm_groups.keys():
         if len(emm_groups[group]) > 1:
             group_length=len(emm_groups[group])
@@ -163,7 +163,7 @@ def foushee(memory,cpus,read_file_path,output_dir="",configuration=""):
     pathlib.Path(ksnp3_output).mkdir(parents=True, exist_ok=True)
 
     # create input file for kSNP3 analysis
-    ksnp3_input_file(emm_groups, out_dir=ksnp3_output)
+    ksnp3_input_file(emm_groups, logger, out_dir=ksnp3_output)
 
     # Run ksnp3 & snp_dists for each emm group:
     for group in emm_groups.keys():
