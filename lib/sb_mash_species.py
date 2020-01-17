@@ -127,13 +127,20 @@ class MashSpecies():
                     output.write(line)
 
             # open the sorted hits and get the top hit
-            with open(mash_result_sorted) as file:
-                top_hit = file.readline()
-                top_hit = re.sub(r'.*-\.-', '', top_hit)
-                top_hit=top_hit.split()
-                top_hit=top_hit[0]
-                top_hit=re.split(r'^([^_]*_[^_]*)(_|\.).*$', top_hit)[1]
+            with open(mash_result_sorted, 'r') as file:
+                for line in file:
+                    top_hit = line
 
+                    # capture only the genus and species of top hit
+                    top_hit = re.sub(r'.*-\.-', '', top_hit)
+                    top_hit=top_hit.split()
+                    top_hit=top_hit[0]
+                    top_hit=re.match(r'^[^_]*_[^_]*', top_hit).group(0)
+                    top_hit=re.sub(r'.fna', '', top_hit)
+
+                    # Ensure top hit has a definitive species assignment
+                    if "_sp." not in top_hit:
+                        break
             # specify the top hit as the species for this id
             mash_species[id] = top_hit
 
