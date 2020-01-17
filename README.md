@@ -36,6 +36,7 @@ Python can be installed a number of ways but we recommend using Anaconda:
 apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
 wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
 bash Anaconda3-2019.10-Linux-x86_64.sh
+source ~/.bashrc
 ```
 When prompted with “Do you wish the installer to initialize Anaconda3 by running conda init?” We recommend “yes”.
 

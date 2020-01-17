@@ -33,6 +33,11 @@
          "tag": "3.13.0",
          "params": ""
       },
+      "bwa": {
+         "image": "staphb/bwa",
+         "tag": "0.7.17",
+         "params": ""
+      },
       "seqyclean": {
          "image": "staphb/seqyclean",
          "tag": "1.10.09",
@@ -98,7 +103,7 @@
          "tag": "1.0.0",
          "params": ""
       },
-      "emm-typing-tool\"": {
+      "emm-typing-tool": {
          "image": "staphb/emm-typing-tool",
          "tag": "0.0.1",
          "params": ""
