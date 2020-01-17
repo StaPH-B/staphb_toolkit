@@ -6,6 +6,7 @@ import argparse
 import sys
 import json
 import shlex
+import subprocess
 #TODO add inidcator that container is being downloaded or updated
 
 def shutdown():
