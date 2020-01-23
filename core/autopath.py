@@ -32,5 +32,4 @@ def path_replacer(args,cwd):
         #if it's not add the argument to final string
         else:
             arg_string = arg_string + ' ' + arg
-        print(path_map)
     return arg_string,path_map
