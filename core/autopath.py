@@ -5,7 +5,8 @@ import os,re
 #replace absolute and relative paths with paths in docker container
 def path_replacer(args,cwd):
     #generate mapping of paths and container paths
-    path_map = {cwd:'/data'} #{"/path/outside":"/path/incontainer"}
+    current_dir_fullpath = os.path.abspath(cwd)
+    path_map = {current_dir_fullpath:'/data'} #{"/path/outside":"/path/incontainer"}
     if not args:
         return "",path_map
     #search pattern for absolute and relative paths
