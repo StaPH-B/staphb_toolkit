@@ -4,9 +4,7 @@ import os,re
 
 #replace absolute and relative paths with paths in docker container
 def path_replacer(args,cwd):
-    #generate mapping of paths and container paths
-    current_dir_fullpath = os.path.abspath(cwd)
-    path_map = {current_dir_fullpath:'/data'} #{"/path/outside":"/path/incontainer"}
+    path_map = {cwd:'/data'} #{"/path/outside":"/path/incontainer"}
     if not args:
         return "",path_map
     #search pattern for absolute and relative paths
@@ -24,8 +22,9 @@ def path_replacer(args,cwd):
             dirname = os.path.dirname(abs_path)
             #check if we have already created a mount point for this location
             if dirname in path_map.keys():
-                mountname = os.path.dirname(path_map[dirname])
-                path_map[dirname] = mountname+'/'
+                if dirname != cwd:
+                    mountname = os.path.dirname(path_map[dirname])
+                    path_map[dirname] = mountname+'/'
             else:
                 path_map[dirname] = '/mount'+str(counter)+'/'
                 counter += 1
@@ -33,5 +32,5 @@ def path_replacer(args,cwd):
         #if it's not add the argument to final string
         else:
             arg_string = arg_string + ' ' + arg
-
+        print(path_map)
     return arg_string,path_map
