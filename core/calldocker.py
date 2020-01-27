@@ -47,12 +47,14 @@ def call(container,command,cwd='',paths={},remove=True):
 
     ###run the container
     #try block to run the container
+    output = b''
     try:
         container_obj = client.containers.run(container,command,user=user,volumes=volumes,working_dir=cwd,remove=remove,detach=True,labels={"prog":"sb_toolkit"})
     except:
         #loop through output as it is streamed
         for line in container_obj.logs(stream=True):
-            yield line.decode('utf-8')
+            output += line
     else:
         for line in container_obj.logs(stream=True):
-            yield line.decode('utf-8').strip()
+            output += line
+    return output.decode('utf-8')
