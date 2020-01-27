@@ -20,7 +20,8 @@ else:
 class Run:
     def __init__(self, command, path, image, tag):
         self.path=path
-        self.command = command
+        self.command = "bash -c '" + command + "'"
+        #self.command = command
         self.image = image
         self.tag = tag
 

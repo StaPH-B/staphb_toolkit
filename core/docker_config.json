@@ -103,6 +103,16 @@
          "tag": "1.0.0",
          "params": ""
       },
+      "samtools": {
+         "image": "staphb/samtools",
+         "tag": "1.10",
+         "params": ""
+      },
+      "minimap2": {
+         "image": "staphb/minimap2",
+         "tag": "2.17",
+         "params": ""
+      },
       "emm-typing-tool": {
          "image": "staphb/emm-typing-tool",
          "tag": "0.0.1",
