@@ -7,8 +7,8 @@ python_version = ""
 pip_cmd = ""
 container = False
 #check python version
-stdout = subprocess.run(["python3","-V"],stdout=subprocess.PIPE,text=True)
-if "Python 3.7" in stdout.stdout:
+stdout = subprocess.run(["python3","-V"],stdout=subprocess.PIPE)
+if "Python 3.7" in stdout.stdout.decode('utf-8'):
     python_cmd = "3.7"
 else:
     os.system("which python3")
@@ -16,12 +16,12 @@ else:
     sys.exit(1)
 
 #check pip version
-stdout = subprocess.run(["pip3","-V"],stdout=subprocess.PIPE,text=True)
-if "python 3.7" in stdout.stdout:
+stdout = subprocess.run(["pip3","-V"],stdout=subprocess.PIPE)
+if "python 3.7" in stdout.stdout.decode('utf-8'):
     pip_cmd = "pip3"
 
-stdout = subprocess.run(["pip","-V"],stdout=subprocess.PIPE,text=True)
-if "python 3.7" in stdout.stdout:
+stdout = subprocess.run(["pip","-V"],stdout=subprocess.PIPE)
+if "python 3.7" in stdout.stdout.decode('utf-8'):
     pip_cmd = "pip"
 
 if not pip_cmd:
@@ -31,5 +31,5 @@ if not pip_cmd:
 if python_version and pip_cmd:
     print("Installing dependencies")
     requirements_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),"requirements.txt")
-    stdout = subprocess.run([pip_cmd,"-r",requirements_path],stdout=subprocess.PIPE,text=True)
-    print(stdout.stdout)
+    stdout = subprocess.run([pip_cmd,"-r",requirements_path],stdout=subprocess.PIPE)
+    print(stdout.stdout.decode('utf-8'))
