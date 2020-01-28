@@ -134,7 +134,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
         cgp_configuration = tredegar_config["parameters"]["cg_pipeline"]
         cgp_params = cgp_configuration["params"]
         cgp_result_file = id + "_readMetrics.tsv"
-        cg_command = f"bash -c \'run_assembly_readMetrics.pl {cgp_params['subsample']} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
+        cg_command = f"bash -c 'run_assembly_readMetrics.pl {cgp_params['subsample']} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
 
         # generate the cg_pipeline object
         cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, image=cgp_configuration["image"], tag=cgp_configuration["tag"])
