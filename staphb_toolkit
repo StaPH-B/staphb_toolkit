@@ -30,6 +30,7 @@ if __name__ == '__main__':
     #-----------------------------------------
     parser_abricate = subparsers.add_parser('abricate', help='Abricate - Mass screening of contigs for antimicrobial and virulence genes', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', help='BWA - mapping low-divergent sequences against a large reference genome', add_help=False)
+    parser_clustalo = subparsers.add_parser('clustalo', help='ClustalO - A fast multiple sequence alignment program', add_help=False)
     parser_iqtree = subparsers.add_parser('iqtree', help='IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.', add_help=False)
     parser_lyveset = subparsers.add_parser('lyveset', help='LYVE-SET - a method of using hqSNPs to create a phylogeny.', add_help=False)
     parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
@@ -99,6 +100,12 @@ if __name__ == '__main__':
         prokka_configuration = config["parameters"]["prokka"]
         prokka = sb_prog.Run(command=command, path=path_map, image=prokka_configuration["image"], tag=prokka_configuration["tag"])
         prokka.run()
+
+    if program == 'clustalo':
+        command = "clustalo " + arg_string
+        clustalo_configuration = config["parameters"]["clustalo"]
+        clustalo = sb_prog.Run(command=command, path=path_map, image=clustalo_configuration["image"], tag=clustalo_configuration["tag"])
+        clustalo.run()
 
     if program == 'abricate':
         command = "abricate " + arg_string

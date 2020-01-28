@@ -48,6 +48,11 @@
          "tag": "1.0.4",
          "params": ""
       },
+      "clustalo": {
+         "image": "staphb/clustalo",
+         "tag": "1.2.4",
+         "params": ""
+      },
       "quast": {
          "image": "staphb/quast",
          "tag": "5.0.2",
