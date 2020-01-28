@@ -38,7 +38,7 @@ def clean_reads(id, output_dir, raw_read_file_path, fwd_read, rev_read, fwd_read
         # command for creating the mash sketch
         seqyclean_configuration = tredegar_config["parameters"]["seqyclean"]
         seqyclean_params = seqyclean_configuration["params"]
-        seqyclean_command = f"bash -c 'seqyclean -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean -minlen {seqyclean_params['minimum_read_length']} -c {seqyclean_params['contaminants']} {seqyclean_params['quality_trimming']}'"
+        seqyclean_command = f'seqyclean -1 /datain/{fwd_read} -2 /datain/{rev_read} -o /dataout/{id}/{id}_clean -minlen {seqyclean_params['minimum_read_length']} -c {seqyclean_params['contaminants']} {seqyclean_params['quality_trimming']}'
 
         # generate command to run seqyclean on the id
         seqyclean_obj = sb_programs.Run(command=seqyclean_command, path=seqyclean_mounting, image=seqyclean_configuration["image"], tag=seqyclean_configuration["tag"])
@@ -91,7 +91,7 @@ def assembly_metrics(id, output_dir, assembly, quast_out_file, isolate_qual, tre
         assembly_file_name = os.path.basename(assembly)
         quast_configuration = tredegar_config["parameters"]["quast"]
         quast_params = quast_configuration["params"]
-        quast_command = f"bash -c 'quast.py /datain/{assembly_file_name} -o /dataout/{id} {quast_params}'"
+        quast_command = f'quast.py /datain/{assembly_file_name} -o /dataout/{id} {quast_params}'
 
         # create the quast object
         quast_obj = sb_programs.Run(command=quast_command, path=quast_mounting, image = quast_configuration["image"], tag = quast_configuration["tag"])
@@ -134,7 +134,7 @@ def read_metrics(id, output_dir, raw_read_file_path, all_reads, isolate_qual, cg
         cgp_configuration = tredegar_config["parameters"]["cg_pipeline"]
         cgp_params = cgp_configuration["params"]
         cgp_result_file = id + "_readMetrics.tsv"
-        cg_command = f"bash -c \'run_assembly_readMetrics.pl {cgp_params['subsample']} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}\'"
+        cg_command = f'run_assembly_readMetrics.pl {cgp_params['subsample']} /datain/{all_reads} -e {genome_length} > /dataout/{cgp_result_file}'
 
         # generate the cg_pipeline object
         cg_obj = sb_programs.Run(command=cg_command, path=cg_mounting, image=cgp_configuration["image"], tag=cgp_configuration["tag"])
@@ -237,7 +237,7 @@ def salmonella_serotype(output_dir, raw_read_file_path, all_reads, id, tredegar_
         # container command
         seqsero_configuration = tredegar_config["parameters"]["seqsero"]
         seqsero_params = seqsero_configuration["params"]
-        seqsero_command = f"bash -c 'SeqSero.py -m2 -i /datain/{all_reads} -d /dataout/{id} {seqsero_params}'"
+        seqsero_command = f'SeqSero.py -m2 -i /datain/{all_reads} -d /dataout/{id} {seqsero_params}'
 
         # generate seqsero object
         seqsero_obj = sb_programs.Run(command=seqsero_command, path=seqsero_mounting, image=seqsero_configuration["image"], tag=seqsero_configuration["tag"])
