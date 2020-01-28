@@ -61,7 +61,7 @@ def assemble_contigs(id, output_dir, clean_read_file_path, fwd_read_clean, rev_r
         # generate command to run shovill on the id
         shovill_configuration = tredegar_config["parameters"]["shovill"]
         shovill_params = shovill_configuration["params"]
-        shovill_command = f"shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force {shovill_params}"
+        shovill_command = f"bash -c 'shovill --outdir /dataout/{id}/ -R1 /datain/{fwd_read_clean} -R2 /datain/{rev_read_clean} --ram {memory} --cpus {cpus} --force {shovill_params}'"
 
         # generate shovill object
         shovill_obj = sb_programs.Run(command=shovill_command, path=shovill_mounting, image=shovill_configuration["image"], tag=shovill_configuration["tag"])
