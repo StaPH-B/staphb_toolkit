@@ -28,22 +28,24 @@ if __name__ == '__main__':
 
     #parser for applications
     #-----------------------------------------
-    parser_bwa = subparsers.add_parser('bwa', help='BWA - mapping low-divergent sequences against a large reference genome', add_help=False)
-    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
-    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
-    parser_minimap2 = subparsers.add_parser('minimap2', help='Minimap2 - a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database.', add_help=False)
-    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis', add_help=False)
-    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler', add_help=False)
-    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation', add_help=False)
     parser_abricate = subparsers.add_parser('abricate', help='Abricate - Mass screening of contigs for antimicrobial and virulence genes', add_help=False)
+    parser_bwa = subparsers.add_parser('bwa', help='BWA - mapping low-divergent sequences against a large reference genome', add_help=False)
     parser_iqtree = subparsers.add_parser('iqtree', help='IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.', add_help=False)
     parser_lyveset = subparsers.add_parser('lyveset', help='LYVE-SET - a method of using hqSNPs to create a phylogeny.', add_help=False)
+    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
+    parser_minimap2 = subparsers.add_parser('minimap2', help='Minimap2 - a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database.', add_help=False)
+    parser_ncbi_blast = subparsers.add_parser('ncbi_blast', help='BLAST - finds regions of local similarity between sequences.', add_help=False)
+    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation', add_help=False)
     parser_quast = subparsers.add_parser('quast', help='Quast - Genome assembly evaluation tool.', add_help=False)
     parser_roary = subparsers.add_parser('roary', help='Roary - Rapid large-scale prokaryote pan genome analysis.', add_help=False)
     parser_samtools = subparsers.add_parser('samtools', help='Samtools - A suite of programs for interacting with high-throughput sequencing data. It consists of three separate repositories.', add_help=False)
     parser_seqsero = subparsers.add_parser('seqsero', help='SeqSero - Salmonella serotyping from genome sequencing data.', add_help=False)
+    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis', add_help=False)
     parser_serotypefinder = subparsers.add_parser('serotypefinder', help='SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.', add_help=False)
+    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler', add_help=False)
+    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
     parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.', add_help=False)
+
     ###lib apps
     parser_mash_species = subparsers.add_parser('mash_species', help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
     parser_mash_species.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
@@ -157,6 +159,12 @@ if __name__ == '__main__':
         minimap2_configuration = config["parameters"]["minimap2"]
         minimap2 = sb_prog.Run(command=command, path=path_map, image=minimap2_configuration["image"], tag=minimap2_configuration["tag"])
         minimap2.run()
+
+    if program == 'ncbi_blast':
+        command = "" + arg_string
+        ncbi_blast_configuration = config["parameters"]["ncbi_blast"]
+        ncbi_blast = sb_prog.Run(command=command, path=path_map, image=ncbi_blast_configuration["image"], tag=ncbi_blast_configuration["tag"])
+        ncbi_blast.run()
 
     if program == 'unicycler':
         command = "unicycler " + arg_string

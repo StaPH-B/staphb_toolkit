@@ -103,6 +103,11 @@
          "tag": "1.0.0",
          "params": ""
       },
+      "ncbi_blast": {
+         "image": "staphb/abricate",
+         "tag": "latest",
+         "params": ""
+      },
       "samtools": {
          "image": "staphb/samtools",
          "tag": "1.10",
