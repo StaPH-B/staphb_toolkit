@@ -27,8 +27,7 @@ class Run:
 
     def run(self):
         try:
-            for line in container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path):
-                print(line)
+            print(container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path))
         except KeyboardInterrupt:
             container_engine.shutdown()
             sys.exit()
@@ -39,7 +38,6 @@ class Run_multi:
         self.command_list = command_list
         self.image = image
         self.tag = tag
-
 
     def run(self,jobs):
         #initalize all workers to ignore signal int since we are handeling the keyboard interrupt ourself
