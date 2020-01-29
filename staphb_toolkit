@@ -126,7 +126,7 @@ if __name__ == '__main__':
         lyveset.run()
 
     if program == 'quast':
-        command = "quast " + arg_string
+        command = "quast.py " + arg_string
         quast_configuration = config["parameters"]["quast"]
         quast = sb_prog.Run(command=command, path=path_map, image=quast_configuration["image"], tag=quast_configuration["tag"])
         quast.run()
