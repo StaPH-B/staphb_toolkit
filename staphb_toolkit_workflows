@@ -11,6 +11,7 @@ import core.sb_programs as sb_prog
 from workflows.tredegar.tredegar import tredegar
 from workflows.foushee.foushee import foushee
 from workflows.dryad.dryad import dryad
+from workflows.spriggan.spriggan import spriggan
 
 if __name__ == '__main__':
 
