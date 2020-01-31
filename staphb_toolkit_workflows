@@ -60,6 +60,14 @@ if __name__ == '__main__':
     #parser_all.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
     #parser_all.add_argument('-t',metavar='threads', type=int,help="number of cpus to use for pipeline - default of 4",default=4)
 
+    #spriggan-----------------------------------------
+    parser_spriggan = subparsers.add_parser('spriggan', help='', add_help=False)
+    parser_spriggan.add_argument('reads', type=str,help="path to the location of the reads in fastq format")
+    parser_spriggan.add_argument('reference', type=str,help="reference fasta for Quast")
+    parser_spriggan.add_argument('-t',metavar='threads', type=int,help="number of threads to use, defaults to 1",default=1)
+    parser_spriggan.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    parser_spriggan.add_argument('-c',metavar='config', type=str,help="path to configuration file")
+
     parser_args = parser.parse_known_args()
     program = parser_args[0].subparser_name
     args = parser_args[0]
@@ -80,3 +88,6 @@ if __name__ == '__main__':
 
     if program == 'dryad_all':
         dryad('all',args.t,args.o,args.reads,args.reference_sequence)
+
+    if program == 'spriggan':
+        spriggan(args.reads,args.reference,args.t,args.o,args.c)
