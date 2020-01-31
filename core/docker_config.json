@@ -33,6 +33,11 @@
          "tag": "3.13.0",
          "params": ""
       },
+      "raxml":{
+	 "image": "staphb/raxml",
+	 "tag": "8.2.12",
+	 "params": ""
+      },
       "bwa": {
          "image": "staphb/bwa",
          "tag": "0.7.17",
@@ -46,6 +51,11 @@
       "shovill": {
          "image": "staphb/shovill",
          "tag": "1.0.4",
+         "params": ""
+      },
+      "clustalo": {
+         "image": "staphb/clustalo",
+         "tag": "1.2.4",
          "params": ""
       },
       "quast": {
@@ -101,6 +111,11 @@
       "seqsero2": {
          "image": "staphb/seqsero2",
          "tag": "1.0.0",
+         "params": ""
+      },
+      "ncbi_blast": {
+         "image": "staphb/abricate",
+         "tag": "latest",
          "params": ""
       },
       "samtools": {

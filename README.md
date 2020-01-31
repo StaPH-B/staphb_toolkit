@@ -46,8 +46,8 @@ When prompted with “Do you wish the installer to initialize Anaconda3 by runni
 First download the Toolkit using git:  
 `git clone https://github.com/StaPH-B/staphb_toolkit.git`
 
-Then install the python dependencies using pip:  
-`pip install -r staphb_toolkit/requirements.txt`  
+Then install the python dependencies using:  
+`./staphb_toolkit/setup.py`  
 
 Run the pipeline with either of the following commands:  
 ```
