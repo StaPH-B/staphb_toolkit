@@ -1,0 +1,85 @@
+{
+    "workflow": {
+        "name": "spriggan",
+        "description": "",
+        "documentation": "",
+        "version": "v1.0",
+        "created": "",
+        "license": "",
+        "contributors": {
+            "contributor-01": {
+                "name": "Abigail Shockey",
+                "affiliation": "Wisconsin State Laboratory of Hygiene",
+                "email": "abigail.shockey@slh.wisc.edu"
+            }
+        }
+    },
+    "parameters": {
+        "mash": {
+           "image": "staphb/mash",
+           "tag": "2.1",
+           "mash_sketch": {
+              "sketch_params": ""
+           },
+           "mash_dist": {
+              "dist_params": "",
+              "db": "/db/RefSeqSketchesDefaults.msh"
+           }
+        },
+        "trimmomatic": {
+            "image": "staphb/trimmomatic",
+            "tag": "0.39",
+            "params": {
+                "windowsize": "4",
+                "qscore": "30",
+                "minlength": "100"
+            }
+        },
+        "shovill": {
+            "image": "staphb/shovill",
+            "tag": "1.0.4",
+            "params": ""
+        },
+        "mlst": {
+            "image": "staphb/mlst",
+            "tag": "2.17.6-cv1",
+            "params": ""
+        },
+        "quast": {
+            "image": "staphb/quast",
+            "tag": "5.0.2",
+            "params": {
+                "reference": null
+            }
+        },
+        "abricate": {
+            "image": "staphb/abricate",
+            "tag": "0.9.8-cv1",
+            "params": ""
+        }
+    },
+    "execution":{
+        "run_id": null,
+        "user": null,
+        "date_time": null
+    },
+    "file_io": {
+        "input_files": {
+            "fastqs": null,
+            "reference": null
+        },
+        "output_files": {
+            "trimmed_fastqs": null,
+            "assemblies": null,
+            "mlst": null,
+            "abricate": null,
+            "abricate_summary": null,
+            "quast_report":  null,
+            "log_files": {
+                "qtrim": null,
+                "assembly": null,
+                "quast": null
+            }
+        }
+    }
+}
