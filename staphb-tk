@@ -56,6 +56,7 @@ if __name__ == '__main__':
     parser_fasttree = subparsers.add_parser('fasttree', help='FastTree infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences.', add_help=False)
     parser_fastqc = subparsers.add_parser('fastqc', help='A quality control tool for high throughput sequence data.', add_help=False)
     parser_filtong = subparsers.add_parser('filtlong', help='Quality filtering tool for long reads', add_help=False)
+    parser_flye = subparsers.add_parser('flye', help='De novo assembler for single molecule sequencing reads using repeat graphs', add_help=False)
 
     ###lib apps
     parser_mash_species = subparsers.add_parser('mash_species', help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
@@ -81,6 +82,14 @@ if __name__ == '__main__':
 
     #Program specific execution code
     #-----------------------------------------
+    if program == 'flye':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "flye " + arg_string
+        flye_configuration = config["parameters"]["flye"]
+        flye = sb_prog.Run(command=command, path=path_map, image=flye_configuration["image"], tag=flye_configuration["tag"])
+        flye.run()
+
     if program == 'filtlong':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
