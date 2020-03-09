@@ -21,14 +21,15 @@ if __name__ == '__main__':
             self.print_help()
             sys.exit(2)
 
-    parser = MyParser(usage="staphb_toolkit_workflows [optional arguments] <workflow> [workflow arguments]")
+    parser = MyParser(usage="staphb-wf [optional arguments] <workflow> [workflow arguments]")
     subparsers = parser.add_subparsers(title='workflow',metavar='',dest="subparser_name",required=True)
 
     #parser for workflows
     #tredegar-----------------------------------------
     parser_tredegar = subparsers.add_parser('tredegar', help='Quality control of WGS read data', add_help=False)
     parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    parser_tredegar.add_argument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
+    parser_tredegar.add_argls
+    ument('-o',metavar='output', type=str,help="output directory - defaults to working directory")
     parser_tredegar.add_argument('-c',metavar='config', type=str,help="path to configuration file")
     parser_tredegar.add_argument('-t',metavar='cpus', type=int,help="number of cpus to use, defaults to 8",default=8)
     parser_tredegar.add_argument('-m',metavar='memory GB', type=int,help="number of GB of memory to use, defaults to 16",default=16)
