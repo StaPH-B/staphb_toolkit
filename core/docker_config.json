@@ -33,6 +33,11 @@
          "tag": "3.13.0",
          "params": ""
       },
+      "raxml":{
+	 "image": "staphb/raxml",
+	 "tag": "8.2.12",
+	 "params": ""
+      },
       "bwa": {
          "image": "staphb/bwa",
          "tag": "0.7.17",
