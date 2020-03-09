@@ -149,6 +149,21 @@
          "params": {
             "mirrored_input": "soft"
          }
+      },
+      "bbtools": {
+         "image": "staphb/bbtools",
+         "tag": "38.76",
+         "params": ""
+      },
+      "canu-racon": {
+         "image": "staphb/canu-racon",
+         "tag": "1.9",
+         "params": ""
+      },
+      "cdc-spn": {
+         "image": "staphb/cdc-spn",
+         "tag": "0.1",
+         "params": ""
       }
    },
    "execution_info":{
