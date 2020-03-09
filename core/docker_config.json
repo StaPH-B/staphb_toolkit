@@ -164,7 +164,32 @@
          "image": "staphb/cdc-spn",
          "tag": "0.1",
          "params": ""
-      }
+      },
+     "circlator": {
+         "image": "staphb/circlator",
+         "tag": "1.5.6",
+         "params": ""
+     },
+     "fastani": {
+         "image": "staphb/fastani",
+         "tag": "1.1",
+         "params": ""
+     },
+     "fasttree": {
+         "image": "staphb/fasttree",
+         "tag": "2.1.11",
+         "params": ""
+     },
+     "fastqc": {
+         "image": "staphb/fastqc",
+         "tag": "0.11.8",
+         "params": ""
+     },
+     "filtlong": {
+         "image": "staphb/filtlong",
+         "tag": "0.2.0-cv1",
+         "params": ""
+     }
    },
    "execution_info":{
      "run_id": null,

@@ -50,6 +50,12 @@ if __name__ == '__main__':
     parser_canuracon = subparsers.add_parser('canu-racon', help='Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.', add_help=False)
     parser_cdcspn = subparsers.add_parser('cdc-spn', help='Scripts and reference files to type streptococcus pneumoniae', add_help=False)
     parser_cfsansnp = subparsers.add_parser('cfsan-snp', help='SNP calling pipeline from the FDA CFSAN laboratory', add_help=False)
+    parser_circlator = subparsers.add_parser('circlator', help='A tool to circularize genome assemblies', add_help=False)
+    parser_emmtypingtool = subparsers.add_parser('emm-typing-tool', help='Group A streptococci emm typing tool for NGS data', add_help=False)
+    parser_fastani = subparsers.add_parser('fastani', help='Fast whole-genome sequence average nucleotide identity (ANI) estimation', add_help=False)
+    parser_fasttree = subparsers.add_parser('fasttree', help='FastTree infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences.', add_help=False)
+    parser_fastqc = subparsers.add_parser('fastqc', help='A quality control tool for high throughput sequence data.', add_help=False)
+    parser_filtong = subparsers.add_parser('filtlong', help='Quality filtering tool for long reads', add_help=False)
 
     ###lib apps
     parser_mash_species = subparsers.add_parser('mash_species', help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
@@ -75,6 +81,55 @@ if __name__ == '__main__':
 
     #Program specific execution code
     #-----------------------------------------
+    if program == 'filtlong':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "filtlong " + arg_string
+        filtlong_configuration = config["parameters"]["filtlong"]
+        filtlong = sb_prog.Run(command=command, path=path_map, image=filtlong_configuration["image"], tag=filtlong_configuration["tag"])
+        filtlong.run()
+
+    if program == 'fastqc':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "fastqc " + arg_string
+        fastqc_configuration = config["parameters"]["fastqc"]
+        fastqc = sb_prog.Run(command=command, path=path_map, image=fastqc_configuration["image"],
+                             tag=fastqc_configuration["tag"])
+        fastqc.run()
+
+    if program == 'fasttree':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "FastTree " + arg_string
+        fasttree_configuration = config["parameters"]["fasttree"]
+        fasttree = sb_prog.Run(command=command, path=path_map, image=fasttree_configuration["image"], tag=fasttree_configuration["tag"])
+        fasttree.run()
+
+    if program == 'fastani':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "fastANI " + arg_string
+        fastani_configuration = config["parameters"]["fastani"]
+        fastani = sb_prog.Run(command=command, path=path_map, image=fastani_configuration["image"], tag=fastani_configuration["tag"])
+        fastani.run()
+
+    if program == 'emm-typing-tool':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "emm_typing.py " + arg_string
+        emm_typing_tool_configuration = config["parameters"]["emm-typing-tool"]
+        emm_typing_tool = sb_prog.Run(command=command, path=path_map, image=emm_typing_tool_configuration["image"], tag=emm_typing_tool_configuration["tag"])
+        emm_typing_tool.run()
+
+    if program == 'circlator':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "circlator " + arg_string
+        circlator_configuration = config["parameters"]["circlator"]
+        circlator = sb_prog.Run(command=command, path=path_map, image=circlator_configuration["image"], tag=circlator_configuration["tag"])
+        circlator.run()
+
     if program == 'cfsan-snp':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
