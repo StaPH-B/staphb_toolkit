@@ -45,6 +45,7 @@ if __name__ == '__main__':
     parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler', add_help=False)
     parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
     parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.', add_help=False)
+    parser_raxml = subparsers.add_parser('raxml', help='Raxml - Maximum likelihood tree builder.', add_help=False)
 
     ###lib apps
     parser_mash_species = subparsers.add_parser('mash_species', help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
@@ -70,6 +71,14 @@ if __name__ == '__main__':
 
     #Program specific execution code
     #-----------------------------------------
+    if program == 'raxml':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "raxmlHPC "+arg_string
+        raxml_configuration = config["parameters"]["raxml"]
+        raxml = sb_prog.Run(command=command, path=path_map, image=raxml_configuration["image"], tag =raxml_configuration["tag"])
+        raxml.run()
+
     if program == 'spades':
         command = "spades.py "+arg_string
         spades_configuration = config["parameters"]["spades"]
