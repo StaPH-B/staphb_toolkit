@@ -46,6 +46,10 @@ if __name__ == '__main__':
     parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
     parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.', add_help=False)
     parser_raxml = subparsers.add_parser('raxml', help='Raxml - Maximum likelihood tree builder.', add_help=False)
+    parser_bbtols = subparsers.add_parser('bbtools', help='Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data', add_help=False)
+    parser_canuracon = subparsers.add_parser('canu-racon', help='Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.', add_help=False)
+    parser_cdcspn = subparsers.add_parser('cdc-spn', help='Scripts and reference files to type streptococcus pneumoniae', add_help=False)
+    parser_cfsansnp = subparsers.add_parser('cfsan-snp', help='SNP calling pipeline from the FDA CFSAN laboratory', add_help=False)
 
     ###lib apps
     parser_mash_species = subparsers.add_parser('mash_species', help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
@@ -71,6 +75,37 @@ if __name__ == '__main__':
 
     #Program specific execution code
     #-----------------------------------------
+    if program == 'cfsan-snp':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "run_snp_pipeline.sh " + arg_string
+        cfsan_snp_configuration = config["parameters"]["cfsan-snp-pipeline"]
+        cfsan_snp = sb_prog.Run(command=command, path=path_map, image=cfsan_snp_configuration["image"], tag=cfsan_snp_configuration["tag"])
+        cfsan_snp.run()
+
+    if program == 'cdc-spn':
+        command = "StrepLab-JanOw_SPN-wrapr.sh " + arg_string
+        cdc_spn_configuration = config["parameters"]["cdc-spn"]
+        cdc_spn = sb_prog.Run(command=command, path=path_map, image=cdc_spn_configuration["image"], tag=cdc_spn_configuration["tag"])
+        cdc_spn.run()
+
+    if program == 'canu-racon':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "racon " + arg_string
+        canu_racon_configuration = config["parameters"]["canu-racon"]
+        canu_racon = sb_prog.Run(command=command, path=path_map, image=canu_racon_configuration["image"], tag=canu_racon_configuration["tag"])
+        canu_racon.run()
+
+    if program == 'bbtools':
+        command = " " + arg_string
+        bbtools_configuration = config["parameters"]["bbtools"]
+        bbtools = sb_prog.Run(command=command, path=path_map, image=bbtools_configuration["image"], tag=bbtools_configuration["tag"])
+        if not re.search('[a-zA-Z]', arg_string):
+            print("BBTools shell script required, e.g. staphb-tk bbmap.sh, staphb-tk bbduk.sh, etc. \n\nMore info on BBTools at https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/.")
+        else:
+            bbtools.run()
+
     if program == 'raxml':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
@@ -134,7 +169,7 @@ if __name__ == '__main__':
         lyveset_configuration = config["parameters"]["lyveset"]
         lyveset = sb_prog.Run(command=command, path=path_map, image=lyveset_configuration["image"], tag=lyveset_configuration["tag"])
         if not re.search('[a-zA-Z]', arg_string):
-            print("Lyev-SET perl script required, e.g. launch_set.pl, set_manage.pl, run_assembly_readMeterics.pl. \n \nMore info on Lyve-SET usage at: github.com/lskatz/lyve-SET.")
+            print("Lyev-SET perl script required, e.g. staphb-tk launch_set.pl, staphb-tk set_manage.pl, staphb-tk run_assembly_readMeterics.pl. \n\nMore info on Lyve-SET usage at: github.com/lskatz/lyve-SET.")
         else:
             lyveset.run()
 
