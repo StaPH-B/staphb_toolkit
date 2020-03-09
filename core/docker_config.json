@@ -70,7 +70,7 @@
       },
       "prokka": {
          "image": "staphb/prokka",
-         "tag": "1.13",
+         "tag": "1.14.5",
          "params": ""
       },
       "serotypefinder": {
@@ -163,7 +163,9 @@
       "cdc-spn": {
          "image": "staphb/cdc-spn",
          "tag": "0.1",
-         "params": ""
+         "params": {
+           "db": "/Spn_Scripts_Reference/SPN_Reference_DB/"
+         }
       },
      "circlator": {
          "image": "staphb/circlator",
@@ -212,17 +214,17 @@
      },
      "legsta": {
         "image": "staphb/legsta",
-        "tag": "0.3.7",
+        "tag": "0.3.7-cv1",
         "params": ""
      },
      "mashtree" : {
         "image": "staphb/mashtree",
-        "tag": "2.2",
+        "tag": "1.0.4",
         "params": ""
      },
      "medaka" : {
         "image": "staphb/medaka",
-        "tag": "1.0.4",
+        "tag": "0.8.1",
         "params": ""
      },
      "mlst" : {
@@ -242,7 +244,7 @@
      },
      "nanoplot": {
         "image": "staphb/nanoplot",
-        "tag": "1.27.0",
+        "tag": "1.27.0-cv1",
         "params": ""
      },
      "ncbi-amrfinder-plus": {
@@ -257,11 +259,11 @@
      },
      "pilon": {
         "image": "staphb/pilon",
-        "tag": "1.14.5",
+        "tag": "1.23.0",
         "params": ""
      },
      "plasmidseeker": {
-        "image": "staphb/plasmidseekr",
+        "image": "staphb/plasmidseeker",
         "tag": "1.0",
         "params": ""
      },
@@ -292,12 +294,12 @@
      },
      "snippy": {
         "image": "staphb/snippy",
-        "tag": "4.5.1",
+        "tag": "4.6.0",
         "params": ""
      },
      "sra-toolkit": {
-        "image": "staphb/sra-toolkit",
-        "tag": "3.14.0",
+        "image": "staphb/sratoolkit",
+        "tag": "2.9.2",
         "params": ""
      },
      "staramr": {
