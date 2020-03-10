@@ -7,10 +7,9 @@
 import sys,os,re
 import argparse
 import json
-import core.calldocker as cd
 import core.sb_programs as sb_prog
 from core.autopath import path_replacer
-from lib.sb_mash_species import MashSpecies
+from apps.sb_mash_species import MashSpecies
 
 #program dictionary
 progs = {
@@ -18,7 +17,6 @@ progs = {
 'bbtools':'BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data',
 'bwa':'BWA - mapping low-divergent sequences against a large reference genome',
 'canu-racon':'Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.',
-'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory',
 'circlator':'Circlator - A tool to circularize genome assemblies',
 'clustalo':'ClustalO - A fast multiple sequence alignment program',
 'emm-typing-tool':'Emm-typing-tool - Group A streptococci emm typing tool for NGS data',
@@ -93,6 +91,8 @@ if __name__ == '__main__':
     parser_mash_species = subparsers.add_parser('mash_species',help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
     parser_mash_species.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
     parser_mash_species.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
+    
+    #TODO add 'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory'
 
     #parser for applications
     #-----------------------------------------
