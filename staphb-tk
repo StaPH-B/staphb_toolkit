@@ -17,6 +17,7 @@ progs = {
 'bbtools':'BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data',
 'bwa':'BWA - mapping low-divergent sequences against a large reference genome',
 'canu-racon':'Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.',
+'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory',
 'circlator':'Circlator - A tool to circularize genome assemblies',
 'clustalo':'ClustalO - A fast multiple sequence alignment program',
 'emm-typing-tool':'Emm-typing-tool - Group A streptococci emm typing tool for NGS data',
@@ -88,11 +89,10 @@ if __name__ == '__main__':
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
 
     ###custom apps
+    ## Mash Species
     parser_mash_species = subparsers.add_parser('mash_species',help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
     parser_mash_species.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
     parser_mash_species.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
-    
-    #TODO add 'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory'
 
     #parser for applications
     #-----------------------------------------
@@ -535,7 +535,7 @@ if __name__ == '__main__':
     if program == 'cfsan-snp':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
-        command = "run_snp_pipeline.sh " + arg_string
+        command = "cfsan_snp_pipeline " + arg_string
         cfsan_snp_configuration = config["parameters"]["cfsan-snp-pipeline"]
         cfsan_snp = sb_prog.Run(command=command, path=path_map, image=cfsan_snp_configuration["image"], tag=cfsan_snp_configuration["tag"])
         cfsan_snp.run()
