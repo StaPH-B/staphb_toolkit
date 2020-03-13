@@ -33,6 +33,32 @@ class Reprinter:
         sys.stdout.write(text)
         self.text = text
 
+def nextflow_printer(running_process):
+    reprinter = Reprinter()
+    block = ""
+    running = False
+    post_text = ""
+    for line in iter(running_process.stdout.readline, b''):
+        s = line.decode("utf-8","ignore").strip('\n')
+        if "Launching" in s:
+            running = True
+            print(s)
+        elif "process" in s:
+            block += s + "\n"
+        elif "executor" in s:
+            continue
+        elif not s:
+            reprinter.reprint(block)
+            block = ""
+        elif s and running == False:
+            print(s)
+        else:
+            if s == '\n':
+                continue
+            else:
+                post_text += s + '\n'
+    print(post_text)
+
 if __name__ == '__main__':
     #get nextflow executable
     lib_path = os.path.abspath(os.path.dirname(__file__) + '/' + 'lib')
@@ -82,6 +108,7 @@ if __name__ == '__main__':
     parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
     parser_dryad.add_argument('-ar',default=False, action="store_true", help="Detect AR mechanisms.")
     parser_dryad.add_argument('-r',metavar='<path>', type=str,help="Reference genome for SNP pipeline.")
+    parser_dryad.add_argument('--profile',metavar='profile_name', type=str,help="Specify a custom nextflow profile.")
 
     args = parser.parse_args()
     if args.subparser_name == None:
@@ -100,10 +127,15 @@ if __name__ == '__main__':
     if program == 'dryad':
         #dryad path
         dryad_path = os.path.join(workflows_path,"dryad/dryad.nf")
+
         #check for reference sequence
         if args.snp and args.r == None:
             parser_dryad.print_help()
             print("Please specify a reference sequence for the SNP pipeline.")
+
+        #check for user profile
+        if args.profile:
+            profile = args.profile
 
         #build nextflow command
         selections = ""
@@ -117,14 +149,12 @@ if __name__ == '__main__':
         command = command + f" {dryad_path} -profile {profile} -resume --reads {args.reads_path} {selections}"
 
         #run command using nextflow in a subprocess
-        process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
-        reprinter = Reprinter()
-        block = ""
-        for line in iter(process.stdout.readline, b''):
-            line_str = line.decode("utf-8","ignore").strip('\n')
-            if "executor" in line_str:
-                reprinter.reprint(block)
-                block = ""
-                block += line_str + "\n"
-            if "process" in line_str:
-                block += line_str + "\n"
+        print("Starting the Dryad pipeline:")
+        try:
+            process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+            nextflow_printer(process)
+        except KeyboardInterrupt:
+            print("Quitting dryad...")
+            process.terminate()
+            print("Done.")
+            sys.exit(1)
