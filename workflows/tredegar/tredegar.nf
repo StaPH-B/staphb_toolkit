@@ -1,13 +1,12 @@
 #!/usr/bin/env nextflow
 
-//Description: Workflow for building SNP and Core-genome Trees from raw illumina reads
-//Author: Kelsey Florek
-//eMail: kelsey.florek@slh.wisc.edu
+//Description: Workflow for quality control of raw illumina reads
+//Author: Kevin Libuit
+//eMail: kevin.libuit@dgs.virginia.gov
 
 //starting parameters
 params.reads = ""
-params.singleEnd = false
-params.outdir = "Tredegar_results"
+params.outdir = ""
 
 //setup channel to read in and pair the fastq files
 Channel
@@ -195,6 +194,9 @@ import csv
 import glob
 
 quast_report = "${quast_report}"
+name = "${name}"
+subsample = "${params.subsample}"
+reads  = "${reads}"
 genome_length = ""
 
 # Set genome length from quast output
@@ -204,10 +206,10 @@ with open(quast_report) as tsv:
     if "Total length" == line[0]:
       genome_length=line[1]
   if not genome_length:
-    raise ValueError("Unable to predict genome length for isolate ${name}")
+    raise ValueError("Unable to predict genome length for isolate".format({name}))
 
 #Run CG Pipeline
-os.system("bash -c 'run_assembly_readMetrics.pl ${params.subsample} ${reads} -e {} > ${name}_readMeterics.tsv'".format(genome_length))
+os.system("run_assembly_readMetrics.pl {} {} -e {} > {}_readMeterics.tsv".format(subsample,reads,genome_length,name))
 """
 }
 
@@ -237,7 +239,7 @@ with open(mash_species) as tsv:
   tsv_reader = csv.reader(tsv, delimiter=",")
   for line in tsv_reader:
     if line[0] == name and line[1] == "Streptococcus_pyogenes":
-        os.system("bash -c 'emm_typing.py -1 {}_R1.fastq.gz -2 {}_R2.fastq.gz -o . -m {}'".format(name,name,db))
+        os.system("'emm_typing.py -1 {}_R1.fastq.gz -2 {}_R2.fastq.gz -o . -m {}".format(name,name,db))
 """
 }
 
@@ -470,7 +472,7 @@ for file in cg_results:
 
 #create output file
 with open("Tredegar_results.csv",'w') as csvout:
-    writer = csv.writer(csvout,delimiter=',')
+    writer = csv.writer(csvout,delimiter='\t')
     writer.writerow(["sample","rq_1", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
     for id in results:
         result = results[id]
