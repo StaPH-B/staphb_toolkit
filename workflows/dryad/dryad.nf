@@ -6,7 +6,7 @@
 
 //starting parameters
 params.reads = ""
-params.outdir = "dryad_results"
+params.outdir = ""
 params.cg = false
 params.snp = false
 params.snp_reference = ""
