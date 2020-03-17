@@ -199,7 +199,7 @@ if __name__ == '__main__':
     if program == 'mash_species':
         #get output dir if supplied, if not set it to cwd
         output_dir = None
-        if parser_args[0].o:
+        if not parser_args[0].o:
             output_dir = os.getcwd()
         else:
             try:
