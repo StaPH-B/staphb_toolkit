@@ -43,25 +43,17 @@ class MashSpecies():
             self.path = path
             self.runfiles = fileparser.ProcessFastqs(self.path, output_dir=output_dir)
 
-        # set the read_file_path equal to the output_dir since reads have been copied/hard linked there
-        if os.path.isdir(os.path.join(self.path, "AppResults")):
-            self.path = output_dir
-        else:
-            self.runfiles.link_reads(output_dir=output_dir)
-            self.path = output_dir
-
         # path to untrimmed reads
-        self.path = os.path.join(self.path, "input_reads")
-
-        self.mash_out_dir = os.path.join(self.output_dir, "mash_output")
+        self.path = os.path.join(self.path)
+        self.mash_out_dir = os.path.join(self.output_dir, "mash_species")
 
     def create_mash_sketch(self, id, mash_mounting, fwd_read, rev_read, sketch_name):
-        if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, sketch_name])):
+        if not os.path.isfile(os.path.join(*[self.output_dir, "mash_species", id, sketch_name])):
 
             # command for creating the mash sketch
             mash_configuration = self.config["parameters"]["mash"]
             mash_sketch_configuration = mash_configuration["mash_sketch"]
-            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_configuration['sketch_params']}'"
+            mash_sketch_command = f"mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_configuration['sketch_params']}"
 
             # create mash sketch object
             mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
@@ -69,12 +61,12 @@ class MashSpecies():
             mash_sketch.run()
 
     def calc_mash_dist(self, id, mash_mounting, sketch_name, mash_result):
-        if not os.path.isfile(os.path.join(*[self.output_dir, "mash_output", id, mash_result])):
+        if not os.path.isfile(os.path.join(*[self.output_dir, "mash_species", id, mash_result])):
 
             # command for calculating mash distance
             mash_configuration = self.config["parameters"]["mash"]
             mash_dist_configuration = mash_configuration["mash_dist"]
-            mash_dist_command = f"bash -c 'mash dist {mash_dist_configuration['db']} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_configuration['dist_params']}'"
+            mash_dist_command = f"mash dist {mash_dist_configuration['db']} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_configuration['dist_params']}"
 
             # create mash distance object
             mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
@@ -101,10 +93,10 @@ class MashSpecies():
                 reads_dir = self.path
 
             # create mash output directory
-            pathlib.Path(os.path.join(self.output_dir,"mash_output")).mkdir(parents=True, exist_ok=True)
+            pathlib.Path(os.path.join(self.output_dir,"mash_species")).mkdir(parents=True, exist_ok=True)
 
             # docker mounting dictionary
-            mash_mounting = {reads_dir: '/datain', os.path.join(self.output_dir,"mash_output"):'/dataout'}
+            mash_mounting = {reads_dir: '/datain', os.path.join(self.output_dir,"mash_species"):'/dataout'}
 
             # command for running mash distance
             sketch_name = id+"_sketch.msh"
