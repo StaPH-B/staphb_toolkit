@@ -57,7 +57,7 @@ process seqyclean {
 //Assemble cleaned reads with Snippy
 process ivar {
   publishDir "${params.outdir}/consensus_assemblies", mode: 'copy',pattern:"*_consensus.fasta"
-  publishDir "${params.outdir}/alignments", mode: 'copy',pattern:".sorted.bam"
+  publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
 
   input:
   set val(name), file(reads) from cleaned_reads
@@ -92,7 +92,7 @@ seqtk seq -U -l 50 ivar.fa | tail -n +2 >> ${name}_consensus.fasta
 
 //QC of read data
 process samtools {
-  publishDir "${params.outdir}/alignments",mode:'copy',overwrite:false
+  publishDir "${params.outdir}/alignments",mode:'copy',overwrite: false
 
   input:
   set val(name), file(alignment) from alignment_file
@@ -126,6 +126,7 @@ import xml.etree.ElementTree as ET
 class result_values:
     def __init__(self,id):
         self.id = id
+        self.aligned_bases = "NA"
         self.percent_cvg = "NA"
         self.mean_depth = "NA"
         self.mean_base_q = "NA"
@@ -144,6 +145,7 @@ for file in samtools_results:
     with open(file,'r') as tsv_file:
         tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
         for line in tsv_reader:
+            result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
@@ -154,10 +156,10 @@ for file in samtools_results:
 #create output file
 with open("consensus_statstics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q"])
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q])
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q])
 """
 
 }
