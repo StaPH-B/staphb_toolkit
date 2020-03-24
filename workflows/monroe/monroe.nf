@@ -54,7 +54,7 @@ process seqyclean {
 }
 
 
-//Assemble cleaned reads with Snippy
+//Assemble cleaned reads with iVar
 process ivar {
   publishDir "${params.outdir}/consensus_assemblies", mode: 'copy',pattern:"*_consensus.fasta"
   publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
@@ -107,7 +107,7 @@ process samtools {
 }
 
 //Collect and format report
-process results{
+process alignment_results{
   publishDir "${params.outdir}", mode: 'copy'
   echo true
 
@@ -163,3 +163,20 @@ with open("consensus_statstics.csv",'w') as csvout:
 """
 
 }
+
+// // Generate SNP matrix from MAFT alignment
+// process snp_matrix{
+//   publishDir "${params.outdir}", mode: 'copy'
+//   echo true
+//
+//   input:
+//   file(alignment) from maft_output
+//
+//   output:
+//   file "pairwise_snp_distance_matrix.tsv"
+//
+//   shell:
+//   """
+//   snp-dists ${alignment} > pairwise_snp_distance_matrix.tsv
+//   """
+// }
