@@ -9,6 +9,6 @@ install:
   - pip install -r requirements.txt
 #command to run the testing
 script:
-  - ./staphb_toolkit -h
-  - ./staphb_toolkit_workflows -h
-  - ./staphb_toolkit spades -v
+  - ./staphb_tk -h
+  - ./staphb_wf -h
+  - ./staphb_tk spades -v
