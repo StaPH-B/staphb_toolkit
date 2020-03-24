@@ -63,7 +63,7 @@ process ivar {
   set val(name), file(reads) from cleaned_reads
 
   output:
-  tuple name, file("${name}_consensus.fasta") into assembled_genomes
+  tuple name, file("${name}_consensus.fasta") into assembled_genomes, assembled_genomes_msa
   tuple name, file("${name}.sorted.bam") into alignment_file
 
   shell:
@@ -164,19 +164,76 @@ with open("consensus_statstics.csv",'w') as csvout:
 
 }
 
-// // Generate SNP matrix from MAFT alignment
-// process snp_matrix{
-//   publishDir "${params.outdir}", mode: 'copy'
-//   echo true
-//
-//   input:
-//   file(alignment) from maft_output
-//
-//   output:
-//   file "pairwise_snp_distance_matrix.tsv"
-//
-//   shell:
-//   """
-//   snp-dists ${alignment} > pairwise_snp_distance_matrix.tsv
-//   """
-// }
+// Generate msa from consensus sequences using MAFFT
+process msa{
+  publishDir "${params.outdir}/msa", mode: 'copy'
+  echo true
+
+  input:
+  file(assemblies) from assembled_genomes_msa.collect()
+
+  output:
+  file "msa.fasta" into msa_snp, msa_vcf, msa_tree
+
+  shell:
+  """
+  cat *.fasta > assemblies.fasta
+  mafft --globalpair --maxiterate 1000 assemblies.fasta > msa.fasta
+  """
+}
+
+// Generate SNP matrix from MAFFT alignment
+process snp_matrix{
+  publishDir "${params.outdir}", mode: 'copy'
+  echo true
+
+  input:
+  file(alignment) from msa_snp
+
+  output:
+  file "pairwise_snp_distance_matrix.tsv"
+
+  shell:
+  """
+  snp-dists ${alignment} > pairwise_snp_distance_matrix.tsv
+  """
+}
+
+// Generate multi-sample vcf from MAFFT alignment
+process vcf{
+  publishDir "${params.outdir}", mode: 'copy'
+  echo true
+
+  input:
+  file(msa) from msa_vcf
+
+  output:
+  file "msa.vcf" into vcf
+
+  shell:
+  """
+  snp-sites -v ${msa} -o msa.vcf
+  """
+}
+
+//Infer ML tree from MAFFT alignment
+process iqtree {
+  publishDir "${params.outdir}",mode:'copy'
+
+  input:
+  file("msa.fasta") from msa_tree
+
+  output:
+  file("msa.tree") optional true
+
+  script:
+    """
+    numGenomes=`grep -o '>' msa.fasta | wc -l`
+    if [ \$numGenomes -gt 3 ]
+    then
+      iqtree -nt AUTO -s msa.fasta -m 'GTR+G4' -bb 1000
+      mv msa.fasta.contree msa.tree
+    fi
+    """
+}
+
