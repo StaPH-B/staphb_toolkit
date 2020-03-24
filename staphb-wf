@@ -149,7 +149,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
     if program == 'monroe':
-        #tredegar path
+        #monroe path
         monroe_path = os.path.join(workflows_path,"monroe/monroe.nf")
 
         #check for user profile
