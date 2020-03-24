@@ -1,8 +1,7 @@
 ---
+title: "Installing the ToolKit"
 layout: page
 ---
-
-<img src="/docker-builds/assets/user_guide.png" style="display:block;margin-left:auto;margin-right:auto;width:400px">
 
 # Installing Dependencies
 The Toolkit has been designed to minimize the amount of needed dependencies. The ToolKit has been built using Python 3.6 which can easily be installed on any Unix/Linux operating system following the instructions below. The design philosophy is centered around usability including the installation of dependencies. Using containerization the Toolkit is able to access numerous bioinformatics applications with out the necessity of installing various often conflicting dependencies. However, because of the use of containerization there are several dependencies that are unavoidable.
@@ -32,7 +31,7 @@ To check if you have docker installed and working use the following command:
 docker --version
 docker run hello-world
 ```
-To check if you have singularity installed and working use the following command:
+To check if you have singularity installed and working use the following command:  
 ```
 singularity --version
 singularity run library://sylabsed/examples/lolcow
