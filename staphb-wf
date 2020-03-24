@@ -91,7 +91,7 @@ if __name__ == '__main__':
     parser_tredegar.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="tredegar_results")
     parser_tredegar.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
 
-    #tredegar-----------------------------------------
+    #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
     parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
     parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         command = command + f" {monroe_path} -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html -w {args.output}/logs/work"
 
         #run command using nextflow in a subprocess
-        print("Starting the Tredegar pipeline:")
+        print("Starting the Monroe pipeline:")
         try:
             process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
             nextflow_printer(process)
