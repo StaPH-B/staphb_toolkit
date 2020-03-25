@@ -1,10 +1,9 @@
 ---
+title: "Using the ToolKit"
 layout: page
 ---
 
-<img src="/docker-builds/assets/user_guide.png" style="display:block;margin-left:auto;margin-right:auto;width:400px">
-
-## Contributing
+# ToolKit Usage
 So far, we've created a bunch of docker images that we use in our day-to-day activities, but if there is a specific tool you do not see on our list and would like to add your own docker image, we would love to add it to the list.
 
 Discover a bug or having issues with our images? Do you have a suggestion or advice for improving our docker images? [Please submit an issue under the Issues tab on our github repository](https://github.com/StaPH-B/docker-builds/issues)
@@ -26,6 +25,6 @@ Discover a bug or having issues with our images? Do you have a suggestion or adv
 ### How to create automated TravisCI tests for a Docker image
 1. Create your own development branch, perhaps called `yourname-travis`, for pushing commits to.
     * Alternatively, you could fork the repo, and push commits to your forked repo, but you'll have to sign up for TravisCI and authorize access to your github repos.
-2. Add a `docker build` command to `.travis.yml` file under the `install:` section. Follow convention of previous lines. No need to prefix the image name with `staphb` like `staphb/mash:2.1`. Just make sure this image name is the same as what is in your test that follows. 
-3. Create a script, bash or python (or perl possibly?) that can run the docker container and test it in some way. To pass Travis tests, it will need to exit with a 0 exit code. This can be as simple as pulling up the help options for a program, or you could have more extensive tests. Just don't go too crazy and add tests that would take hours to run 😄 
+2. Add a `docker build` command to `.travis.yml` file under the `install:` section. Follow convention of previous lines. No need to prefix the image name with `staphb` like `staphb/mash:2.1`. Just make sure this image name is the same as what is in your test that follows.
+3. Create a script, bash or python (or perl possibly?) that can run the docker container and test it in some way. To pass Travis tests, it will need to exit with a 0 exit code. This can be as simple as pulling up the help options for a program, or you could have more extensive tests. Just don't go too crazy and add tests that would take hours to run 😄
 4. If you push changes to your development branch (which is under the staph-b/docker-builds repo), then travis should automatically test the changes using the `.travis.yml` file. If Travis passes successfully, submit a pull request!
