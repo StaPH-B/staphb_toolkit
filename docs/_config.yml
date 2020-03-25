@@ -5,7 +5,7 @@
 
 # If you are building a simple GitHub user page (https://username.github.io) then use these settings:
 url: "https://staph-b.github.io/staphb_toolkit"
-baseurl: "/staphb_toolkit"
+baseurl: ""
 
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
@@ -37,7 +37,7 @@ navbar-links:
 
 # If you want to have an image logo in the top-left corner instead of the title text,
 # then specify the following parameter
-title-img: "/staphb_toolkit/assets/staphb-tk_logo.png"
+title-img: "/assets/staphb-tk_logo.png"
 
 # --- Background colour/image options --- #
 

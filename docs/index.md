@@ -3,7 +3,7 @@ layout: page
 subtitle: Docker User Guide
 ---
 
-<a href="https://staph-b.github.io/staphb_toolkit/"><img src="/staphb_toolkit/assets/staphb-tk_logo.png" style="display:block;margin-left:auto;margin-right:auto;width:600px"></a>
+<a href="https://staph-b.github.io/staphb_toolkit/"><img src="assets/staphb-tk_logo.png" style="display:block;margin-left:auto;margin-right:auto;width:600px"></a>
 
 Public health bioinformatics is dependent on open-source software that require carefully curated computational environments and various software dependencies. Setting up and maintaining such environments requires a skill set and expertise absent in most public health laboratories. The [StaPH-B Docker Images](https://github.com/StaPH-B/docker-builds) have helped generate reproducible computational environments through the use of containerization. However, access to these images is dependent on a working understanding of Linux operating systems and containerization, which is not available in most laboratories. The ToolKit addresses this limitation by allowing users to interact with bioinformatis programs without needing to interact directly with mounted file systems and running containers. The goal of the Toolkit is it increase usability while mirroring the functionality of a locally-installed tool.
 
@@ -14,7 +14,7 @@ The StaPH-B ToolKit is a Python application (Python 3.6) that utilizes modern wo
 This tool was developed and tested for use on an Ubuntu/Debian OS. However, the tool could also be used on other Linux/Unix and MacOS systems as long as the dependencies are met.
 
 #### [Usage Guide](#usage-guide)
-  * [Installing](/staphb_toolkit/install)
-  * [Using the Toolkit](/staphb_toolkit/using_tk)
-  * [Running Workflows](/staphb_toolkit/using_wf)
-  * [Custom Configurations](/staphb_toolkit/configs)
+  * [Installing](/install)
+  * [Using the Toolkit](/using_tk)
+  * [Running Workflows](/using_wf)
+  * [Custom Configurations](/configs)
