@@ -68,16 +68,14 @@ process ivar {
 
   shell:
 """
+echo "01"
 minimap2 -K 20M -x sr -a /reference/nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
-
+echo "02"
 samtools index SC2.bam
 samtools flagstat SC2.bam
-
-if [ "${params.primers}" == "V1" ]; then
-  ivar trim -i SC2.bam -b /reference/ARTIC-V1.bed -p ivar -e
-elif [ "${params.primers}" == "V2" ]; then
-  ivar trim -i SC2.bam -b /reference/ARTIC-V2.bed -p ivar -e
-fi
+echo "03"
+ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
+echo "04"
 
 samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam
@@ -236,4 +234,3 @@ process iqtree {
     fi
     """
 }
-
