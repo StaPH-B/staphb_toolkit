@@ -234,3 +234,40 @@ process iqtree {
     fi
     """
 }
+
+process snp_frequency{
+  publishDir "${params.outdir}", mode: 'copy'
+  echo true
+
+  input:
+  file(vcf) from vcf
+
+  output:
+  file "snp_frequencies.tsv"
+
+  script:
+"""
+#!/usr/bin/env python3
+import csv
+
+with open('msa.vcf','r') as vcf:
+    with open('snp_frequencies.tsv','w') as tsv:
+        writer = csv.writer(tsv, delimiter='\t')
+        writer.writerow(['Genomic Position','Reference Allele','Alternative Allele','Frequency'])
+        for line in vcf:
+          if '#' in line:
+              next
+          else:
+              sline = line.strip().split("\t")
+              pos = sline[1]
+              ref = sline[3]
+              alt = sline[4]
+              vals = sline[9:len(sline)]
+              vals = list(map(str, vals))
+              vals = [sub.replace("2", "1") for sub in vals]
+              vals = [sub.replace("3", "1") for sub in vals]
+              vals = list(map(int, vals))
+              freq = sum(vals)
+              writer.writerow([pos,ref,alt,freq])
+"""
+}
