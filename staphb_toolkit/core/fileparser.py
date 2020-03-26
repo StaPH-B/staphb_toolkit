@@ -2,7 +2,7 @@
 
 import os
 import re
-from core.basemount import Basemount
+from staphb_toolkit.core.basemount import Basemount
 
 #class for containing all sequencing run information
 class ProcessFastqs:
