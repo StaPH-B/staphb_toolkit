@@ -129,13 +129,13 @@ process shovill {
   set val(name), file(reads) from cleaned_reads
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_serotypefinder
+  tuple name, file("${name}_contigs.fa") into assembled_genomes_quality, assembled_genomes_ksnp
 
   shell:
   '''
   ram=`awk '/MemTotal/ { printf "%.0f \\n", $2/1024/1024 - 1 }' /proc/meminfo`
   shovill --cpus 0 --ram $ram  --outdir . --R1 !{reads[0]} --R2 !{reads[1]} --force
-  mv contigs.fa !{name}.contigs.fa
+  mv contigs.fa !{name}_contigs.fa
   '''
 }
 
@@ -165,7 +165,7 @@ process emmtype_finder {
   file(mash_species) from mash_species_GAS
 
   output:
-  file "${name}*.results.xml" into emmtyper_results
+  file "${name}*.results.xml" into emmtyper_results, emmtyper_results_ksnp
 
   script:
   """
@@ -187,7 +187,7 @@ with open(mash_species) as tsv:
 """
 }
 
-//Collect and format seqsero_results
+//Collect and qc metrics
 EMPTY = file('empty')
 process results{
   publishDir "${params.outdir}", mode: 'copy'
@@ -200,11 +200,11 @@ process results{
   file(emmtyper_results) from emmtyper_results.collect().ifEmpty(EMPTY)
 
   output:
-  file "assembly_metrics.csv"
+  file "assembly_metrics.csv" into qc_metrics
 
   script:
   """
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os, sys
 import glob, csv
 import xml.etree.ElementTree as ET
@@ -273,18 +273,82 @@ with open("assembly_metrics.csv",'w') as csvout:
         writer.writerow([result.id,result.est_genome_length,result.est_cvg,result.number_contigs,result.species_prediction,result.subspecies_prediction])
 
 """
-
 }
-//
-// process ksnp3{
-//   input:
-//   set val(name), file(assembly) from assembled_genomes_ksnp.collect()
-//
-//   output:
-//   tuple name, file("core_SNPs_matrix.fasta") into ksnp_matrix
-//
-//   script:
-//   """
-//   """
-//
-// }
+
+process ksnp3 {
+  publishDir "${params.outdir}/ksnp3", mode: 'copy'
+
+  input:
+  file(qc_metrics) from qc_metrics
+  file(assembly) from assembled_genomes_ksnp.collect()
+
+  output:
+  file("*core_SNPs_matrix.fasta") into ksnp_matrix
+  file("*_tree.core.tre")
+
+  script:
+  """
+#!/usr/bin/env python
+import os
+import glob, csv
+import re
+import xml.etree.ElementTree as ET
+class result_values:
+    def __init__(self,id):
+        self.subspecies_prediction = "NA"
+
+qc_metrics = "assembly_metrics.csv"
+assemblies = glob.glob("*_contigs.fa")
+kmer_length = "${params.kmer_length}"
+kmer_snps = "${params.kmer_snps}"
+
+with open(qc_metrics,'r') as csv_file:
+    csv_reader = list(csv.DictReader(csv_file, delimiter=","))
+    for line in csv_reader:
+        if re.search(r"emm\\d", line["subspecies_prediction"]) is not None:
+            emm_type = line["subspecies_prediction"]
+            isolate = line["sample"]
+            assembly = os.path.abspath("{}_contigs.fa".format(isolate))
+
+            with open("{}_assemblies.txt".format(emm_type), 'a') as file:
+                file.write("{}\\t{}\\n".format(assembly, isolate))
+        else:
+            print(str(re.search(r"emm/d", line["subspecies_prediction"])))
+            print(line["subspecies_prediction"])
+
+assembly_paths = glob.glob("*_assemblies.txt")
+
+for file in assembly_paths:
+    if len(open(file).readlines(  )) < 2:
+        pass
+    else:
+        group = file.split("_assemblies.txt")[0]
+        file = os.path.abspath(file)
+        if not os.path.exists("ksnp3"):
+            os.makedirs("ksnp3")
+        os.system("kSNP3 -in {}_assemblies.txt -outdir ksnp3/{} -k {} {}".format(group,group,kmer_length,kmer_snps))
+        os.rename("ksnp3/{}/core_SNPs_matrix.fasta".format(group), "{}_core_SNPs_matrix.fasta".format(group))
+        os.rename("ksnp3/{}/tree.core.tre".format(group), "{}_tree.core.tre".format(group))
+  """
+}
+
+// Generate SNP matrix from ksnp3 matrix
+process snp_dists{
+  publishDir "${params.outdir}", mode: 'copy'
+  echo true
+
+  input:
+  file(alignment) from ksnp_matrix.collect()
+
+  output:
+  file "*pairwise_snp_distance_matrix.tsv"
+
+  shell:
+  """
+  for i in *_core_SNPs_matrix.fasta
+  do
+      group=\$(echo \${i} | sed 's/_core_SNPs_matrix\\.fasta//')
+      snp-dists \${group}_core_SNPs_matrix.fasta > \${group}_pairwise_snp_distance_matrix.tsv
+  done
+  """
+}
