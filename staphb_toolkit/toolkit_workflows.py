@@ -195,7 +195,6 @@ def main():
         #build command
         command = nextflow_path
         command = command + f" {foushee_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Foushee_trace.txt -with-report {args.output}/logs/Foushee_execution_report.html {work}"
-        print(command)
         #run command using nextflow in a subprocess
         print("Starting the Foushee pipeline:")
         try:
