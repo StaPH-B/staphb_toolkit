@@ -219,18 +219,20 @@ process emmtype_finder {
   publishDir "${params.outdir}/emmtyper/",mode:'copy'
 
   input:
-  set val(name), file(assembly) from raw_reads_gas
+  set val(name), file(reads) from raw_reads_gas
   file(mash_species) from mash_species_GAS
 
   output:
-  file "${name}_R1.results.xml" into emmtyper_results optional true
+  file "${name}*.results.xml" into emmtyper_results
 
   script:
   """
 #!/usr/bin/env python
 import os
 import csv
+import glob
 
+reads =  glob.glob("*fastq*")
 mash_species = "${mash_species}"
 name = "${name}"
 db = "${params.emmtyper_db}"
@@ -239,7 +241,7 @@ with open(mash_species) as tsv:
   tsv_reader = csv.reader(tsv, delimiter=",")
   for line in tsv_reader:
     if line[0] == name and line[1] == "Streptococcus_pyogenes":
-        os.system("'emm_typing.py -1 {}_R1.fastq.gz -2 {}_R2.fastq.gz -o . -m {}".format(name,name,db))
+        os.system("emm_typing.py -1 {} -2 {} -o . -m {}".format(reads[0],reads[1],db))
 """
 }
 
@@ -315,7 +317,9 @@ with open(mash_species) as tsv:
 }
 
 //Collect and format seqsero_results
-EMPTY = file('empty')
+STF_EMPTY = file('stf_empty')
+SS_EMPTY = file('ss_empty')
+ET_EMPTY = file('et_empty')
 process results{
   publishDir "${params.outdir}", mode: 'copy'
   echo true
@@ -325,12 +329,12 @@ process results{
   file(cg_pipeline_results) from cg_pipeline_results.collect()
   file(quast_report) from quast_results_report.collect()
   file(mash_species) from mash_species_report
-  file(seortypefinder_result) from serotypefinder_results.collect().ifEmpty(EMPTY)
-  file(seqsero_results) from seqsero_results.collect().ifEmpty(EMPTY)
-  file(emmtyper_results) from emmtyper_results.collect().ifEmpty(EMPTY)
+  file(seortypefinder_result) from serotypefinder_results.collect().ifEmpty(STF_EMPTY)
+  file(seqsero_results) from seqsero_results.collect().ifEmpty(SS_EMPTY)
+  file(emmtyper_results) from emmtyper_results.collect().ifEmpty(ET_EMPTY)
 
   output:
-  file "Tredegar_results.csv"
+  file "Tredegar_results.tsv"
 
   script:
   """
@@ -396,7 +400,7 @@ for file in cg_results:
             result.species_prediction = line[1]
 
     # collect emmtyper results
-    file = "{}_R1.results.xml".format(id)
+    file = glob.glob("{}*.results.xml".format(id))[0]
     if not os.path.isfile(file):
         pass
     else:
@@ -471,7 +475,7 @@ for file in cg_results:
     results[id] = result
 
 #create output file
-with open("Tredegar_results.csv",'w') as csvout:
+with open("Tredegar_results.tsv",'w') as csvout:
     writer = csv.writer(csvout,delimiter='\t')
     writer.writerow(["sample","rq_1", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
     for id in results:
