@@ -22,7 +22,7 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_clean, raw_reads_iv
+  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_clean
 
   script:
   if(params.name_split_on!=""){

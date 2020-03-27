@@ -133,9 +133,14 @@ def main():
         if args.profile:
             profile = args.profile
 
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile != "aws":
+            work = f"-w {args.output}/logs/work"
+
         #build command
         command = nextflow_path
-        command = command + f" {tredegar_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/Tredegar_trace.txt -with-report {args.output}/Tredegar_execution_report.html -w {args.output}/work"
+        command = command + f" {tredegar_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Tredegar_trace.txt -with-report {args.output}/logs/Tredegar_execution_report.html {work}"
 
         #run command using nextflow in a subprocess
         print("Starting the Tredegar pipeline:")
@@ -156,17 +161,21 @@ def main():
         if args.profile:
             profile = args.profile
 
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile != "aws":
+            work = f"-w {args.output}/logs/work"
+
         #build command
         command = nextflow_path
-        command = command + f" {monroe_path} -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html -w {args.output}/logs/work"
-
+        command = command + f" {monroe_path} -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
         #run command using nextflow in a subprocess
         print("Starting the Monroe pipeline:")
         try:
             process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
             nextflow_printer(process)
         except KeyboardInterrupt:
-            print("Quitting Tredegar...")
+            print("Quitting Monroe...")
             process.terminate()
             print("Done.")
             sys.exit(1)
