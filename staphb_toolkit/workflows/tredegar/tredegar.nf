@@ -471,7 +471,7 @@ for file in cg_results:
     results[id] = result
 
 #create output file
-with open("Tredegar_results.csv",'w') as csvout:
+with open("Tredegar_results.tsv",'w') as csvout:
     writer = csv.writer(csvout,delimiter='\t')
     writer.writerow(["sample","rq_1", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
     for id in results:
