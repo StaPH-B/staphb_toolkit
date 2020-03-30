@@ -8,6 +8,7 @@
 params.reads = ""
 params.outdir = ""
 params.primers =""
+params.report = ""
 
 //setup channel to read in and pair the fastq files
 Channel
@@ -15,7 +16,10 @@ Channel
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
 
-
+Channel
+    .fromPath(params.report)
+    .set { report }
+    
 //Step0: Preprocess reads - change name to end at first underscore
 process preProcess {
   input:
@@ -267,3 +271,19 @@ with open('msa.vcf','r') as vcf:
               writer.writerow([pos,ref,alt,freq])
 """
 }
+
+process render{
+  publishDir "${params.outdir}/report", mode: 'copy'
+  echo true
+
+  input:
+  file("pairwise_snp_distance_matrix.tsv") from matrix
+  file("msa.tree") from outChannel
+  file(rmd) from report
+
+  output:
+  file "monroe_report.pdf"                                                                                                                                                                                         
+  shell:
+"""
+Rscript /reports/render.R pairwise_snp_distance_matrix.tsv msa.tree ${rmd}
+}     
