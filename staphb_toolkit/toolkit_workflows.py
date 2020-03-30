@@ -95,16 +95,14 @@ def main():
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
     parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
     parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
-    parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)")
+    parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
     parser_monroe.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
 
     #foushee-----------------------------------------
-    # parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP analysis of GAS isolates.', add_help=False)
-    # parser_foushee.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    # parser_foushee.add_argument('--output','-o',metavar='output', type=str,help="output directory - defaults to working directory")
-    # parser_foushee.add_argument('-c',metavar='config', type=str,help="path to configuration file")
-    # parser_foushee.add_argument('-t',metavar='cpus', type=int,help="number of cpus to use, defaults to 8",default=8)
-    # parser_foushee.add_argument('-m',metavar='memory GB', type=int,help="number of GB of memory to use, defaults to 16",default=16)
+    parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
+    parser_foushee.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    parser_foushee.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="foushee_results")
+    parser_foushee.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
 
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
@@ -182,7 +180,31 @@ def main():
 
 
     if program == 'foushee':
-        pass
+        #tredegar path
+        foushee_path = os.path.join(workflows_path,"foushee/foushee.nf")
+
+        #check for user profile
+        if args.profile:
+            profile = args.profile
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile != "aws":
+            work = f"-w {args.output}/logs/work"
+
+        #build command
+        command = nextflow_path
+        command = command + f" {foushee_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Foushee_trace.txt -with-report {args.output}/logs/Foushee_execution_report.html {work}"
+        #run command using nextflow in a subprocess
+        print("Starting the Foushee pipeline:")
+        try:
+            process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+            nextflow_printer(process)
+        except KeyboardInterrupt:
+            print("Quitting Foushee...")
+            process.terminate()
+            print("Done.")
+            sys.exit(1)
 
     if program == 'dryad':
         #dryad path
