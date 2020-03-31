@@ -1,6 +1,5 @@
 ---
 layout: page
-subtitle: Docker User Guide
 ---
 
 <a href="https://staph-b.github.io/staphb_toolkit/"><img src="assets/staphb-tk_logo.png" style="display:block;margin-left:auto;margin-right:auto;width:600px"></a>
@@ -16,5 +15,5 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
 #### [Usage Guide](#usage-guide)
   * [Installing](/install)
   * [Using the Toolkit](/using_tk)
-  * [Running Workflows](/using_wf)
+  * [Running Workflows](/workflows)
   * [Custom Configurations](/configs)
