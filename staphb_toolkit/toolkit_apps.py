@@ -85,7 +85,7 @@ def main():
     parser = MyParser(usage="staphb-tk [optional arguments] <application> [application arguments]",add_help=True)
     subparsers = parser.add_subparsers(title='custom program execution',metavar='',dest="subparser_name",parser_class=MyParser)
     parser.add_argument("--docker_config","-c", default="/core/docker_config.json",metavar="<path>", help="Configuration file for container images and tags; if none provided, configuration will be set to staphb_toolkit/core/docker_config.json")
-    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers.")
+    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not Recomended!).")
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
 
     ###custom apps
