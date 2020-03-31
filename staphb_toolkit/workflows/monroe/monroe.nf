@@ -22,7 +22,7 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_clean, raw_reads_iv
+  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_clean
 
   script:
   if(params.name_split_on!=""){
@@ -68,14 +68,10 @@ process ivar {
 
   shell:
 """
-echo "01"
 minimap2 -K 20M -x sr -a /reference/nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
-echo "02"
 samtools index SC2.bam
 samtools flagstat SC2.bam
-echo "03"
 ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
-echo "04"
 
 samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam
