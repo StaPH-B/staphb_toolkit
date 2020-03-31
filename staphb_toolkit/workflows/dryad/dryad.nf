@@ -12,38 +12,47 @@ params.snp = false
 params.snp_reference = ""
 params.ar = false
 
-//setup channel to read in and pair the fastq files
-Channel
-    .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
-    .set { raw_reads }
 
+//Get reference sequence if we are performing SNP analysis
 if (params.snp) {
     Channel
         .fromPath(params.snp_reference)
+        .ifEmpty { exit 1, "Need to supply a reference sequence if performing SNP analysis." }
         .set { snp_reference }
 }
 
-//Step0: Preprocess reads - change name to end at first underscore
-process preProcess {
-  input:
-  set val(name), file(reads) from raw_reads
+//Renaming option for renaming default fastq file names
+if (params.name_split_on!=""){
+  //setup channel to read in and pair the fastq files
+  Channel
+      .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
+      .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
+      .set { raw_reads }
 
-  output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into read_files_fastqc, read_files_trimming
+  //Step0: Preprocess reads - change name to end at first underscore
+  process preProcess {
+    input:
+    set val(name), file(reads) from raw_reads
 
-  script:
-  if(params.name_split_on!=""){
-    name = name.split(params.name_split_on)[0]
-    """
-    mv ${reads[0]} ${name}_R1.fastq.gz
-    mv ${reads[1]} ${name}_R2.fastq.gz
-    """
-  }else{
-    """
-    """
+    output:
+    tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into read_files_fastqc, read_files_trimming
+
+    script:
+      name = name.split(params.name_split_on)[0]
+      """
+      mv ${reads[0]} ${name}_R1.fastq.gz
+      mv ${reads[1]} ${name}_R2.fastq.gz
+      """
   }
 }
+else {
+  //setup channel to read in and pair the fastq files
+  Channel
+      .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
+      .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
+      .into { read_files_fastqc; read_files_trimming }
+}
+
 
 //Step1a: FastQC
 process fastqc {

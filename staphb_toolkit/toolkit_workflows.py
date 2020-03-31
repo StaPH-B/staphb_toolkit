@@ -114,7 +114,7 @@ def main():
     parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
     parser_dryad.add_argument('-ar',default=False, action="store_true", help="Detect AR mechanisms.")
     parser_dryad.add_argument('-r',metavar='<path>', type=str,help="Reference genome for SNP pipeline.")
-    parser_dryad.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    parser_dryad.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profiles (docker, singularity, ...).")
     parser_dryad.add_argument('--sep',metavar="sep_chars",type=str,help="Dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\".",default="_")
 
     args = parser.parse_args()
