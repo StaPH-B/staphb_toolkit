@@ -68,7 +68,8 @@ process ivar {
 
   shell:
 """
-minimap2 -K 20M -x sr -a /reference/nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
+ln -s /reference/nCoV-2019.reference.fasta ./nCoV-2019.reference.fasta
+minimap2 -K 20M -x sr -a ./nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
 samtools index SC2.bam
 samtools flagstat SC2.bam
 ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
@@ -77,7 +78,7 @@ samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam
 samtools flagstat ${name}.sorted.bam
 
-samtools mpileup -f /reference/nCoV-2019.reference.fasta -d 1000000 -A -B -Q 0 ${name}.sorted.bam | ivar consensus -p ivar -m 1 -t 0 -n N
+samtools mpileup -f ./nCoV-2019.reference.fasta -d 1000000 -A -B -Q 0 ${name}.sorted.bam | ivar consensus -p ivar -m 1 -t 0 -n N
 echo '>${name}' > ${name}_consensus.fasta
 
 seqtk seq -U -l 50 ivar.fa | tail -n +2 >> ${name}_consensus.fasta
