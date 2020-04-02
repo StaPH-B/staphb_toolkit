@@ -58,6 +58,7 @@ process seqyclean {
 process ivar {
   publishDir "${params.outdir}/consensus_assemblies", mode: 'copy',pattern:"*_consensus.fasta"
   publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
+  publishDir "${params.outdir}/SC2_reads", mode: 'copy',pattern:"*_SC2*.fastq.gz"
 
   input:
   set val(name), file(reads) from cleaned_reads
@@ -65,6 +66,7 @@ process ivar {
   output:
   tuple name, file("${name}_consensus.fasta") into assembled_genomes, assembled_genomes_msa
   tuple name, file("${name}.sorted.bam") into alignment_file
+  tuple name, file("${name}_SC2*.fastq.gz") into sc2_reads
 
   shell:
 """
@@ -72,6 +74,9 @@ ln -s /reference/nCoV-2019.reference.fasta ./nCoV-2019.reference.fasta
 minimap2 -K 20M -x sr -a ./nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
 samtools index SC2.bam
 samtools flagstat SC2.bam
+samtools sort -n SC2.bam > SC2_sorted.bam
+samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam
+
 ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
 
 samtools sort  ivar.bam > ${name}.sorted.bam
