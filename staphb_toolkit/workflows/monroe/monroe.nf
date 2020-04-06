@@ -149,6 +149,7 @@ class result_values:
         self.mean_depth = "NA"
         self.mean_base_q = "NA"
         self.mean_map_q = "NA"
+        self.status = "PASS"
 
 
 #get list of result files
@@ -165,6 +166,7 @@ for file in samtools_results:
         for line in tsv_reader:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
+            if int(line["cloverage"])
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             result.mean_map_q = line["meanmapq"]
@@ -174,17 +176,17 @@ for file in samtools_results:
 #create output file
 with open("consensus_statstics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q"])
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q])
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.status])
 """
 
 }
 
 // Generate msa from consensus sequences using MAFFT
 process msa{
-  publishDir "${params.outdir}/msa", mode: 'copy'
+  publishDir "${params.outdir}/msa",mode:'copy',overwrite: false
 
   input:
   file(assemblies) from assembled_genomes_msa.collect()
@@ -201,7 +203,7 @@ process msa{
 
 // Generate SNP matrix from MAFFT alignment
 process snp_matrix{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}", mode: 'copy',overwrite: false
   echo true
 
   input:
@@ -218,7 +220,7 @@ process snp_matrix{
 
 // Generate multi-sample vcf from MAFFT alignment
 process vcf{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}", mode: 'copy', overwrite: false
   echo true
 
   input:
@@ -235,7 +237,7 @@ process vcf{
 
 //Infer ML tree from MAFFT alignment
 process iqtree {
-  publishDir "${params.outdir}",mode:'copy'
+  publishDir "${params.outdir}",mode:'copy', overwrite: false
 
   input:
   file("msa.fasta") from msa_tree
@@ -255,7 +257,7 @@ process iqtree {
 }
 
 process snp_frequency{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}", mode: 'copy',overwrite: false
   echo true
 
   input:
