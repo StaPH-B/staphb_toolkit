@@ -166,7 +166,7 @@ for file in samtools_results:
         for line in tsv_reader:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
-            if int(line["cloverage"])
+      #      if int(line["cloverage"])
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             result.mean_map_q = line["meanmapq"]
@@ -197,7 +197,7 @@ process msa{
   shell:
   """
   cat *.fasta > assemblies.fasta
-  mafft --globalpair --maxiterate 1000 assemblies.fasta > msa.fasta
+  mafft --thread -1 assemblies.fasta > msa.fasta
   """
 }
 
