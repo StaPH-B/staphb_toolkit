@@ -74,6 +74,8 @@ process cleanreads {
 
 //Assemble cleaned reads with iVar
 process ivar {
+  tag "$name"
+
   publishDir "${params.outdir}/consensus_assemblies", mode: 'copy',pattern:"*_consensus.fasta"
   publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
   publishDir "${params.outdir}/SC2_reads", mode: 'copy',pattern:"*_SC2*.fastq.gz"
@@ -110,6 +112,7 @@ seqtk seq -U -l 50 ivar.fa | tail -n +2 >> ${name}_consensus.fasta
 
 //QC of read data
 process samtools {
+  tag "$name"
   publishDir "${params.outdir}/alignments",mode:'copy',overwrite: false
 
   input:
