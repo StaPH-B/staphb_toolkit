@@ -76,7 +76,6 @@ process cleanreads {
 process ivar {
   tag "$name"
 
-  publishDir "${params.outdir}/consensus_assemblies", mode: 'copy',pattern:"*_consensus.fasta"
   publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
   publishDir "${params.outdir}/SC2_reads", mode: 'copy',pattern:"*_SC2*.fastq.gz"
 
@@ -84,7 +83,7 @@ process ivar {
   set val(name), file(reads) from cleaned_reads
 
   output:
-  tuple name, file("${name}_consensus.fasta") into assembled_genomes, assembled_genomes_msa
+  tuple name, file("${name}_consensus.fasta") into assembled_genomes
   tuple name, file("${name}.sorted.bam") into alignment_file
   tuple name, file("${name}_SC2*.fastq.gz") into sc2_reads
 
@@ -95,7 +94,7 @@ minimap2 -K 20M -x sr -a ./nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | s
 samtools index SC2.bam
 samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
-samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam
+samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
 ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
 
@@ -129,14 +128,18 @@ process samtools {
 
 //Collect and format report
 process alignment_results{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}/assemblies", mode: 'copy'
+
   echo true
 
   input:
   file(cg_pipeline_results) from alignment_qc.collect()
+  file(assemblies) from assembled_genomes.collect()
 
   output:
-  file "consensus_statstics.csv"
+  file "assembly_statstics.csv"
+  file("*_consensus_*.fasta") into assembled_genomes_msa
+
 
   script:
 """
@@ -157,6 +160,7 @@ class result_values:
 
 #get list of result files
 samtools_results = glob.glob("*_samtoolscoverage.tsv")
+assemblies = glob.glob("*consensus.fasta")
 
 results = {}
 
@@ -169,15 +173,29 @@ for file in samtools_results:
         for line in tsv_reader:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
-      #      if int(line["cloverage"])
+            if float(line["coverage"]) < 98:
+                result.status = "FAIL: coverage <98%"
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
+            if float(line["meanbaseq"]) < 30:
+                result.status = "FAIL: meanbaseq < 30"
             result.mean_map_q = line["meanmapq"]
-
+            if float(line["meanmapq"]) < 30:
+                result.status = "FAIL: meanmapq < 30"
     results[id] = result
 
+for assembly in assemblies:
+    id = assembly.split("_consensus.fasta")[0]
+    result = results[id]
+    if result.status == "PASS":
+        os.rename(assembly, f"{id}_consensus_PASSED.fasta")
+    else:
+        os.rename(assembly, f"{id}_consensus_FAILED.fasta")
+
+
+
 #create output file
-with open("consensus_statstics.csv",'w') as csvout:
+with open("assembly_statstics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
     writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status"])
     for id in results:
@@ -199,14 +217,14 @@ process msa{
 
   shell:
   """
-  cat *.fasta > assemblies.fasta
+  cat *PASSED.fasta > assemblies.fasta
   mafft --thread -1 assemblies.fasta > msa.fasta
   """
 }
 
 // Generate SNP matrix from MAFFT alignment
 process snp_matrix{
-  publishDir "${params.outdir}", mode: 'copy',overwrite: false
+  publishDir "${params.outdir}/snp_calls", mode: 'copy',overwrite: false
   echo true
 
   input:
@@ -223,7 +241,7 @@ process snp_matrix{
 
 // Generate multi-sample vcf from MAFFT alignment
 process vcf{
-  publishDir "${params.outdir}", mode: 'copy', overwrite: false
+  publishDir "${params.outdir}/snp_calls", mode: 'copy', overwrite: false
   echo true
 
   input:
@@ -240,7 +258,7 @@ process vcf{
 
 //Infer ML tree from MAFFT alignment
 process iqtree {
-  publishDir "${params.outdir}",mode:'copy', overwrite: false
+  publishDir "${params.outdir}/msa",mode:'copy', overwrite: false
 
   input:
   file("msa.fasta") from msa_tree
@@ -260,7 +278,7 @@ process iqtree {
 }
 
 process snp_frequency{
-  publishDir "${params.outdir}", mode: 'copy',overwrite: false
+  publishDir "${params.outdir}/snp_calls", mode: 'copy',overwrite: false
   echo true
 
   input:
