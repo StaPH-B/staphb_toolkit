@@ -155,7 +155,7 @@ class result_values:
         self.mean_depth = "NA"
         self.mean_base_q = "NA"
         self.mean_map_q = "NA"
-        self.status = "PASS"
+        self.status = "NA"
 
 
 #get list of result files
@@ -168,20 +168,26 @@ results = {}
 for file in samtools_results:
     id = file.split("_samtoolscoverage.tsv")[0]
     result = result_values(id)
+    status = []
     with open(file,'r') as tsv_file:
         tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
         for line in tsv_reader:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
             if float(line["coverage"]) < 98:
-                result.status = "FAIL: coverage <98%"
+                status.append("coverage <98%")
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             if float(line["meanbaseq"]) < 30:
-                result.status = "FAIL: meanbaseq < 30"
+                status.append("meanbaseq < 30")
             result.mean_map_q = line["meanmapq"]
             if float(line["meanmapq"]) < 30:
-                result.status = "FAIL: meanmapq < 30"
+                status.append("meanmapq < 30")
+        if len(status) == 0:
+            result.status = "PASS"
+        else:
+            result.status ="FAIL: " + '; '.join(status)
+
     results[id] = result
 
 for assembly in assemblies:
