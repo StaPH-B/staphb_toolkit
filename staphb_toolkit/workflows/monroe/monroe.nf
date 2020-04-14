@@ -325,7 +325,7 @@ with open('msa.vcf','r') as vcf:
 }
 
 process render{
-  publishDir "${params.outdir}/report", mode: 'copy'
+  publishDir "${params.outdir}", mode: 'copy'
   echo true
 
   input:
@@ -334,9 +334,11 @@ process render{
   file(rmd) from report
 
   output:
-  file "monroe_report.pdf"
+  file "monroe_cluster_report.pdf"
   shell:
 """
-Rscript /reports/render.R pairwise_snp_distance_matrix.tsv msa.tree ${rmd}
+cp ${rmd} ./report_template.Rmd
+Rscript /reports/render.R pairwise_snp_distance_matrix.tsv msa.tree ./report_template.Rmd
+mv report.pdf monroe_cluster_report.pdf
 """
 }
