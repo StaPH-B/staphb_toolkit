@@ -274,7 +274,7 @@ process iqtree {
   file("msa.fasta") from msa_tree
 
   output:
-  file("msa.tree") optional true
+  file("msa.tree") into msa_tree
 
   script:
     """
@@ -330,7 +330,7 @@ process render{
 
   input:
   file("pairwise_snp_distance_matrix.tsv") from matrix
-  file("msa.tree") from outChannel
+  file("msa.tree") from msa_tree
   file(rmd) from report
 
   output:
