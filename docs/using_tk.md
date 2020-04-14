@@ -3,28 +3,125 @@ title: "Using the ToolKit"
 layout: page
 ---
 
-# ToolKit Usage
-So far, we've created a bunch of docker images that we use in our day-to-day activities, but if there is a specific tool you do not see on our list and would like to add your own docker image, we would love to add it to the list.
+Using the ToolKit is simply done by running the commands `staphb-tk` for running individual tools or `staphb-wf` for running the different workflows incorporated into the toolkit. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/workflows) page.
 
-Discover a bug or having issues with our images? Do you have a suggestion or advice for improving our docker images? [Please submit an issue under the Issues tab on our github repository](https://github.com/StaPH-B/docker-builds/issues)
+## Using the ToolKit to run individual bioinformatics tools
+Running the toolkit using the the `staphb-tk` command provides a menu of options available for running tools in the toolkit:
+```
+usage: staphb-tk [optional arguments] <application> [application arguments]
 
-### How to contribute a new Docker image
-1. Build your own docker image using a Dockerfile (information on this in [Develop your own container](https://staph-b.github.io/docker-builds/make_containers/) )
-2. Test to make sure it works in the way that you intend it to (e.g. give ILMN reads to a SPAdes docker container, receive SPAdes assembly out)
-3. Fork this github repository using the fork button at the top right hand of the github page.
-4. Add your Dockerfile (and any other required files required for building) to your forked repository following this convention:
-    * The first directory should be the name of the program with special characters removed, and it's preferable to remove uppercase - `/spades`
-    * The second directory should be the version number of the program, in X.X.X format - `/spades/3.12.0`
-    * Lastly the Dockerfile and any other files required for building (hopefully there are none) belong in the sub-directory - `/spades/3.12.0/Dockerfile` and `/spades/3.12.0/some-other-file-needed-for-building.txt`
-    * NOTE: There is a file size limit for github (I believe 100MB/file), so if you have a program with a huge database or file of some kind -  we won't be able to store the it in our github repository, and that database should be downloaded as part of the Dockerfile instructions with `wget`, `curl`, etc.
-5. Please edit the `README.md` and `LICENSE.md` with the appropriate information for your program (follow alphabetical order please!) and commit changes to your forked repo. It's easiest to copy a line for an existing program from the raw markdown documents [README.md](https://raw.githubusercontent.com/StaPH-B/docker-builds/master/README.md) or [LICENSE.md](https://raw.githubusercontent.com/StaPH-B/docker-builds/master/LICENSE.md) and replace the information with your new image.
-6.  Visit our docker-builds github repository and a green "Submit Pull Request" button should appear near the top of the page. Click it, and submit a pull request to merge your forked repository into our repository.
-7. We will take a look at your additions/changes, do some testing, and decide on whether or not to incorporate the changes into the master branch. We will most likely accept all new docker images, but if you have a specific change to an existing image we may not accept it. These images were built with the purpose of being used for clinical lab validations, so they should stay static, especially if a particular public health lab has incorporated that image into their clinically validated workflow.
-8. If we accept your pull request, we will then add your docker image to the StaPH-B docker hub repository. Once the docker-hub builds the image (successfully), it will be available and downloadable via `docker pull staphb/name-of-your-image:0.0.0` or `docker pull staphb/name-of-your-image:latest`
+optional arguments:
+  -h, --help            show this help message and exit
+  --docker_config <path>, -c <path>
+                        Configuration file for container images and tags; if
+                        none provided, configuration will be set to
+                        staphb_toolkit/core/docker_config.json
+  --overide_path        Overide the automatic path mounting that is performed
+                        for docker containers.
+  --list, -l            List all of the software available in the toolkit.
 
-### How to create automated TravisCI tests for a Docker image
-1. Create your own development branch, perhaps called `yourname-travis`, for pushing commits to.
-    * Alternatively, you could fork the repo, and push commits to your forked repo, but you'll have to sign up for TravisCI and authorize access to your github repos.
-2. Add a `docker build` command to `.travis.yml` file under the `install:` section. Follow convention of previous lines. No need to prefix the image name with `staphb` like `staphb/mash:2.1`. Just make sure this image name is the same as what is in your test that follows.
-3. Create a script, bash or python (or perl possibly?) that can run the docker container and test it in some way. To pass Travis tests, it will need to exit with a 0 exit code. This can be as simple as pulling up the help options for a program, or you could have more extensive tests. Just don't go too crazy and add tests that would take hours to run 😄
-4. If you push changes to your development branch (which is under the staph-b/docker-builds repo), then travis should automatically test the changes using the `.travis.yml` file. If Travis passes successfully, submit a pull request!
+custom program execution:
+
+    mash_species        MASH Species uses a custom database to identify the
+                        isolate species.
+```
+
+The typical usage of the ToolKit involves a command structure that calls the toolkit i.e. `staphb-tk` followed by the application i.e. `spades` then the parameters associated with that tool. For example using the command `staphb-tk spades` the output shows the options available to the SPAdes assembly tool:
+
+```
+SPAdes genome assembler v3.13.0
+
+Usage: /SPAdes-3.13.0-Linux/bin/spades.py [options] -o <output_dir>
+
+Basic options:
+-o	<output_dir>	directory to store all the resulting files (required)
+--sc			this flag is required for MDA (single-cell) data
+--meta			this flag is required for metagenomic sample data
+...
+```
+If we wanted to run the SPAdes assembler on a pair of fastq files the command would be `staphb-tk spades -1 <path to fwd reads> -2 <path to rev reads> -o <output dir>`.
+
+To list the available software included with the ToolKit use the command `staphb-tk --list`.
+```
+Available programs:
+Command                  Description
+-------                  -----------
+abricate                 Abricate - Mass screening of contigs for antimicrobial and virulence genes
+bbtools                  BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data
+bwa                      BWA - mapping low-divergent sequences against a large reference genome
+canu-racon               Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.
+cfsan-snp                CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory
+circlator                Circlator - A tool to circularize genome assemblies
+clustalo                 ClustalO - A fast multiple sequence alignment program
+emm-typing-tool          Emm-typing-tool - Group A streptococci emm typing tool for NGS data
+fastani                  FastANI - Fast whole-genome sequence average nucleotide identity (ANI) estimation
+fastqc                   FastQC - A quality control tool for high throughput sequence data.
+fasttree                 FastTree - Infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences.
+filtlong                 Filtlong - Quality filtering tool for long reads
+flye                     Flye - De novo assembler for single molecule sequencing reads using repeat graphs
+iqtree                   IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.
+kma                      KMA - Mapping method designed to map raw reads directly against redundant databases, in an ultra-fast manner using seed and extend.
+kraken                   Kraken - Taxonomic sequence classification system
+kraken-build             Kraken-build - Build a kraken database
+kraken2                  Kraken2 - The second version of the Kraken taxonomic sequence classification system
+kraken2-build            Karken2-build - Build a kraken2 database
+ksnp3                    kSNP2 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.
+legsta                   Legsta - In silico Legionella pneumophila Sequence Based Typing
+lyveset                  LYVE-SET - a method of using hqSNPs to create a phylogeny.
+mash                     MASH - Fast genome and metagenome distance estimation using MinHash
+mashtree                 MashTree - Create a tree using Mash distances
+medaka                   Medaka - Sequence correction provided by ONT Research
+minimap2                 Minimap2 - a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database.
+mlst                     MLST - Scan contig files against PubMLST typing schemes
+mugsy                    Mugsy - A multiple whole genome aligner.
+multiqc                  MultiQC - Aggregate results from bioinformatics analyses across many samples into a single report.
+nanoplot                 NanoPlot - Plotting scripts for long read sequencing data
+ncbi-amrfinder-plus      NCBI AMRFinderPlus - Designed to find acquired antimicrobial resistance genes and some point mutations in protein or assembled nucleotide sequences.
+orthofinder              OrthoFinder - Phylogenetic orthology inference for comparative genomics
+pilon                    Pilon - Automated genome assembly improvement and variant detection tool
+plasmidseeker            PlasmidSeeker - A k-mer based program for the identification of known plasmids from whole-genome sequencing reads
+prokka                   Prokka - Rapid prokaryotic genome annotation
+quast                    Quast - Genome assembly evaluation tool.
+rasusa                   RASUA - Randomly subsample sequencing reads to a specified coverage
+raxml                    RAxML -Maximum likelihood tree builder.
+roary                    Roary - Rapid large-scale prokaryote pan genome analysis.
+salmid                   SalmID - Rapid confirmation of Salmonella spp. and subspp. from sequence data
+samtools                 Samtools - A suite of programs for interacting with high-throughput sequencing data. It consists of three separate repositories.
+seqsero                  SeqSero - Salmonella serotyping from genome sequencing data.
+seqsero2                 SeqSero2 - Salmonella serotype prediction from genome sequencing data.
+seqyclean                SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis
+seroba                   Seroba - k-mer based Pipeline to identify the Serotype from Illumina NGS reads
+serotypefinder           SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.
+shovill                  Shovill - Faster SPAdes assembler
+sistr                    SISTR - Salmonella in silico typing resource command-line tool
+skesa                    SKESA - NCBI's de novo genome assemlber
+snippy                   Snippy - Rapid haploid variant calling and core genome alignment
+snp-dists                SNP-dists - Pairwise SNP distance matrix from a FASTA sequence alignment
+spades                   SPAdes - St. Petersburg genome assembler
+sra-toolkit              SRA ToolKit - Collection of tools and libraries for using data in the INSDC Sequence Read Archives.
+staramr                  StarAMR - Scans genome contigs against the ResFinder, PlasmidFinder, and PointFinder databases.
+tiptoft                  TipToft - Predict plasmids from uncorrected long read data
+trimmomatic              Trimmoamtic - Flexible read trimming tool for Illumina NGS data
+unicycler                Unicycler - an assembly pipeline for bacterial genomes.
+wtdbg2                   WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly
+```
+
+Some programs have been customized with additional functionality and are available under the **custom program execution** menu of the ToolKit help.
+
+## Using the ToolKit to run workflows
+The ToolKit also provides the ability to run workflows using the `staphb-wf` command. Information and usage of specific workflows is available on the [workflow page](/workflows).
+```
+usage: staphb-wf [optional arguments] <workflow> [workflow arguments]
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+workflows:
+
+    tredegar  Quality control of WGS read data.
+    monroe    Consensus assembly for SARS-CoV-2 from ARTIC + Illumina
+              protocols.
+    dryad     A comprehensive tree building program.
+```
+
+To run the workflow simply use the command and workflow allowing with the workflow specific commands.

@@ -223,7 +223,7 @@ process emmtype_finder {
   file(mash_species) from mash_species_GAS
 
   output:
-  file "${name}*.results.xml" into emmtyper_results
+  file "${name}*.results.xml" into emmtyper_results optional true
 
   script:
   """
@@ -400,10 +400,10 @@ for file in cg_results:
             result.species_prediction = line[1]
 
     # collect emmtyper results
-    file = glob.glob("{}*.results.xml".format(id))[0]
-    if not os.path.isfile(file):
+    if not glob.glob("{}*.results.xml".format(id)):
         pass
     else:
+        file = glob.glob("{}*.results.xml".format(id))[0]
         tree=ET.parse(file)
         root = tree.getroot()
         for emm in root[1].findall("result"):

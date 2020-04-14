@@ -3,8 +3,8 @@ title: "Installing the ToolKit"
 layout: page
 ---
 
-# Installing Dependencies
-The Toolkit has been designed to minimize the amount of needed dependencies. The ToolKit has been built using Python 3.6 which can easily be installed on any Unix/Linux operating system following the instructions below. The design philosophy is centered around usability including the installation of dependencies. Using containerization the Toolkit is able to access numerous bioinformatics applications with out the necessity of installing various often conflicting dependencies. However, because of the use of containerization there are several dependencies that are unavoidable.
+## Installing the Dependencies
+The Toolkit has been designed to minimize the amount of needed dependencies by using containerization to hold the optimal environment for each tool. The ToolKit was developed using Python 3.6 which can easily be installed on any Unix/Linux operating system following the instructions below. The design philosophy is centered around usability including the installation of dependencies. Using containerization the Toolkit is able to access numerous bioinformatics applications with out the necessity of installing various often conflicting dependencies. However, because of the use of containerization there are several dependencies that are unavoidable.
 
 ### Python Version >= 3.6
 The Toolkit uses python to interact with the containers and workflows. Most Linux systems come with an adequate version of python.  
@@ -57,4 +57,20 @@ sudo wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/ap
 sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
 sudo apt-get update
 sudo apt-get install singularity-container
+```
+
+## Java Version 8 or later
+Check your java version using:  
+```
+java -version
+```
+Install version 8 using the following command or replace the 8 with a newer version if you wish, i.e. `openjdk-12-jre`.  
+```
+sudo apt-get install openjdk-8-jre
+```
+
+## Installing the ToolKit
+Installing the ToolKit can be done simply using pip. To install using pip:
+```
+pip install staphb_toolkit
 ```
