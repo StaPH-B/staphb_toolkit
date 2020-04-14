@@ -19,7 +19,7 @@ Channel
 Channel
     .fromPath(params.report)
     .set { report }
-    
+
 //Step0: Preprocess reads - change name to end at first underscore
 process preProcess {
   input:
@@ -241,7 +241,7 @@ process snp_matrix{
   file(alignment) from msa_snp
 
   output:
-  file "pairwise_snp_distance_matrix.tsv"
+  file "pairwise_snp_distance_matrix.tsv" into matrix
 
   shell:
   """
@@ -274,7 +274,7 @@ process iqtree {
   file("msa.fasta") from msa_tree
 
   output:
-  file("msa.tree") into msa_tree
+  file("msa.tree") into ML_tree
 
   script:
     """
@@ -330,12 +330,13 @@ process render{
 
   input:
   file("pairwise_snp_distance_matrix.tsv") from matrix
-  file("msa.tree") from msa_tree
+  file("msa.tree") from ML_tree
   file(rmd) from report
 
   output:
-  file "monroe_report.pdf"                                                                                                                                                                                         
+  file "monroe_report.pdf"
   shell:
 """
 Rscript /reports/render.R pairwise_snp_distance_matrix.tsv msa.tree ${rmd}
-}     
+"""
+}
