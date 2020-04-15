@@ -335,6 +335,8 @@ process render{
 
   output:
   file "monroe_cluster_report.pdf"
+  file "ML_tree.png"
+  file "SNP_heatmap.png"
   shell:
 """
 cp ${rmd} ./report_template.Rmd
