@@ -85,7 +85,7 @@ cell_font_size <- 2.25
 tree_offset <- 50
 
 # offset of column names from heatmap; should be negative
-col_offset <- -1
+col_offset <- -2
 
 # offset of row names names from heatmap
 row_offset <- -40
@@ -214,6 +214,7 @@ guides(fill = guide_colourbar(title.position = "top",
     barheight = colourbar_height,
     barwidth = colourbar_width))
 
+ggsave('SNP_heatmap.png', units = "in", width = 8.5, height = 10)
 ```
 \newpage
 
@@ -229,12 +230,12 @@ Using variation within the genome between samples (SNPs), we can estimate how re
 gtree <- ggtree(mpt, color = "black", alpha = 0.75, size = 0.5) +
 
 # add boostrap values as node labels
-geom_nodelab(aes(x = branch,
-  label = label,
-  subset = !isTip & (as.numeric(label) >= boot_thresh)),
-  vjust = -0.5,
-  nudge_x = x_nudge,
-  size = node_text_size) +
+#geom_nodelab(aes(x = branch,
+#  label = label,
+#  subset = !isTip & (as.numeric(label) >= boot_thresh)),
+#  vjust = -0.5,
+#  nudge_x = x_nudge,
+#  size = node_text_size) +
 
 # add tip labels
 geom_tiplab(size = tip_font_size) +
@@ -260,9 +261,9 @@ xmin <- 0
 
 # set x limits and plot tree
 gtree + xlim(xmin,xmax)
-
+ggsave('ML_tree.png', units = "in", width = 8.5, height = 10)
 ```
 
 ### Methods
 
-The figures shown here were generated using sequence data processed with our data analysis pipeline, Monroe (link). Sequences were assembled using a reference guided approach (reference genome: X). SNPs were called using X (link to X). The phylogenetic tree was generated from a whole genome alignment (link to mafft). The tree was generated using a maximum-likelihood method with the GTR+G4 substitution model and bootstrapped with 1000 replicates (link to iqtree). Report generated using R and designed by Abigail Shockey. If you have questions about this report please contact X at X.
+The figures shown here were generated using sequence data processed with our data analysis pipeline, [Monroe](https://github.com/StaPH-B/staphb_toolkit/tree/dev). Sequences were assembled using a reference guided approach (reference genome: Wuhan-1; NCBI RefSeq NC_045512.2). The Pairwise-SNP matrix was generated from were called using (link to X). The phylogenetic tree was generated from a whole genome alignment (link to mafft). The tree was generated using a maximum-likelihood method with the GTR+G4 substitution model and bootstrapped with 1000 replicates (link to iqtree). Report generated using R and designed by Abigail Shockey. If you have questions about this report please contact X at X.
