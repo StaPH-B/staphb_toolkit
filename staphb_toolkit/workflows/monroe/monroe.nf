@@ -325,7 +325,8 @@ with open('msa.vcf','r') as vcf:
 }
 
 process render{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "monroe_cluster_report.pdf"
+  publishDir "${params.outdir}/cluster_analysis/images/", mode: 'copy', pattern: "*.png"
   echo true
 
   input:
