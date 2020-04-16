@@ -234,7 +234,6 @@ process msa{
 
 // Generate SNP matrix from MAFFT alignment
 process snp_matrix{
-  publishDir "${params.outdir}/snp_calls", mode: 'copy',overwrite: false
   echo true
 
   input:
@@ -325,8 +324,8 @@ with open('msa.vcf','r') as vcf:
 }
 
 process render{
-  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "monroe_cluster_report.pdf"
-  publishDir "${params.outdir}/cluster_analysis/images/", mode: 'copy', pattern: "*.png"
+  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "*.pdf, *.png"
+  publishDir "${params.outdir}/snp_calls", mode: 'copy', pattern: "pairwise_snp_distance_matrix.tsv", overwrite: false
   echo true
 
   input:
@@ -338,6 +337,7 @@ process render{
   file "monroe_cluster_report.pdf"
   file "ML_tree.png"
   file "SNP_heatmap.png"
+  file "pairwise_snp_distance_matrix.tsv"
   shell:
 """
 cp ${rmd} ./report_template.Rmd

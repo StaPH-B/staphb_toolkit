@@ -215,6 +215,15 @@ guides(fill = guide_colourbar(title.position = "top",
     barwidth = colourbar_width))
 
 ggsave('SNP_heatmap.png', units = "in", width = 8.5, height = 10)
+
+snp_mat <- snp_mat[,ncol(snp_mat):1]
+snp_mat <- snp_mat[nrow(snp_mat):1,]
+write.table(snp_mat,"pairwise_snp_distance_matrix.tsv",
+            row.names = T,
+            col.names = T,
+            sep = "\t",
+            quote = F)
+            
 ```
 \newpage
 
