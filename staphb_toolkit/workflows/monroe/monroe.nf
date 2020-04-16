@@ -324,7 +324,7 @@ with open('msa.vcf','r') as vcf:
 }
 
 process render{
-  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "*.pdf, *.png"
+  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "*.p*"
   publishDir "${params.outdir}/snp_calls", mode: 'copy', pattern: "pairwise_snp_distance_matrix.tsv", overwrite: false
   echo true
 
