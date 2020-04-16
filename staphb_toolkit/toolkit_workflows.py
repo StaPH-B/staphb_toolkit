@@ -94,8 +94,8 @@ def main():
     #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
     parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    parser_monroe.add_argument('report', type=str,help="path to report rmarkdown") 
     parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    parser_monroe.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
     parser_monroe.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
 
@@ -155,6 +155,8 @@ def main():
     if program == 'monroe':
         #monroe path
         monroe_path = os.path.join(workflows_path,"monroe/monroe.nf")
+
+        #monroe_report
 
         #check for user profile
         if args.profile:
