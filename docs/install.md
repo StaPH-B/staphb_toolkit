@@ -3,11 +3,19 @@ title: "Installing the ToolKit"
 layout: page
 ---
 
-## Installing the Dependencies
 The Toolkit has been designed to minimize the amount of needed dependencies by using containerization to hold the optimal environment for each tool. The ToolKit was developed using Python 3.6 which can easily be installed on any Unix/Linux operating system following the instructions below. The design philosophy is centered around usability including the installation of dependencies. Using containerization the Toolkit is able to access numerous bioinformatics applications with out the necessity of installing various often conflicting dependencies. However, because of the use of containerization there are several dependencies that are unavoidable.
 
-### Python Version >= 3.6
-The Toolkit uses python to interact with the containers and workflows. Most Linux systems come with an adequate version of python.  
+## Contents
+  * [Python](#python)
+  * [Docker](#docker)
+  * [Singularity](#singularity)
+  * [Java](#java)
+  * [Installing the Toolkit](#installing-the-toolkit)
+
+<br>
+
+## Python
+The Toolkit uses python version >= 3.6 to interact with the containers and workflows. Most Linux systems come with an adequate version of python.  
 To check your version of python use the following command:
 ```
 python -V
@@ -24,7 +32,9 @@ source ~/.bashrc
 
 For a different system download it through the [Anaconda website](https://www.anaconda.com/distribution/).
 
-### Docker or Singularity
+<br>
+
+## Docker or Singularity
 The system must have either Docker or Singularity installed in order to use any of the tools in the Toolkit.  
 To check if you have docker installed and working use the following command:  
 ```
@@ -36,8 +46,8 @@ To check if you have singularity installed and working use the following command
 singularity --version
 singularity run library://sylabsed/examples/lolcow
 ```
-
-##### Docker
+<br>
+### Docker
 Installation instructions for installing Docker on an Ubuntu Linux system:  
 ```
 sudo apt-get update
@@ -49,8 +59,8 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker ${USER}
 sudo su - ${USER}
 ```
-
-##### Singularity
+<br>
+### Singularity
 Installation instructions for installing Singularity on an Debian/Ubuntu Linux system:
 ```
 sudo wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
@@ -58,9 +68,9 @@ sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D3
 sudo apt-get update
 sudo apt-get install singularity-container
 ```
-
-## Java Version 8 or later
-Check your java version using:  
+<br>
+## Java
+The ToolKit needs Java version 8 or later, check your java version using:  
 ```
 java -version
 ```
@@ -68,7 +78,7 @@ Install version 8 using the following command or replace the 8 with a newer vers
 ```
 sudo apt-get install openjdk-8-jre
 ```
-
+<br>
 ## Installing the ToolKit
 Installing the ToolKit can be done simply using pip. To install using pip:
 ```
