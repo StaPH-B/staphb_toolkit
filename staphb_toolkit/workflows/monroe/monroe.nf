@@ -131,7 +131,7 @@ process samtools {
 }
 
 //Collect and format report
-process alignment_results{
+process assembly_results{
   publishDir "${params.outdir}/assemblies", mode: 'copy'
 
   echo true
