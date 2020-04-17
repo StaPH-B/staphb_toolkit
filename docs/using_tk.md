@@ -5,7 +5,14 @@ layout: page
 
 Using the ToolKit is simply done by running the commands `staphb-tk` for running individual tools or `staphb-wf` for running the different workflows incorporated into the toolkit. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/workflows) page.
 
-## Using the ToolKit to run individual bioinformatics tools
+## Contents
+  * [Running Applications](#running-applications-using-the-toolkit)
+    - [Pipes and Paths](#special-note-about-autopathing-and-pipes)
+  * [Included Applications](#included-applications)
+  * [Running Workflows](#using-the-toolkit-to-run-workflows)
+
+<br>
+## Running applications using the ToolKit
 Running the toolkit using the the `staphb-tk` command provides a menu of options available for running tools in the toolkit:
 ```
 usage: staphb-tk [optional arguments] <application> [application arguments]
@@ -16,8 +23,6 @@ optional arguments:
                         Configuration file for container images and tags; if
                         none provided, configuration will be set to
                         staphb_toolkit/core/docker_config.json
-  --overide_path        Overide the automatic path mounting that is performed
-                        for docker containers.
   --list, -l            List all of the software available in the toolkit.
 
 custom program execution:
@@ -39,9 +44,29 @@ Basic options:
 --meta			this flag is required for metagenomic sample data
 ...
 ```
-If we wanted to run the SPAdes assembler on a pair of fastq files the command would be `staphb-tk spades -1 <path to fwd reads> -2 <path to rev reads> -o <output dir>`.
+If we wanted to run the SPAdes assembler on a pair of fastq files the command would be:
+```
+staphb-tk spades -1 <path to fwd reads> -2 <path to rev reads> -o <output dir>
+```
+
+### Special note about autopathing and pipes
+The ToolKit will automatically mount paths in your command from your host file system. This allows the toolkit to interact with docker or singularity containers without needing your input on how to mount things. However, if you wish to use a path to a file contained inside the container the autopathing will still try to find that file on your host system therefore you must use an `$` to indicate the path is located inside the container as shown in the command below:
+
+```
+staphb-tk mash dist $/db/RefSeqSketchesDefaults.msh mash_output/sample_sketch.msh
+```
+
+In addition, pipes are by default read by the bash interpreter. If you wish to use a pipe in your command and you want that pipe to run inside the container, you must use the bash escape character `\` to signify that you want the pipe run in the container. For example:
+
+```
+staphb-tk mash dist $/db/RefSeqSketchesDefaults.msh mash_output/sample_sketch.msh \> mash_output/sample_distances.tab
+```
+<br>
+## Included Applications
 
 To list the available software included with the ToolKit use the command `staphb-tk --list`.
+
+**Note**: Some programs have been customized with additional functionality and are available under the **custom program execution** menu of the ToolKit help.
 ```
 Available programs:
 Command                  Description
@@ -105,9 +130,7 @@ trimmomatic              Trimmoamtic - Flexible read trimming tool for Illumina 
 unicycler                Unicycler - an assembly pipeline for bacterial genomes.
 wtdbg2                   WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly
 ```
-
-Some programs have been customized with additional functionality and are available under the **custom program execution** menu of the ToolKit help.
-
+<br>
 ## Using the ToolKit to run workflows
 The ToolKit also provides the ability to run workflows using the `staphb-wf` command. Information and usage of specific workflows is available on the [workflow page](/workflows).
 ```
