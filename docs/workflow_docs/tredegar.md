@@ -3,7 +3,7 @@ category: Workflows
 path: '/Workflows/:id'
 title: 'Tredegar'
 
-layout: nil
+layout: page
 ---
 
 # Tredegar v2.1
