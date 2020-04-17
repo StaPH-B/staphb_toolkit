@@ -10,6 +10,7 @@ import json
 import staphb_toolkit.core.sb_programs as sb_prog
 from staphb_toolkit.core.autopath import path_replacer
 from staphb_toolkit.apps.sb_mash_species import MashSpecies
+import staphb_toolkit.core.update_app as autoupdate
 
 #program dictionary
 progs = {
@@ -86,7 +87,7 @@ def main():
     subparsers = parser.add_subparsers(title='custom program execution',metavar='',dest="subparser_name",parser_class=MyParser)
     parser.add_argument("--docker_config","-c", default="/core/docker_config.json",metavar="<path>", help="Configuration file for container images and tags; if none provided, configuration will be set to staphb_toolkit/core/docker_config.json")
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
-
+    parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
     ###custom apps
     ## Mash Species
     parser_mash_species = subparsers.add_parser('mash_species',help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
@@ -169,6 +170,18 @@ def main():
     parser_args = parser.parse_known_args()
     program = parser_args[0].subparser_name
     args = parser_args[1]
+
+    #check for updates
+    if parser_args[0].auto_update:
+        #get current status
+        update_status = autoupdate.check_update_status()
+        if update_status:
+            autoupdate.toggle_updater(False)
+        else:
+            autoupdate.toggle_updater(True)
+
+    if autoupdate.check_update_status():
+        autoupdate.check_for_updates()
 
     #display list of programs if needed
     if parser_args[0].list:
