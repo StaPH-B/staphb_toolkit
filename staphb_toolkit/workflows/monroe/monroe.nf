@@ -116,7 +116,6 @@ seqtk seq -U -l 50 ivar.fa | tail -n +2 >> ${name}_consensus.fasta
 //QC of read data
 process samtools {
   tag "$name"
-  publishDir "${params.outdir}/alignments",mode:'copy',overwrite: false
 
   input:
   set val(name), file(alignment) from alignment_file
@@ -132,7 +131,8 @@ process samtools {
 
 //Collect and format report
 process assembly_results{
-  publishDir "${params.outdir}/assemblies", mode: 'copy'
+  publishDir "${params.outdir}/assemblies", mode: 'copy', pattern: "*.fasta"
+  publishDir "${params.outdir}/assemblies/quality_metrics/", mode: 'copy', pattern: "*assembly_metrics.csv"
 
   echo true
 
@@ -141,7 +141,7 @@ process assembly_results{
   file(assemblies) from assembled_genomes.collect()
 
   output:
-  file "assembly_statstics.csv"
+  file "*assembly_metrics.csv"
   file("*_consensus_*.fasta") into assembled_genomes_msa
 
 
@@ -151,6 +151,11 @@ process assembly_results{
 import os, sys
 import glob, csv
 import xml.etree.ElementTree as ET
+from datetime import datetime
+
+today = datetime.today()
+today = today.strftime("%m%d%y")
+
 class result_values:
     def __init__(self,id):
         self.id = id
@@ -205,7 +210,7 @@ for assembly in assemblies:
 
 
 #create output file
-with open("assembly_statstics.csv",'w') as csvout:
+with open(f"{today}_assembly_metrics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
     writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status"])
     for id in results:
@@ -217,18 +222,19 @@ with open("assembly_statstics.csv",'w') as csvout:
 
 // Generate msa from consensus sequences using MAFFT
 process msa{
-  publishDir "${params.outdir}/msa",mode:'copy',overwrite: false
+  publishDir "${params.outdir}/cluster_analysis/msa",mode:'copy',overwrite: false
 
   input:
   file(assemblies) from assembled_genomes_msa.collect()
 
   output:
-  file "msa.fasta" into msa_snp, msa_vcf, msa_tree
+  file "*msa.fasta" into msa_snp, msa_vcf, msa_tree
 
   shell:
   """
+  date=\$(date '+%m%d%y')
   cat *PASSED.fasta > assemblies.fasta
-  mafft --thread -1 assemblies.fasta > msa.fasta
+  mafft --thread -1 assemblies.fasta > \${date}_msa.fasta
   """
 }
 
@@ -240,11 +246,12 @@ process snp_matrix{
   file(alignment) from msa_snp
 
   output:
-  file "pairwise_snp_distance_matrix.tsv" into matrix
+  file "*pairwise_snp_distance_matrix.tsv" into matrix
 
   shell:
   """
-  snp-dists ${alignment} > pairwise_snp_distance_matrix.tsv
+  date=\$(date '+%m%d%y')
+  snp-dists ${alignment} > \${date}_pairwise_snp_distance_matrix.tsv
   """
 }
 
@@ -257,31 +264,33 @@ process vcf{
   file(msa) from msa_vcf
 
   output:
-  file "msa.vcf" into vcf
+  file "*msa.vcf" into vcf
 
   shell:
   """
-  snp-sites -v ${msa} -o msa.vcf
+  date=\$(date '+%m%d%y')
+  snp-sites -v ${msa} -o \${date}_msa.vcf
   """
 }
 
 //Infer ML tree from MAFFT alignment
 process iqtree {
-  publishDir "${params.outdir}/msa",mode:'copy', overwrite: false
+  publishDir "${params.outdir}/cluster_analysis/msa",mode:'copy', overwrite: false
 
   input:
-  file("msa.fasta") from msa_tree
+  file(msa) from msa_tree
 
   output:
-  file("msa.tree") into ML_tree
+  file("*msa.tree") into ML_tree
 
   script:
     """
-    numGenomes=`grep -o '>' msa.fasta | wc -l`
+    date=\$(date '+%m%d%y')
+    numGenomes=`grep -o '>' ${msa} | wc -l`
     if [ \$numGenomes -gt 3 ]
     then
-      iqtree -nt AUTO -s msa.fasta -m 'GTR+G4' -bb 1000
-      mv msa.fasta.contree msa.tree
+      iqtree -nt AUTO -s ${msa} -m 'GTR+G4' -bb 1000
+      mv \${date}_msa.fasta.contree \${date}_msa.tree
     fi
     """
 }
@@ -300,8 +309,12 @@ process snp_frequency{
 """
 #!/usr/bin/env python3
 import csv
+from datetime import datetime
 
-with open('msa.vcf','r') as vcf:
+today = datetime.today()
+today = today.strftime("%m%d%y")
+
+with open(f'{today}_msa.vcf','r') as vcf:
     with open('snp_frequencies.tsv','w') as tsv:
         writer = csv.writer(tsv, delimiter='\t')
         writer.writerow(['Genomic Position','Reference Allele','Alternative Allele','Frequency'])
@@ -324,24 +337,29 @@ with open('msa.vcf','r') as vcf:
 }
 
 process render{
-  publishDir "${params.outdir}/cluster_analysis", mode: 'copy', pattern: "*.p*"
-  publishDir "${params.outdir}/snp_calls", mode: 'copy', pattern: "pairwise_snp_distance_matrix.tsv", overwrite: false
+  publishDir "${params.outdir}/cluster_analysis/report", mode: 'copy', pattern: "*.pdf"
+  publishDir "${params.outdir}/cluster_analysis/images", mode: 'copy', pattern: "*.png"
+  publishDir "${params.outdir}/cluster_analysis/msa", mode: 'copy', pattern: "*snp_distance_matrix.tsv", overwrite: false
   echo true
 
   input:
-  file("pairwise_snp_distance_matrix.tsv") from matrix
+  file(pairwise_snp_distance_matrix) from matrix
   file("msa.tree") from ML_tree
   file(rmd) from report
 
   output:
-  file "monroe_cluster_report.pdf"
-  file "ML_tree.png"
-  file "SNP_heatmap.png"
-  file "pairwise_snp_distance_matrix.tsv"
+  file "*monroe_cluster_report.pdf"
+  file "*ML_tree.png"
+  file "*SNP_heatmap.png"
+  file "*snp_distance_matrix.tsv"
   shell:
 """
+date=\$(date '+%m%d%y')
 cp ${rmd} ./report_template.Rmd
-Rscript /reports/render.R pairwise_snp_distance_matrix.tsv msa.tree ./report_template.Rmd
-mv report.pdf monroe_cluster_report.pdf
+Rscript /reports/render.R ${pairwise_snp_distance_matrix} msa.tree ./report_template.Rmd
+mv report.pdf \${date}_monroe_cluster_report.pdf
+mv ML_tree.png \${date}_ML_tree.png
+mv SNP_heatmap.png \${date}_SNP_heatmap.png
+mv snp_distance_matrix.tsv \${date}_snp_distance_matrix.tsv
 """
 }
