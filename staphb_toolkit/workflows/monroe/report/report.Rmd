@@ -222,7 +222,7 @@ snp_mat$Iso <- rownames(snp_mat)
 snp_mat <- snp_mat[,c(ncol(snp_mat),1:(ncol(snp_mat)-1))]
 colnames(snp_mat) <- c("",rownames(snp_mat))
 
-write.table(snp_mat,"pairwise_snp_distance_matrix.tsv",
+write.table(snp_mat,"snp_distance_matrix.tsv",
             row.names = T,
             col.names = T,
             sep = "\t",
