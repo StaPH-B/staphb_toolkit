@@ -12,7 +12,7 @@ The StaPH-B ToolKit is a Python application (Python 3.6) that utilizes modern wo
 
 This tool was developed and tested for use on an Ubuntu/Debian OS. However, the tool could also be used on other Linux/Unix and MacOS systems as long as the dependencies are met.
 
-#### [Usage Guide](#usage-guide)
+## Usage Guide
   * [Installing](/install)
   * [Using the Toolkit](/using_tk)
   * [Running Workflows](/workflows)
