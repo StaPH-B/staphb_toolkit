@@ -1,8 +1,5 @@
 ---
-category: Workflows
-path: '/Workflows/:id'
 title: 'Tredegar'
-
 layout: page
 ---
 
