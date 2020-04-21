@@ -228,7 +228,7 @@ process msa{
   file(assemblies) from assembled_genomes_msa.collect()
 
   output:
-  file "*msa.fasta" into msa_snp, msa_vcf, msa_tree
+  file "*msa.fasta" into msa_snp, msa_tree
 
   shell:
   """
@@ -255,24 +255,6 @@ process snp_matrix{
   """
 }
 
-// Generate multi-sample vcf from MAFFT alignment
-process vcf{
-  publishDir "${params.outdir}/snp_calls", mode: 'copy', overwrite: false
-  echo true
-
-  input:
-  file(msa) from msa_vcf
-
-  output:
-  file "*msa.vcf" into vcf
-
-  shell:
-  """
-  date=\$(date '+%m%d%y')
-  snp-sites -v ${msa} -o \${date}_msa.vcf
-  """
-}
-
 //Infer ML tree from MAFFT alignment
 process iqtree {
   publishDir "${params.outdir}/cluster_analysis/msa",mode:'copy', overwrite: false
@@ -293,47 +275,6 @@ process iqtree {
       mv \${date}_msa.fasta.contree \${date}_msa.tree
     fi
     """
-}
-
-process snp_frequency{
-  publishDir "${params.outdir}/snp_calls", mode: 'copy',overwrite: false
-  echo true
-
-  input:
-  file(vcf) from vcf
-
-  output:
-  file "snp_frequencies.tsv"
-
-  script:
-"""
-#!/usr/bin/env python3
-import csv
-from datetime import datetime
-
-today = datetime.today()
-today = today.strftime("%m%d%y")
-
-with open(f'{today}_msa.vcf','r') as vcf:
-    with open('snp_frequencies.tsv','w') as tsv:
-        writer = csv.writer(tsv, delimiter='\t')
-        writer.writerow(['Genomic Position','Reference Allele','Alternative Allele','Frequency'])
-        for line in vcf:
-          if '#' in line:
-              next
-          else:
-              sline = line.strip().split("\t")
-              pos = sline[1]
-              ref = sline[3]
-              alt = sline[4]
-              vals = sline[9:len(sline)]
-              vals = list(map(str, vals))
-              vals = [sub.replace("2", "1") for sub in vals]
-              vals = [sub.replace("3", "1") for sub in vals]
-              vals = list(map(int, vals))
-              freq = sum(vals)
-              writer.writerow([pos,ref,alt,freq])
-"""
 }
 
 process render{
