@@ -95,11 +95,31 @@ def main():
 
     #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
-    parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
-    parser_monroe.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
-    parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
-    parser_monroe.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    monroe_subparsers = parser_monroe.add_subparsers(title='commands',metavar='',dest='monroe_command')
+
+    ##monroe_pe_assembly----------------------------
+    subparser_monroe_pe_assembly = monroe_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data generated from ARTIC amplicons', add_help=False)
+    subparser_monroe_pe_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    subparser_monroe_pe_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
+    subparser_monroe_pe_assembly.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+
+    ##monroe_pe_assembly----------------------------
+    subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multi-sequence analysis for SC2 assemblies to generate SNP-distance matrix & ML phylogenetic tree', add_help=False)
+    subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format")
+    subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
+    subparser_monroe_cluster_analysis.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+
+
+    ##monroe_pe_assembly----------------------------
+    #parser_monroe_pe_assembly = monroe_subparsers.add_parser('monroe_command', type=str, choices=["pe_assembly", "cluster_detection"], help="Monroe command: \"pe_assembly\" or \"cluster_detection\"")
+    #
+    # parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    # parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    # parser_monroe.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
+    # parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
+    # parser_monroe.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
@@ -168,9 +188,7 @@ def main():
 
     if program == 'monroe':
         #monroe path
-        monroe_path = os.path.join(workflows_path,"monroe/monroe.nf")
-
-        #monroe_report
+        monroe_path = os.path.join(workflows_path,"monroe/")
 
         #check for user profile
         if args.profile:
@@ -181,20 +199,35 @@ def main():
         if profile != "aws":
             work = f"-w {args.output}/logs/work"
 
-        #build command
-        command = nextflow_path
-        command = command + f" {monroe_path} -profile {profile} -resume --reads {args.reads_path} --report {args.report} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
-        #run command using nextflow in a subprocess
-        print("Starting the Monroe pipeline:")
-        try:
-            process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
-            nextflow_printer(process)
-        except KeyboardInterrupt:
-            print("Quitting Monroe...")
-            process.terminate()
-            print("Done.")
-            sys.exit(1)
 
+
+        if args.monroe_command == 'pe_assembly':
+            #build command
+            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            #run command using nextflow in a subprocess
+            print("Starting the Monroe paired-end assembly:")
+            try:
+                process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+                nextflow_printer(process)
+            except KeyboardInterrupt:
+                print("Quitting Monroe...")
+                process.terminate()
+                print("Done.")
+                sys.exit(1)
+
+        if args.monroe_command == 'cluster_analysis':
+            #build command
+            command = nextflow_path + f" {monroe_path}/monroe_cluster_analysis.nf -profile {profile} -resume --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            #run command using nextflow in a subprocess
+            print("Starting the Monroe cluster analysis:")
+            try:
+                process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+                nextflow_printer(process)
+            except KeyboardInterrupt:
+                print("Quitting Monroe...")
+                process.terminate()
+                print("Done.")
+                sys.exit(1)
 
     if program == 'foushee':
         #tredegar path
