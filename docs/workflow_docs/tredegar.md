@@ -1,9 +1,7 @@
 ---
-title: 'Tredegar'
+title: 'Tredegar v2.1'
 layout: page
 ---
-
-# Tredegar v2.1
 Bioinformatics pipeline for infectious disease WGS data QC
 
 ## Data workflow:
