@@ -90,41 +90,31 @@ def main():
     parser_tredegar = subparsers.add_parser('tredegar', help='Quality control of WGS read data.', add_help=False)
     parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
     parser_tredegar.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="tredegar_results")
-    parser_tredegar.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    parser_tredegar.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
 
     #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
-    monroe_subparsers = parser_monroe.add_subparsers(title='commands',metavar='',dest='monroe_command')
+    monroe_subparsers = parser_monroe.add_subparsers(title='monroe_commands',metavar='',dest='monroe_command')
 
     ##monroe_pe_assembly----------------------------
     subparser_monroe_pe_assembly = monroe_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data generated from ARTIC amplicons', add_help=False)
     subparser_monroe_pe_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_pe_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
-    subparser_monroe_pe_assembly.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    subparser_monroe_pe_assembly.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
 
-    ##monroe_pe_assembly----------------------------
-    subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multi-sequence analysis for SC2 assemblies to generate SNP-distance matrix & ML phylogenetic tree', add_help=False)
+    ##monroe_cluster_analysis-----------------------
+    subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate SNP-distance matrix & ML phylogenetic tree', add_help=False)
     subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format")
     subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
-    subparser_monroe_cluster_analysis.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
-
-
-    ##monroe_pe_assembly----------------------------
-    #parser_monroe_pe_assembly = monroe_subparsers.add_parser('monroe_command', type=str, choices=["pe_assembly", "cluster_detection"], help="Monroe command: \"pe_assembly\" or \"cluster_detection\"")
-    #
-    # parser_monroe.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    # parser_monroe.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
-    # parser_monroe.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
-    # parser_monroe.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
-    # parser_monroe.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
     parser_foushee.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
     parser_foushee.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="foushee_results")
-    parser_foushee.add_argument('--profile',metavar='profile_name', type=str,help="Custom nextflow profile.")
+    parser_foushee.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
 
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
@@ -183,6 +173,10 @@ def main():
         #monroe path
         monroe_path = os.path.join(workflows_path,"monroe/")
 
+        if args.monroe_command == None:
+            parser_monroe.print_help()
+            sys.exit(1)
+
         #check for user profile
         if args.profile:
             profile = args.profile
@@ -191,7 +185,7 @@ def main():
         work = ""
         if profile != "aws":
             work = f"-w {args.output}/logs/work"
-            
+
         if args.monroe_command == 'pe_assembly':
             #build command
             command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
