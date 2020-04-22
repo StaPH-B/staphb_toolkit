@@ -12,7 +12,7 @@ params.report = ""
 //setup channel to read in and pair the fastq files
 Channel
     .fromPath("${params.assemblies}/*.fasta")
-    .ifEmpty { exit 1, "Cannot find any assemblies matching: ${params.reads}" }
+    .ifEmpty { exit 1, "Cannot find any fasta assemblies in ${params.assemblies}" }
     .set { assemblies}
 
 Channel
@@ -22,7 +22,7 @@ Channel
 
 // Generate msa from consensus sequences using MAFFT
 process msa{
-  publishDir "${params.outdir}/cluster_analysis/",mode:'copy',overwrite: false
+  publishDir "${params.outdir}/msa",mode:'copy',overwrite: false
 
   input:
   file(assemblies) from assemblies.collect()
@@ -32,8 +32,9 @@ process msa{
 
   shell:
   """
+  date=\$(date '+%m%d%y')
   cat *.fasta > assemblies.fasta
-  mafft --thread -1 assemblies.fasta > msa.fasta
+  mafft --thread -1 assemblies.fasta > \${date}_msa.fasta
   """
 }
 
@@ -55,7 +56,7 @@ process snp_matrix{
 
 //Infer ML tree from MAFFT alignment
 process iqtree {
-  publishDir "${params.outdir}/cluster_analysis/",mode:'copy', overwrite: false
+  publishDir "${params.outdir}/msa",mode:'copy', overwrite: false
 
   input:
   file(msa) from msa_tree
@@ -65,36 +66,40 @@ process iqtree {
 
   script:
     """
+    date=\$(date '+%m%d%y')
     numGenomes=`grep -o '>' ${msa} | wc -l`
     if [ \$numGenomes -gt 3 ]
     then
       iqtree -nt AUTO -s ${msa} -m 'GTR+G4' -bb 1000
-      mv msa.fasta.contree msa.tree
+      mv \${date}_msa.fasta.contree \${date}_msa.tree
     fi
     """
 }
 
 process render{
-  publishDir "${params.outdir}/cluster_analysis/report", mode: 'copy', pattern: "*.pdf"
-  publishDir "${params.outdir}/cluster_analysis/images", mode: 'copy', pattern: "*.png"
-  publishDir "${params.outdir}/cluster_analysis/msa", mode: 'copy', pattern: "*snp_distance_matrix.tsv", overwrite: false
+  publishDir "${params.outdir}/", mode: 'copy', pattern: "*.pdf"
+  publishDir "${params.outdir}/images", mode: 'copy', pattern: "*.png"
+  publishDir "${params.outdir}/msa", mode: 'copy', pattern: "*snp_distance_matrix.tsv", overwrite: false
   echo true
 
   input:
   file(pairwise_snp_distance_matrix) from matrix
-  file("msa.tree") from ML_tree
+  file(ml_tree) from ML_tree
   file(rmd) from report
 
   output:
-  file "monroe_cluster_report.pdf"
-  file "ML_tree.png"
-  file "SNP_heatmap.png"
-  file "snp_distance_matrix.tsv"
+  file "*monroe_cluster_report.pdf"
+  file "*ML_tree.png"
+  file "*SNP_heatmap.png"
+  file "*snp_distance_matrix.tsv"
   shell:
 """
 date=\$(date '+%m%d%y')
 cp ${rmd} ./report_template.Rmd
-Rscript /reports/render.R ${pairwise_snp_distance_matrix} msa.tree ./report_template.Rmd
-mv report.pdf monroe_cluster_report.pdf
+Rscript /reports/render.R ${pairwise_snp_distance_matrix} ${ml_tree} ./report_template.Rmd
+mv report.pdf \${date}_monroe_cluster_report.pdf
+mv ML_tree.png \${date}_ML_tree.png
+mv SNP_heatmap.png \${date}_SNP_heatmap.png
+mv snp_distance_matrix.tsv \${date}_snp_distance_matrix.tsv
 """
 }
