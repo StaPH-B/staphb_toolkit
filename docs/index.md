@@ -16,5 +16,6 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
   * [Installing](/install)
   * [Using the Toolkit](/using_tk)
   * [Running Workflows](/workflows)
+    - [Dryad](/workflow_docs/dryad)
     - [Tredegar](/workflow_docs/tredegar)
   * [Custom Configurations](/configs)
