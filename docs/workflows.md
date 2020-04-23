@@ -12,7 +12,7 @@ Workflows in the ToolKit are run using [Nextflow](https://www.nextflow.io/). The
   * [Tredegar](#tredegar)
 
 ## Dryad
-Dryad uses several programs and pipelines to construct trees from either a core set of genes or a set of SNPs from a reference genome.
+Dryad is a pipeline to detect antimicrobial resistance genes, construct reference free core-genome, and/or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will perform both a reference free core-genome analysis based off of the approach outlined by [Oakeson et. al](https://www.ncbi.nlm.nih.gov/pubmed/30158193) and/or a SNP analysis using the [CFSAN-SNP](https://snp-pipeline.readthedocs.io/en/latest/readme.html) pipeline.
 Read the usage guide [here](/workflow_docs/dryad).
 
 ## Foushee
