@@ -80,7 +80,11 @@ sudo apt-get install openjdk-8-jre
 ```
 <br>
 ## Installing the ToolKit
-Installing the ToolKit can be done simply using pip. To install using pip:
+Installing the ToolKit can be done simply using pip:
 ```
 pip install staphb_toolkit
+```
+or install locally by downloading the release and install using pip:
+```
+pip install <path to staphb_toolkit>
 ```
