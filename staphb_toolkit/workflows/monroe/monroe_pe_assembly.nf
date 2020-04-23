@@ -9,7 +9,7 @@ params.reads = ""
 params.outdir = ""
 params.primers =""
 params.report = ""
-params.pipe = "pe"
+params.pipe = ""
 
 //setup channel to read in and pair the fastq files
 Channel
@@ -24,7 +24,6 @@ process preProcess {
 
   output:
   tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_trim
-
   script:
   if(params.name_split_on!=""){
     name = name.split(params.name_split_on)[0]
