@@ -222,7 +222,11 @@ def main():
             else:
                 basecall = f"--fastq_dir {args.reads_path}"
 
+<<<<<<< HEAD
             command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} {basecall} --pipe ont --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+=======
+            command = nextflow_path + f" {monroe_path}/monroe_ont_assembly.nf -profile {profile} {args.resume} {basecall} --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+>>>>>>> cee6f5a14c4fec0fdcd5765b94fb1c99b976dd44
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)
