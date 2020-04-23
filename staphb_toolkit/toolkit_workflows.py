@@ -116,7 +116,7 @@ def main():
     subparser_monroe_ont_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     ##monroe_cluster_analysis-----------------------
-    subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate SNP-distance matrix & ML phylogenetic tree', add_help=False)
+    subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate a SNP-distance matrix & ML phylogenetic tree', add_help=False)
     subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format")
     subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
@@ -201,7 +201,7 @@ def main():
 
         if args.monroe_command == 'pe_assembly':
             #build command
-            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} --pipe pe --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)
@@ -209,7 +209,7 @@ def main():
 
         if args.monroe_command == 'cluster_analysis':
             #build command
-            command = nextflow_path + f" {monroe_path}/monroe_cluster_analysis.nf -profile {profile} {args.resume} --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {monroe_path}/monroe_cluster_analysis.nf -profile {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe cluster analysis:")
             child = pexpect.spawn(command)
@@ -222,7 +222,7 @@ def main():
             else:
                 basecall = f"--fastq_dir {args.reads_path}"
 
-            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} {basecall} --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} {basecall} --pipe ont --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)

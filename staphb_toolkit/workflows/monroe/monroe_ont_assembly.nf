@@ -12,7 +12,7 @@ params.sequencing_summary = ""
 params.outdir = ""
 params.primers = ""
 params.run_prefix = "artic_ncov19"
-params.pipe = "ont"
+params.pipe = ""
 
 // Input channels
 Channel

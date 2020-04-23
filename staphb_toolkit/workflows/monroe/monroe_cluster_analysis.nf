@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-//Description: Workflow for quality control of raw illumina reads
+//Description: Perform multiple sequence alinmment of SC2 assemblies to generate a SNP-distance matrix & ML phylogenetic tree
 //Author: Kevin Libuit
 //eMail: kevin.libuit@dgs.virginia.gov
 
@@ -8,7 +8,7 @@
 params.assemblies = ""
 params.outdir = ""
 params.report = ""
-params.pipe = "cluster"
+params.pipe = ""
 
 //setup channel to read in and pair the fastq files
 Channel
