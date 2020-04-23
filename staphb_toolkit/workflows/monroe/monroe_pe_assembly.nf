@@ -9,6 +9,7 @@ params.reads = ""
 params.outdir = ""
 params.primers =""
 params.report = ""
+params.pipe = "pe"
 
 //setup channel to read in and pair the fastq files
 Channel
