@@ -102,6 +102,18 @@ def main():
     subparser_monroe_pe_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
     subparser_monroe_pe_assembly.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    subparser_monroe_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+
+    ##monroe_ont_assembly----------------------------
+    subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
+    subparser_monroe_ont_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq or fast5 format")
+    subparser_monroe_ont_assembly.add_argument('sequencing_summary', type=str,help="path to the location of the sequencing summary")
+    subparser_monroe_ont_assembly.add_argument('--run_prefix', type=str,help="desired run prefix. Default \"artic_ncov19\"",default="artic_ncov19")
+    subparser_monroe_ont_assembly.add_argument('--ont_basecalling', default=False, action="store_true",help="perform high accuracy basecalling using GPU (only use if you have setup a GPU compatable device)")
+    subparser_monroe_ont_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
+    subparser_monroe_ont_assembly.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    subparser_monroe_ont_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    subparser_monroe_ont_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     ##monroe_cluster_analysis-----------------------
     subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate SNP-distance matrix & ML phylogenetic tree', add_help=False)
@@ -109,6 +121,7 @@ def main():
     subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker", "aws", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    subparser_monroe_cluster_analysis.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
@@ -188,7 +201,7 @@ def main():
 
         if args.monroe_command == 'pe_assembly':
             #build command
-            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} -resume --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)
@@ -196,9 +209,24 @@ def main():
 
         if args.monroe_command == 'cluster_analysis':
             #build command
-            command = nextflow_path + f" {monroe_path}/monroe_cluster_analysis.nf -profile {profile} -resume --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {monroe_path}/monroe_cluster_analysis.nf -profile {profile} {args.resume} --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe cluster analysis:")
+            child = pexpect.spawn(command)
+            child.interact()
+
+        if args.monroe_command == 'ont_assembly':
+            #build command
+            if(args.ont_basecalling):
+                basecall = f"--basecalling --fast5_dir {args.reads_path}"
+            else:
+                basecall = f"--fastq_dir {args.reads_path}"
+
+            command = nextflow_path + f" {monroe_path}/monroe_pe_assembly.nf -profile {profile} {args.resume} {basecall} --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            #run command using nextflow in a subprocess
+            print("Starting the Monroe paired-end assembly:")
+            print(command)
+            sys.exit()
             child = pexpect.spawn(command)
             child.interact()
 

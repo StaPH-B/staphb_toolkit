@@ -8,6 +8,7 @@
 params.assemblies = ""
 params.outdir = ""
 params.report = ""
+params.pipe = "cluster"
 
 //setup channel to read in and pair the fastq files
 Channel
