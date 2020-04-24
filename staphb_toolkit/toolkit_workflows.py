@@ -176,7 +176,7 @@ def main():
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile != "aws":
+        if profile:
             work = f"-w {args.output}/logs/work"
 
         if args.monroe_command == 'pe_assembly':
