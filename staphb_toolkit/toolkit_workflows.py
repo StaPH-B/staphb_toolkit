@@ -55,6 +55,7 @@ def main():
     subparser_monroe_pe_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_monroe_pe_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
 
     ##monroe_ont_assembly----------------------------
     subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
@@ -75,6 +76,8 @@ def main():
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_cluster_analysis.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_monroe_cluster_analysis.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
