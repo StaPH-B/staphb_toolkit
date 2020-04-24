@@ -42,11 +42,11 @@ if(params.basecalling){
     script:
       if(params.basecalling_mode == "fast"){
         """
-        guppy_basecaller -c /opt/ont/guppy/data/dna_r9.4.1_450bps_fast.cfg -i . -s fastq -x auto -r
+        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} -c /opt/ont/guppy/data/dna_r9.4.1_450bps_fast.cfg -i . -s fastq -x auto -r
         """
       }else{
         """
-        guppy_basecaller -c /opt/ont/guppy/data/dna_r9.4.1_450bps_hac.cfg -i . -s fastq -x auto -r
+        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} -c /opt/ont/guppy/data/dna_r9.4.1_450bps_hac.cfg -i . -s fastq -x auto -r
         """
       }
   }

@@ -28,9 +28,10 @@ navbar-links:
   Usage Guide:
     - Installing : "install"
     - Using the Toolkit: "using_tk"
-    - Running Workflows: "using_wf"
+    - Running Workflows: "workflows"
     - Custom Configurations: "configs"
   Workflows:
+    - Dryad: "workflow_docs/dryad"
     - Tredegar: "workflow_docs/tredegar"
     - Contributing Workflows: "contributing"
 
