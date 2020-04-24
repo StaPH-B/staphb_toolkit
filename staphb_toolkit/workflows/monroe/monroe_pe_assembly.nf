@@ -78,6 +78,8 @@ process ivar {
 
   publishDir "${params.outdir}/alignments", mode: 'copy',pattern:"*.sorted.bam"
   publishDir "${params.outdir}/SC2_reads", mode: 'copy',pattern:"*_SC2*.fastq.gz"
+  publishDir "${params.outdir}/assemblies", mode: 'copy', pattern: "*_consensus.fasta"
+
 
   input:
   set val(name), file(reads) from cleaned_reads
@@ -127,7 +129,6 @@ process samtools {
 
 //Collect and format report
 process assembly_results{
-  publishDir "${params.outdir}/assemblies", mode: 'copy', pattern: "*.fasta"
   publishDir "${params.outdir}/assemblies/quality_metrics/", mode: 'copy', pattern: "*assembly_metrics.csv"
 
   echo true
@@ -138,7 +139,6 @@ process assembly_results{
 
   output:
   file "*assembly_metrics.csv"
-  file("*_consensus_*.fasta")
 
 
   script:
@@ -180,7 +180,7 @@ for file in samtools_results:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
             if float(line["coverage"]) < 98:
-                status.append("coverage <98%")
+                status.append("coverage <80%")
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             if float(line["meanbaseq"]) < 30:
@@ -191,17 +191,9 @@ for file in samtools_results:
         if len(status) == 0:
             result.status = "PASS"
         else:
-            result.status ="FAIL: " + '; '.join(status)
+            result.status ="WARNING: " + '; '.join(status)
 
     results[id] = result
-
-for assembly in assemblies:
-    id = assembly.split("_consensus.fasta")[0]
-    result = results[id]
-    if result.status == "PASS":
-        os.rename(assembly, f"{id}_consensus_PASSED.fasta")
-    else:
-        os.rename(assembly, f"{id}_consensus_FAILED.fasta")
 
 
 
