@@ -213,7 +213,7 @@ def main():
 
             command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {basecall} --pipe ont --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
-            print("Starting the Monroe paired-end assembly:")
+            print("Starting the Monroe ONT assembly:")
             child = pexpect.spawn(command)
             child.interact()
 
