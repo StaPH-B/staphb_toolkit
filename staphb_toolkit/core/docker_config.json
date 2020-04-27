@@ -244,7 +244,7 @@
      },
      "nanoplot": {
         "image": "staphb/nanoplot",
-        "tag": "1.27.0-cv1",
+        "tag": "1.29.0",
         "params": ""
      },
      "ncbi-amrfinder-plus": {
