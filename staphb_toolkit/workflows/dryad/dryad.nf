@@ -4,55 +4,38 @@
 //Author: Kelsey Florek
 //eMail: kelsey.florek@slh.wisc.edu
 
-//starting parameters
-params.reads = ""
-params.outdir = ""
-params.cg = false
-params.snp = false
-params.snp_reference = ""
-params.ar = false
+//setup channel to read in and pair the fastq files
+Channel
+    .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
+    .set { raw_reads }
 
-
-//Get reference sequence if we are performing SNP analysis
-if (params.snp) {
-    Channel
-        .fromPath(params.snp_reference)
-        .ifEmpty { exit 1, "Need to supply a reference sequence if performing SNP analysis." }
-        .set { snp_reference }
+if(params.snp){
+Channel
+    .fromPath(params.snp_reference)
+    .set { snp_reference }
 }
 
-//Renaming option for renaming default fastq file names
-if (params.name_split_on!=""){
-  //setup channel to read in and pair the fastq files
-  Channel
-      .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
-      .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
-      .set { raw_reads }
+//Step0: Preprocess reads - change name to end at first underscore
+process preProcess {
+  input:
+  set val(name), file(reads) from raw_reads
 
-  //Step0: Preprocess reads - change name to end at first underscore
-  process preProcess {
-    input:
-    set val(name), file(reads) from raw_reads
+  output:
+  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into read_files_fastqc, read_files_trimming
 
-    output:
-    tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into read_files_fastqc, read_files_trimming
-
-    script:
-      name = name.split(params.name_split_on)[0]
-      """
-      mv ${reads[0]} ${name}_R1.fastq.gz
-      mv ${reads[1]} ${name}_R2.fastq.gz
-      """
+  script:
+  if(params.name_split_on!=""){
+    name = name.split(params.name_split_on)[0]
+    """
+    mv ${reads[0]} ${name}_R1.fastq.gz
+    mv ${reads[1]} ${name}_R2.fastq.gz
+    """
+  }else{
+    """
+    """
   }
 }
-else {
-  //setup channel to read in and pair the fastq files
-  Channel
-      .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
-      .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads} Path must not end with /" }
-      .into { read_files_fastqc; read_files_trimming }
-}
-
 
 //Step1a: FastQC
 process fastqc {
@@ -112,74 +95,77 @@ process cleanreads {
   """
 }
 
-if (params.snp) {
-    //SNP Step1: Run CFSAN-SNP Pipeline
-    process cfsan {
-      publishDir "${params.outdir}/cfsan-snp", mode: 'copy'
+if(params.snp){
+//SNP Step1: Run CFSAN-SNP Pipeline
+process cfsan {
+  publishDir "${params.outdir}/cfsan-snp", mode: 'copy'
 
-      input:
-      file(reads) from cleaned_reads_snp.collect()
-      file(reference) from snp_reference
+  input:
+  file(reads) from cleaned_reads_snp.collect()
+  file(reference) from snp_reference
 
-      output:
-      file("snp_distance_matrix.tsv")
-      file("snpma.fasta") into snp_alignment
+  output:
+  file("snp_distance_matrix.tsv")
+  file("snpma.fasta") into snp_alignment
 
-      when:
-      params.snp == true
+  when:
+  params.snp == true
 
-      script:
-      """
-      #!/usr/bin/env python
-      import subprocess
-      import glob
-      import os
+  script:
+  """
+  #!/usr/bin/env python
+  import subprocess
+  import glob
+  import os
 
-      fwd_reads = glob.glob("*_1.clean.fastq.gz")
-      fwd_reads.sort()
+  fwd_reads = glob.glob("*_1.clean.fastq.gz")
+  fwd_reads.sort()
 
-      readDict = {}
-      for file in fwd_reads:
-        sid = os.path.basename(file).split('_')[0]
-        fwd_read = glob.glob(sid+"_1.clean.fastq.gz")[0]
-        rev_read = glob.glob(sid+"_2.clean.fastq.gz")[0]
-        readDict[sid] = [fwd_read,rev_read]
+  readDict = {}
+  for file in fwd_reads:
+    sid = os.path.basename(file).split('_')[0]
+    fwd_read = glob.glob(sid+"_1.clean.fastq.gz")[0]
+    rev_read = glob.glob(sid+"_2.clean.fastq.gz")[0]
+    readDict[sid] = [fwd_read,rev_read]
 
-      os.mkdir("input_reads")
-      for key in readDict:
-        print key
-        os.mkdir(os.path.join("input_reads",key))
-        os.rename(readDict[key][0],os.path.join(*["input_reads",key,readDict[key][0]]))
-        os.rename(readDict[key][1],os.path.join(*["input_reads",key,readDict[key][1]]))
+  os.mkdir("input_reads")
+  for key in readDict:
+    print key
+    os.mkdir(os.path.join("input_reads",key))
+    os.rename(readDict[key][0],os.path.join(*["input_reads",key,readDict[key][0]]))
+    os.rename(readDict[key][1],os.path.join(*["input_reads",key,readDict[key][1]]))
 
-      command = "cfsan_snp_pipeline run ${reference} -o . -s input_reads"
-      process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-      output, error = process.communicate()
-      print output
-      print error
-      """
-    }
+  command = "cfsan_snp_pipeline run ${reference} -o . -s input_reads"
+  process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+  output, error = process.communicate()
+  print output
+  print error
+  """
+}
 
-    //SNP Step2: Run IQTREE on snp alignment
-    process snp_tree {
-      publishDir "${params.outdir}/snp_tree", mode: 'copy'
+//SNP Step2: Run IQTREE on snp alignment
+process snp_tree {
+  publishDir "${params.outdir}/snp_tree", mode: 'copy'
 
-      input:
-      file(snp_fasta) from snp_alignment
+  input:
+  file(snp_fasta) from snp_alignment
 
-      output:
-      file("snp.tree") optional true
+  output:
+  file("snp.tree") optional true
 
-      script:
-        """
-        numGenomes=`grep -o '>' snpma.fasta | wc -l`
-        if [ \$numGenomes -gt 3 ]
-        then
-          iqtree -nt AUTO -s snpma.fasta -m ${params.cg_tree_model} -bb 1000
-          mv snpma.fasta.contree snp.tree
-        fi
-        """
-    }
+  when:
+  params.snp == true
+
+  script:
+    """
+    numGenomes=`grep -o '>' snpma.fasta | wc -l`
+    if [ \$numGenomes -gt 3 ]
+    then
+      iqtree -nt AUTO -s snpma.fasta -m ${params.cg_tree_model} -bb 1000
+      mv snpma.fasta.contree snp.tree
+    fi
+    """
+}
 }
 
 //CG Step1: Assemble trimmed reads with Shovill
@@ -192,7 +178,7 @@ process shovill {
   set val(name), file(reads) from cleaned_reads_cg
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar
+  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
 
   shell:
   '''
@@ -272,6 +258,7 @@ process amrfinder_summary {
 
   output:
   file("ar_predictions_binary.tsv")
+  file("ar_predictions.tsv")
 
   when:
   params.ar == true
@@ -300,21 +287,26 @@ process amrfinder_summary {
             coverage = row[16]
             hits.append([sample,gene,identity,coverage])
 
-  vals = []
+    vals = []
+    binary = []
 
-  for hit in hits:
-    sample = hit[0]
-    gene = hit[1]
-    identity = hit[2]
-    coverage = hit[3]
-    if float(identity) >= 90 and float(coverage) >= 90:
-        vals.append([sample, gene, 1])
-    if float(identity) < 90 or float(coverage) < 90:
-        vals.append([sample, gene, 0])
+    for hit in hits:
+      sample = hit[0]
+      gene = hit[1]
+      identity = hit[2]
+      coverage = hit[3]
+      vals.append([sample,gene,identity,coverage])
+      if float(identity) >= 90 and float(coverage) >= 90:
+          binary.append([sample, gene, 1])
+      if float(identity) < 90 or float(coverage) < 90:
+          binary.append([sample, gene, 0])
 
-  df = pd.DataFrame(vals, columns = ["Sample", "Gene", "Value"])
-  df = df.pivot_table(index = "Sample", columns = "Gene", values = "Value", fill_value = 0)
-  df.to_csv("ar_predictions_binary.tsv", sep='\t', encoding='utf-8')
+    df = pd.DataFrame(vals, columns = ["Sample", "Gene", "Identity", "Coverage"])
+    df.to_csv("ar_predictions.tsv", sep='\t', encoding='utf-8', index = False)
+
+    binary_df = pd.DataFrame(binary, columns = ["Sample", "Gene", "Value"])
+    binary_df = binary_df.pivot_table(index = "Sample", columns = "Gene", values = "Value", fill_value = 0)
+    binary_df.to_csv("ar_predictions_binary.tsv", sep='\t', encoding='utf-8')
   """
 }
 
@@ -328,6 +320,9 @@ process roary {
   output:
   file("core_gene_alignment.aln") into core_aligned_genomes
   file "core_genome_statistics.txt" into core_aligned_stats
+
+  when:
+  params.cg == true
 
   script:
   if(params.roary_mafft == true){
@@ -350,6 +345,8 @@ process cg_tree {
   output:
   file("core_genome.tree") optional true
 
+  when:
+  params.cg == true
 
   script:
     """
@@ -385,5 +382,39 @@ process multiqc {
   prefix = fastqc[0].toString() - '_fastqc.html' - 'fastqc/'
   """
   multiqc . 2>&1
+  """
+}
+
+process mash {
+  errorStrategy 'ignore'
+  tag "$name"
+  publishDir "${params.outdir}/mash",mode:'copy'
+
+  input:
+  set val(name), file(assembly) from assembled_genomes_mash
+
+  output:
+  file "${name}.mash.txt"
+
+  script:
+  """
+  mash dist /db/RefSeqSketchesDefaults.msh ${assembly} > ${name}.txt
+  sort -gk3 ${name}.txt | head > ${name}.mash.txt
+  """
+}
+
+process mlst {
+  errorStrategy 'ignore'
+  publishDir "${params.outdir}/mlst",mode:'copy'
+
+  input:
+  file(assemblies) from assembled_genomes_mlst.collect()
+
+  output:
+  file "mlst.tsv"
+
+  script:
+  """
+  mlst --nopath *.fa > mlst.tsv
   """
 }
