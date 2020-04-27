@@ -91,10 +91,13 @@ def main():
     parser_dryad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"dryad_results\".",default="dryad_results")
     parser_dryad.add_argument('--core-genome','-cg',default=False, action="store_true", help="Construct a core-genome tree.")
     parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
-    parser_dryad.add_argument('-ar',default=False, action="store_true", help="Detect AR mechanisms.")
     parser_dryad.add_argument('-r',metavar='<path>', type=str,help="Reference genome for SNP pipeline.")
-    parser_dryad.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_dryad.add_argument('-ar',default=False, action="store_true", help="Detect AR mechanisms.")
     parser_dryad.add_argument('--sep',metavar="sep_chars",type=str,help="Dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\".",default="_")
+    parser_dryad.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_dryad.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_dryad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for dryad.")
+    parser_dryad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     args = parser.parse_args()
     #check for updates
@@ -114,8 +117,12 @@ def main():
         sys.exit(1)
     program = args.subparser_name
 
-    #Program specific execution code
-    #-----------------------------------------
+    #################################
+    #Program specific execution code#
+    #################################
+
+    #tredegar--------------------------------
+
     if program == 'tredegar':
         #tredegar path
         tredegar_path = os.path.join(workflows_path,"tredegar/tredegar.nf")
@@ -137,6 +144,8 @@ def main():
         print("Starting the Tredegar pipeline:")
         child = pexpect.spawn(command)
         child.interact()
+
+    #monroe----------------------------------
 
     if program == 'monroe':
         #monroe path
@@ -208,6 +217,8 @@ def main():
             child = pexpect.spawn(command)
             child.interact()
 
+    #foushee---------------------------------
+
     if program == 'foushee':
         #tredegar path
         foushee_path = os.path.join(workflows_path,"foushee/foushee.nf")
@@ -230,9 +241,18 @@ def main():
         child = pexpect.spawn(command)
         child.interact()
 
+    #dryad-----------------------------------
+
     if program == 'dryad':
         #dryad path
-        dryad_path = os.path.join(workflows_path,"dryad/dryad.nf")
+        dryad_path = os.path.join(workflows_path,"dryad/")
+
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(dryad_path,"configs/dryad_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_dryad.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
 
         #check for reference sequence
         if args.snp and args.r == None:
@@ -240,9 +260,21 @@ def main():
             print("Please specify a reference sequence for the SNP pipeline.")
             sys.exit(1)
 
-        #check for user profile
-        if args.profile:
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
             profile = args.profile
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile:
+            work = f"-w {args.output}/logs/work"
 
         #build nextflow command
         selections = ""
@@ -256,7 +288,7 @@ def main():
         other_args = f"--name_split_on {args.sep} --outdir {args.output}"
         #build command
         command = nextflow_path
-        command = command + f" {dryad_path} -profile {profile} -resume --reads {args.reads_path} {selections} {other_args}"
+        command = command + f" {config} run {dryad_path}/dryad.nf {profile} {args.resume} --reads {args.reads_path} {selections} {other_args} {work}"
 
         #run command using nextflow in a subprocess
         print("Starting the Dryad pipeline:")
