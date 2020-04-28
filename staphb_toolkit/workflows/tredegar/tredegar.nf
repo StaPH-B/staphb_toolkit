@@ -35,36 +35,19 @@ process preProcess {
   }
 }
 //Create Mash Sketches for all isolates
-process mash_sketch {
+process mash_dist{
   tag "$name"
-  publishDir "${params.outdir}/mash/$name", mode: 'copy'
 
   input:
   set val(name), file(reads) from raw_reads_mash
 
   output:
-  tuple val("${name}"), file("${name}_sketch.msh") into mash_sketch
+  tuple val("${name}"), file("${name}_top_hits.tab") into mash_dist
 
   script:
   """
   mash sketch -r -m 2 -o ${name}_sketch.msh ${reads}
-  """
-}
-
-//Query Mash Sketches against RefSeq db
-process mash_dist {
-  tag "$name"
-  publishDir "${params.outdir}/mash/$name", mode: 'copy'
-
-  input:
-  set val(name), file(sketch) from mash_sketch
-
-  output:
-  tuple val("${name}"), "${name}_top_hits.tab" into mash_dist
-
-  script:
-  """
-  mash dist ${params.mash_db} ${sketch} > ${name}_distance.tab && sort -gk3 ${name}_distance.tab | head > ${name}_top_hits.tab
+  mash dist ${params.mash_db} ${name}_sketch.msh > ${name}_distance.tab && sort -gk3 ${name}_distance.tab | head > ${name}_top_hits.tab
   """
 }
 
