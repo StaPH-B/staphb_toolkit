@@ -87,7 +87,7 @@ def main():
 
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
-    parser_dryad.add_argument('reads_path', type=str,help="Path to the location of the raw reads in the fastq format.")
+    parser.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
     parser_dryad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"dryad_results\".",default="dryad_results")
     parser_dryad.add_argument('--core-genome','-cg',default=False, action="store_true", help="Construct a core-genome tree.")
     parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
@@ -253,6 +253,12 @@ def main():
             dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_dryad.config")
             copyfile(config_path,dest_path)
             sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
 
         #check for reference sequence
         if args.snp and args.r == None:
