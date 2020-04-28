@@ -39,9 +39,12 @@ def main():
     #parser for workflows
     #tredegar-----------------------------------------
     parser_tredegar = subparsers.add_parser('tredegar', help='Quality control of WGS read data.', add_help=False)
-    parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
     parser_tredegar.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="tredegar_results")
     parser_tredegar.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_tredegar.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_tredegar.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for tredegar.")
+    parser_tredegar.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
@@ -81,13 +84,15 @@ def main():
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
-    parser_foushee.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    parser_foushee.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
     parser_foushee.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="foushee_results")
     parser_foushee.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-
+    parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for dryad.")
+    parser_foushee.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
-    parser.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
+    parser_dryad.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
     parser_dryad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"dryad_results\".",default="dryad_results")
     parser_dryad.add_argument('--core-genome','-cg',default=False, action="store_true", help="Construct a core-genome tree.")
     parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
@@ -125,20 +130,42 @@ def main():
 
     if program == 'tredegar':
         #tredegar path
-        tredegar_path = os.path.join(workflows_path,"tredegar/tredegar.nf")
+        tredegar_path = os.path.join(workflows_path,"tredegar/")
 
-        #check for user profile
-        if args.profile:
-            profile = args.profile
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(tredegar_path,"configs/tredegar_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_tredegar.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
+
+
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile != "aws":
+        if profile:
             work = f"-w {args.output}/logs/work"
 
         #build command
         command = nextflow_path
-        command = command + f" {tredegar_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Tredegar_trace.txt -with-report {args.output}/logs/Tredegar_execution_report.html {work}"
+        command = command + f" {config} run {tredegar_path}/tredegar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Tredegar_trace.txt -with-report {args.output}/logs/Tredegar_execution_report.html {work}"
+        print(command)
 
         #run command using nextflow in a subprocess
         print("Starting the Tredegar pipeline:")
@@ -178,7 +205,7 @@ def main():
             config = "-C " + os.path.abspath(args.config)
             profile = ""
         elif args.profile:
-            profile = args.profile
+            profile = f"-profile {args.profile}"
         elif not profile:
             print('Singularity or Docker is not installed or not in found in PATH.')
             sys.exit(1)
@@ -221,20 +248,42 @@ def main():
 
     if program == 'foushee':
         #tredegar path
-        foushee_path = os.path.join(workflows_path,"foushee/foushee.nf")
+        foushee_path = os.path.join(workflows_path,"foushee/")
 
-        #check for user profile
-        if args.profile:
-            profile = args.profile
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(foushee_path,"configs/foushee_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_foushee.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
+
+
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile != "aws":
+        if profile:
             work = f"-w {args.output}/logs/work"
 
         #build command
         command = nextflow_path
-        command = command + f" {foushee_path} -profile {profile} -resume --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Foushee_trace.txt -with-report {args.output}/logs/Foushee_execution_report.html {work}"
+        command = command + f" {config} run {foushee_path}/foushee.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Foushee_trace.txt -with-report {args.output}/logs/Foushee_execution_report.html {work}"
+        print(command)
 
         #run command using nextflow in a subprocess
         print("Starting the Foushee pipeline:")
