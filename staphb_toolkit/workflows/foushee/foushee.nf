@@ -20,7 +20,7 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_clean, raw_reads_mash
+  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_trim, raw_reads_mash
 
   script:
   if(params.name_split_on!=""){
@@ -34,23 +34,40 @@ process preProcess {
   """
   }
 }
-//Trim reads and remove adapters
-process seqyclean {
+//Step1b: Trim with Trimmomatic
+process trim {
   tag "$name"
-  publishDir "${params.outdir}/seqyclean/", mode: 'copy'
 
   input:
-  set val(name), file(reads) from raw_reads_clean
+  set val(name), file(reads) from raw_reads_trim
 
   output:
-  tuple val("${name}"), "${name}_clean_PE{1,2}.fastq" into cleaned_reads, cleaned_reads_mash, cleaned_reads_gas
+  tuple name, file("${name}*{_1,_2}.fastq.gz") into trimmed_reads
 
   script:
   """
-  seqyclean -1 ${name}_R1.fastq.gz -2 ${name}_R2.fastq.gz -minlen ${params.min_read_length} -o ${name}_clean -c ${params.contaminants} ${params.quality_trimming}
+  cpus=`grep -c ^processor /proc/cpuinfo`
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads \$cpus ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
+  mv ${name}*1P.fastq.gz ${name}_1.fastq.gz
+  mv ${name}*2P.fastq.gz ${name}_2.fastq.gz
   """
 }
+//Step2: Remove PhiX contamination
+process cleanreads {
+  tag "$name"
 
+  input:
+  set val(name), file(reads) from trimmed_reads
+
+  output:
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads, cleaned_reads_mash, cleaned_reads_gas
+  script:
+  """
+  repair.sh in1=${reads[0]} in2=${reads[1]} out1=${name}.paired_1.fastq.gz out2=${name}.paired_2.fastq.gz
+  bbduk.sh in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
+  """
+}
 //Create Mash Sketches for all isolates
 process mash_dist{
   tag "$name"
@@ -174,7 +191,7 @@ import os
 import csv
 import glob
 
-reads =  glob.glob("*fastq")
+reads =  glob.glob("*fastq*")
 mash_species = "${mash_species}"
 name = "${name}"
 db = "${params.emmtyper_db}"
