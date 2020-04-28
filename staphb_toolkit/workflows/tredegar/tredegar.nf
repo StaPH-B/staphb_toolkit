@@ -317,10 +317,12 @@ with open(mash_species) as tsv:
 """
 }
 
-//Collect and format seqsero_results
+//Collect and format all output
+
+// First set falg files for optional-output processes
 STF_EMPTY = file("${params.outdir}/logs/Tredegar_trace.txt")
-SS_EMPTY = file("${params.outdir}/logs/Tredegar_trace.txt")
-ET_EMPTY = file("${params.outdir}/logs/Tredegar_trace.txt")
+SS_EMPTY = file("${params.outdir}/logs/execution_report.html")
+ET_EMPTY = file("${params.outdir}/shovill/*contigs.fa")
 process results{
   publishDir "${params.outdir}", mode: 'copy'
   echo true
