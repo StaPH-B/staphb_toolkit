@@ -2,7 +2,9 @@
 title: 'Monroe v1.0.0'
 layout: page
 ---
-SARS-CoV-2 genome assembly and sample cluster detection for read data generated using the [ARTIC PCR tiling protocols](https://artic.network/ncov-2019) and either  Illumina-platform (e.g. MiSeq) or Oxford Nanopore Technologies sequencing.
+Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detection.
+- SARS-CoV-2 genome assembly can be performed from read data generated using the [ARTIC PCR tiling protocols](https://artic.network/ncov-2019) (V1, V2, or V3) with either an Illumina sequencing platform (e.g. MiSeq) or an Oxford Nanopore Technologies MinIon device.
+- Cluster detection can be performed from input assembly files (fasta) generated from any sequencing protocol
 
 ## Data workflow:
 Monroe consists of three separate NextFlow pipelines for Illumina paired-end read assembly (`pe_assebly`) Oxford Nanopore Technlogies read assembly (`ont_assembly`) cluster analysis from assembled SC2 genomes (`cluster_analysis`):
@@ -60,7 +62,11 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_as
 | samtools  | Gathering alignment quality metrics  | staphb/samtools:1.10  | |
 | assembly_results  | Curating assembly quality metrics  | staphb/tiptoft:1.0.0 | Light-weight container with python3 |
 
-## Oxford Nanopore Technlogies  Read Assembly:
+## Oxford Nanopore Technlogies (ONT) Read Assembly:
+
+Monroe `ont_assembly` can accept ONT Fast5 or FastQ read data. If Fast5 files are provided, high accuracy basecalling will be performed using a GPU-optimized environment. ONT FastQ files, in accordance to the [ARTIC bioinformatics protocols](https://artic.network/ncov-2019/ncov2019-bioinformatics-sop.html), undergo demultiplexing and read filtering prior to genome assembly with either [NanoPolish](https://nanopolish.readthedocs.io/en/latest/) or [Medaka](https://github.com/nanoporetech/medaka).
+
+Output from snp-dists and IQ-Tree are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env)
 
 guppy
 guppy artic minion artic medaka
