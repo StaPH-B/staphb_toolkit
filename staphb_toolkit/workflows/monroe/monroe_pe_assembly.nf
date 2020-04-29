@@ -129,7 +129,7 @@ process samtools {
 
 //Collect and format report
 process assembly_results{
-  publishDir "${params.outdir}/assemblies/quality_metrics/", mode: 'copy', pattern: "*assembly_metrics.csv"
+  publishDir "${params.outdir}/assemblies/", mode: 'copy', pattern: "*assembly_metrics.csv"
 
   echo true
 
