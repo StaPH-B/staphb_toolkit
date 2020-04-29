@@ -7,12 +7,18 @@
 //starting parameters
 params.reads = ""
 params.outdir = ""
+params.report = ""
+
 
 //setup channel to read in and pair the fastq files
 Channel
     .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
+
+Channel
+    .fromPath(params.report)
+    .set { report }
 
 //Step0: Preprocess reads - change name to end at first underscore
 process preProcess {
@@ -301,7 +307,7 @@ process ksnp3 {
 
   output:
   file("*core_SNPs_matrix.fasta") into ksnp_matrix
-  file("*_tree.core.tre")
+  file("*_tree.core.tre") into ksnp_tree
 
   script:
   """
@@ -329,9 +335,6 @@ with open(qc_metrics,'r') as csv_file:
 
             with open("{}_assemblies.txt".format(emm_type), 'a') as file:
                 file.write("{}\\t{}\\n".format(assembly, isolate))
-        else:
-            print(str(re.search(r"emm/d", line["subspecies_prediction"])))
-            print(line["subspecies_prediction"])
 
 assembly_paths = glob.glob("*_assemblies.txt")
 
@@ -351,14 +354,14 @@ for file in assembly_paths:
 
 // Generate SNP matrix from ksnp3 matrix
 process snp_dists{
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}/cluster_analysis", mode: 'copy'
   echo true
 
   input:
   file(alignment) from ksnp_matrix.collect()
 
   output:
-  file "*pairwise_snp_distance_matrix.tsv"
+  file "*pairwise_snp_distance_matrix.tsv" into matrix
 
   shell:
   """
@@ -368,4 +371,35 @@ process snp_dists{
       snp-dists \${group}_core_SNPs_matrix.fasta > \${group}_pairwise_snp_distance_matrix.tsv
   done
   """
+}
+
+process render{
+  publishDir "${params.outdir}/cluster_analysis/", mode: 'copy', pattern: "*.pdf"
+  publishDir "${params.outdir}/cluster_analysis/images", mode: 'copy', pattern: "*.png"
+  publishDir "${params.outdir}/cluster_analysis/", mode: 'copy', pattern: "*ordered_snp_distance_matrix.tsv", overwrite: false
+  echo true
+
+  input:
+  file(pairwise_snp_distance_matrix) from matrix.collect()
+  file(tree_file) from ksnp_tree.collect()
+  file(rmd) from report
+
+  output:
+  file "*foushee_cluster_report.pdf"
+  file "*ML_tree.png"
+  file "*SNP_heatmap.png"
+  file "*snp_distance_matrix.tsv"
+  shell:
+"""
+for i in *pairwise_snp_distance_matrix.tsv
+do
+  emm_type=\$(echo \$i | cut -d _ -f 1)
+  cp ${rmd} ./report_template.Rmd
+  Rscript /reports/render.R \${emm_type}_pairwise_snp_distance_matrix.tsv \${emm_type}_tree.core.tre ./report_template.Rmd
+  mv report.pdf \${emm_type}_foushee_cluster_report.pdf
+  mv ML_tree.png \${emm_type}_ML_tree.png
+  mv SNP_heatmap.png \${emm_type}_SNP_heatmap.png
+  mv snp_distance_matrix.tsv \${emm_type}_ordered_snp_distance_matrix.tsv
+done
+"""
 }
