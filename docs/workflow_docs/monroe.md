@@ -34,7 +34,7 @@ Monroe `pe_assembly` will organize all output into four subdirectories under the
 - `<output_dir>/alignments`: Sorted BAM files after minimap2 mapping and ivar primer trimming
 - `<output_dir>/assemblies`: Consensus genome assemblies in fasta format as well as a `<date>_quality_metrics.tsv` file comprising of quality metrics for all genome assemblies
 - `<output_dir>/SC2_reads`: Paired read data that have mapped to the Wu-Han-1 reference genome
-- `<output_dir>/logs`: NextFlow execution report (`Tredegar_execution_report.html`), trace file (`Tredegar_trace.txt`), and task work directorie.
+- `<output_dir>/logs`: NextFlow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
 
 Sample quality metrics file:
 
@@ -46,6 +46,19 @@ Sample quality metrics file:
 - mean_base_q: average quality of basecalls for read data mapped to the reference genome
 - mean_map_q: mean mapping quality
 - status: "PASS" if percent_cvg >80%, mean_base_q >30, and mean_map_q >30; "WARNING" if any of these quality thresholds are not met
+
+
+### Docker Images
+The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_assebly` incorporate the following StaPH-B Docker Images:
+
+| Monroe `pe_assembly` Process   | Function  | Docker Image  | Comment|
+|---|---|---|---|---|
+| preProcess  | Renames input read files for downstream processing | staphb/fastqc_container  | Light-weight container for quick text processing  |
+| trim  | Quality trimming of input read data  | staphb/trimmomatic:0.39  | |
+| cleanreads  | Adapter removal of input read data  | staphb/bbtools:38.76  | |
+| ivar  | Read mapping and consensus genome assembly  | staphb/ivar:1.2.1-SC2  |  |
+| samtools  | Gathering alignment quality metrics  | staphb/samtools:1.10  | |
+| assembly_results  | Curating assembly quality metrics  | staphb/tiptoft:1.0.0 | Light-weight container with python3 |
 
 ## Oxford Nanopore Technlogies  Read Assembly:
 
@@ -72,11 +85,10 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 ### Output:
 
 
-## Sample Monroe Report
+## Cluster Analysis:
+Monroe `cluster_analysis` uses [Mafft](https://mafft.cbrc.jp/alignment/software/) to perform multiple-sequence alignment of all SARS-CoV-2 genomes provided. The resulting alignment fasta file is used to generate a pairwise-snp distance matrix with [snp-dists](https://github.com/tseemann/snp-dists) and a maximum-likelihood phylogeneitc tree with [IQ-Tree](http://www.iqtree.org/).
 
-### Cluster Analysis:
-
-Mafft, snp-dists, iq tree, variant Analysis
+Output from snp-dists and IQ-Tree are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env)
 
 ### Quick Start
 ````
@@ -92,9 +104,21 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 - `--get_config`: Create a template config file for pipeline customization
 
 ### Output:
+Monroe `cluster_analysis` will write the final pdf report to the specified `<output_dir>`. All other output will be organized into three subdirectories:
+- `<output_dir>/images`: PNG files of the maximum-likelihood tree and color-coded SNP-distance matrix
+- `<output_dir>/msa`: Mafft alignment file (fasta), IQ-Tree newick file, and SNP-dists pairwise-distance matrix
+- `<output_dir>/logs`: NextFlow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
 
 
+### Docker Images
+The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
+| Monroe `cluster_analysis` Process   | Function  | Docker Image  | Comment|
+|---|---|---|---|---|
+| msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  |  |
+| snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  | |
+| iqtree  | Generating maximum-likelihood phylogenetic tree from Mafft msa  | staphb/iqtree:1.6.7 | |
+| render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |  |
 
 ## Version History
 
@@ -103,6 +127,6 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 Version 1.0.0 is the first stable version of Monroe
 
 ## Author
-[Kevin G. Libuit](https://github.com/kevinlibuit), DCLS Bioinformatics Lead Scientist
-[Kelsey R Florek](https://github.com/k-florek), WSLH Bioinformatics Scientist  
+[Kevin G. Libuit](https://github.com/kevinlibuit), DCLS Bioinformatics Lead Scientist <br />
+[Kelsey R Florek](https://github.com/k-florek), WSLH Bioinformatics Scientist  <br />
 [Abigail Shockey](https://github.com/AbigailShockey), WSLH Bioinformatics Fellow
