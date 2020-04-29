@@ -199,16 +199,6 @@ for file in samtools_results:
 
     results[id] = result
 
-for assembly in assemblies:
-    id = assembly.split("_consensus.fasta")[0]
-    result = results[id]
-    if result.status == "PASS":
-        os.rename(assembly, f"{id}_consensus_PASSED.fasta")
-    else:
-        os.rename(assembly, f"{id}_consensus_FAILED.fasta")
-
-
-
 #create output file
 with open(f"{today}_assembly_metrics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
@@ -233,7 +223,7 @@ process msa{
   shell:
   """
   date=\$(date '+%m%d%y')
-  cat *PASSED.fasta > assemblies.fasta
+  cat *_consensus.fasta > assemblies.fasta
   mafft --thread -1 assemblies.fasta > \${date}_msa.fasta
   """
 }
