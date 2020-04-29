@@ -15,7 +15,6 @@ Monroe `pe_assembly` Uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimm
 
 ARTIC primers are trimmed from the alignment file and a consensus assembly is generated using [iVar v1.2.1](https://github.com/andersen-lab/ivar).
 
-
 ### Quick Start
 
 ````
@@ -66,10 +65,6 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_as
 
 Monroe `ont_assembly` can accept ONT Fast5 or FastQ read data. If Fast5 files are provided, high accuracy basecalling will be performed using a GPU-optimized environment. ONT FastQ files, in accordance to the [ARTIC bioinformatics protocols](https://artic.network/ncov-2019/ncov2019-bioinformatics-sop.html), undergo demultiplexing and read filtering prior to genome assembly with either [NanoPolish](https://nanopolish.readthedocs.io/en/latest/) or [Medaka](https://github.com/nanoporetech/medaka).
 
-Output from snp-dists and IQ-Tree are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env)
-
-guppy
-guppy artic minion artic medaka
 
 ### Quick Start
 ````
@@ -82,13 +77,24 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 
 ### Other Options
 - `--run_prefix`: Desired run prefix. Default = `artic_ncov19`
-- `--ont_basecalling`: perform high accuracy basecalling using GPU (only use if you have setup a GPU compatible device; must be invoked if input data is in Fast5 format.
+- `--ont_basecalling`: perform high accuracy basecalling using GPU (only use if you have setup a GPU compatible device); must be invoked if input data is in Fast5 format.
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`, `-c`: Path to a custom Nextflow configureation
 - `--resume`: Resume a previous run
 - `--get_config`: Create a template config file for pipeline customization
 
 ### Output:
+
+### Docker Images
+The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
+
+| Monroe `ont_assembly` Process   | Function  | Docker Image  | Comments|
+|---|---|---|---|---|
+| guppy_basecalling  | high accuracy basecalling using GPU | genomicpariscentre/guppy-gpu| Used if `--ont_basecalling` is invoked; must have setup a GPU compatible device|
+| guppy_demultiplexing  | Generating pairwise snp-distance matrix from Mafft msa  | genomicpariscentre/guppy  | |
+| artic_guppyplex  |   |genomicpariscentre/guppy | |
+| artic_nanopolish_pipeline  | Performing genome assembly with NanoPolish   | staphb/artic-ncov2019-nanopolish  |  |
+| artic_medaka_pipeline  | Performing genome assembly with Medaka   | staphb/artic-ncov2019-nanopolish  |  |
 
 
 ## Cluster Analysis:
@@ -119,12 +125,12 @@ Monroe `cluster_analysis` will write the final pdf report to the specified `<out
 ### Docker Images
 The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
-| Monroe `cluster_analysis` Process   | Function  | Docker Image  | Comment|
+| Monroe `cluster_analysis` Process   | Function  | Docker Image  |
 |---|---|---|---|---|
-| msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  |  |
-| snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  | |
-| iqtree  | Generating maximum-likelihood phylogenetic tree from Mafft msa  | staphb/iqtree:1.6.7 | |
-| render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |  |
+| msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  |
+| snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  |
+| iqtree  | Generating maximum-likelihood phylogenetic tree from Mafft msa  | staphb/iqtree:1.6.7 |
+| render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |  
 
 ## Version History
 
