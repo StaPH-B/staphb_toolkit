@@ -19,4 +19,5 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
     - [Dryad](/workflow_docs/dryad)
     - [Tredegar](/workflow_docs/tredegar)
     - [Monroe](/workflow_docs/monroe)
+    - [Foushee](/workflow_docs/foushee)
   * [Custom Configurations](/configs)
