@@ -34,7 +34,6 @@ $ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_prim
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`, `-c`: Path to a custom Nextflow configureation
 - `--resume`: Resume a previous run
-- `--get_config`: Create a template config file for pipeline customization
 
 ### Output:
 Monroe `pe_assembly` will organize all output into four subdirectories under the specified `<output_dir>`:
@@ -68,7 +67,7 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_as
 | assembly_results  | Curating assembly quality metrics  | staphb/tiptoft:1.0.0 | Light-weight container with python3 |
 
 Default docker images and parameters listed above can be adjusted by:
-1. Copying the template `pe_assebly` config file (`$ staphb-wf monroe pe_assembly --get_config`)
+1. Copying the template `pe_assebly` config file (`$ staphb-wf monroe --get_config pe_assembly`)
 2. Using a text editor to change the `<date>_pe_assembly.config` file
 3. Specifying your custom config file (i.e. the edited `<date>_pe_assembly.config>` file) when running the pipeline:<br />
 
@@ -96,7 +95,6 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`, `-c`: Path to a custom Nextflow configureation
 - `--resume`: Resume a previous run
-- `--get_config`: Create a template config file for pipeline customization
 
 ### Output:
 
@@ -112,7 +110,7 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `clust
 | artic_medaka_pipeline  | Performing genome assembly with Medaka   | staphb/artic-ncov2019-nanopolish  | `artic medaka` parameters set to: --normalize=200 |
 
 Default docker images and parameters listed above can be adjusted by:
-1. Copying the template `ont_assembly` config file (`$ staphb-wf monroe ont_assembly --get_config`)
+1. Copying the template `ont_assembly` config file (`$ staphb-wf monroe --get_config ont_assembly`)
 2. Using a text editor to change the `<date>_ont_assembly.config` file
 3. Specifying your custom config file (i.e. the edited `<date>_ont_assembly.config>` file) when running the pipeline: < br/>
 
@@ -136,7 +134,6 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`, `-c`: Path to a custom Nextflow configureation
 - `--resume`: Resume a previous run
-- `--get_config`: Create a template config file for pipeline customization
 
 ### Output:
 Monroe `cluster_analysis` will write the final pdf report to the specified `<output_dir>`. All other output will be organized into three subdirectories:
@@ -156,7 +153,7 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `clust
 | render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |   |
 
 Default docker images and parameters listed above can be adjusted by:
-1. Copying the template `cluster_analysis` config file (`$ staphb-wf monroe cluster_analysis --get_config`)
+1. Copying the template `cluster_analysis` config file (`$ staphb-wf monroe --get_config cluster_analysis`)
 2. Using a text editor to change the `<date>_cluster_analysis.config` file
 3. Specifying your custom config file (i.e. the edited `<date>_cluster_analysis.config>` file) when running the pipeline:<br />
 
