@@ -10,10 +10,16 @@ Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detect
 Monroe consists of three separate NextFlow pipelines for Illumina paired-end read assembly (`pe_assebly`) Oxford Nanopore Technlogies read assembly (`ont_assembly`) cluster analysis from assembled SC2 genomes (`cluster_analysis`):
 ![Monroe pipeline](/assets/workflows/monroe/Monroe_v1.0.png)
 
-## Paired-End Read Assembly:
-Monroe `pe_assembly` Uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter removal  and Illumina read data prior to mapping read data to a reference SARS-CoV-2 genome (Wuhan-1; NCBI RefSeq [NC_045512.2](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2)). Paired-fastq files are pulled from the alignment file with [SAMtools](http://www.htslib.org/doc/samtools.html)--these filtered read data (i.e. paired reads that map to the reference genome) can be uploaded to public repositories.
+Monroe's NextFlow pipelines can be executed using the following command format:
+```
+$ staphbe-wf monroe <monroe_pipeline> [options]
+```
+- `<monroe_pipeline>` must be `pe_assembly`, `ont_assembly`, or `cluster_analysis`
 
-ARTIC primers are trimmed from the alignment file and a consensus assembly is generated using [iVar v1.2.1](https://github.com/andersen-lab/ivar).
+## Paired-End Read Assembly:
+Monroe `pe_assembly` uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter/PhiX removal prior to mapping read data to a reference SARS-CoV-2 genome (Wuhan-1; NCBI RefSeq [NC_045512.2](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2)) with [minimap2](https://www.ncbi.nlm.nih.gov/pubmed/29750242). Paired-fastq files are pulled from the alignment file with [SAMtools](http://www.htslib.org/doc/samtools.html)--these filtered read data (i.e. paired reads that map to the reference genome) are stored as separate files that can be uploaded to public repositories such as NCBI SRA.
+
+The minimap2 alignment file is also used to generate a consensus assembly after trimming ARTIC primers using [iVar v1.2.1](https://github.com/andersen-lab/ivar).
 
 ### Quick Start
 
@@ -52,14 +58,20 @@ Sample quality metrics file:
 ### Docker Images
 The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_assebly` incorporate the following StaPH-B Docker Images:
 
-| Monroe `pe_assembly` Process   | Function  | Docker Image  | Comment|
+| Process   | Function  | Docker Image  | Comment|
 |---|---|---|---|---|
 | preProcess  | Renames input read files for downstream processing | staphb/fastqc_container  | Light-weight container for quick text processing  |
-| trim  | Quality trimming of input read data  | staphb/trimmomatic:0.39  | |
-| cleanreads  | Adapter removal of input read data  | staphb/bbtools:38.76  | |
-| ivar  | Read mapping and consensus genome assembly  | staphb/ivar:1.2.1-SC2  |  |
-| samtools  | Gathering alignment quality metrics  | staphb/samtools:1.10  | |
+| trim  | Quality trimming of input read data with bbduk  | staphb/trimmomatic:0.39  | `trimmomatic` parameters set to: minlength=75, windowsize=4, & qualitytrimscore=30|
+| cleanreads  | Adapter and PhiX removal from input read data  | staphb/bbtools:38.76  |`bbduk` default parameters used |
+| ivar  | Read mapping and consensus genome assembly  | staphb/ivar:1.2.1-SC2  | `ivar consensus` parameters set to: minimum frequency (-t)=0, minimum depth (-m)=1 |
+| samtools  | Gathering alignment quality metrics  | staphb/samtools:1.10  | `samtools coverage` default parameters used|
 | assembly_results  | Curating assembly quality metrics  | staphb/tiptoft:1.0.0 | Light-weight container with python3 |
+
+Default docker images and parameters listed above can be adjusted by:
+1. Copying the template `pe_assebly` config file (`$ staphb-wf monroe --get_config`)
+2. Using a text editor to change the `<date>_pe_assembly.config` file
+3. Specifying your custom config file (i.e. the edited `<date>_pe_assembly.config>` file) when running the pipeline: <br />
+`$ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_primer_version> -c <custom_config_file> [options]`
 
 ## Oxford Nanopore Technlogies (ONT) Read Assembly:
 
@@ -125,12 +137,18 @@ Monroe `cluster_analysis` will write the final pdf report to the specified `<out
 ### Docker Images
 The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
-| Monroe `cluster_analysis` Process   | Function  | Docker Image  |
+| Monroe `cluster_analysis` Process   | Function  | Docker Image  | Comments |
 |---|---|---|---|---|
-| msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  |
-| snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  |
-| iqtree  | Generating maximum-likelihood phylogenetic tree from Mafft msa  | staphb/iqtree:1.6.7 |
-| render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |  
+| msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  | `mafft` default parameters used|
+| snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  | `snp-dists` default parameters used|
+| iqtree  | Generating maximum-likelihood phylogenetic tree from Mafft msa  | staphb/iqtree:1.6.7 | `iqtree` set to: substitution model (-m)=GTR+4, bootstrap replicates (-bb)=1000|
+| render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |   |
+
+Default docker images and parameters listed above can be adjusted by:
+1. Copying the template `cluster_analysis` config file (`$ staphb-wf monroe --get_config`)
+2. Using a text editor to change the `<date>_cluster_analysis.config` file
+3. Specifying your custom config file (i.e. the edited `<date>_cluster_analysis.config>` file) when running the pipeline: <br />
+`staphb-wf monroe cluster_analysis <input_dir> -o <output_dir> -c <custom_config_file> [options]`
 
 ## Version History
 
@@ -138,7 +156,7 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `clust
 
 Version 1.0.0 is the first stable version of Monroe
 
-## Author
+## Authors
 [Kevin G. Libuit](https://github.com/kevinlibuit), DCLS Bioinformatics Lead Scientist <br />
 [Kelsey R Florek](https://github.com/k-florek), WSLH Bioinformatics Scientist  <br />
 [Abigail Shockey](https://github.com/AbigailShockey), WSLH Bioinformatics Fellow
