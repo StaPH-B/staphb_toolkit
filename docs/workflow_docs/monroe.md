@@ -134,6 +134,17 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`, `-c`: Path to a custom Nextflow configureation
 - `--resume`: Resume a previous run
+- `get_rtemplate`: Create a report template file for pipeline customization; `<date>_cluster_analysis_report.Rmd` will be populated in the user's current working directory
+- `--report`,`-r`: Path to custom report tempalte file
+
+To customize the final report format:
+1. Copy the report template file (`$ staphb-wf monroe cluster_analysis --get_rtemplate`)
+2. Using a text editor to change the `<date>_cluster_analysis_report.Rmd` file
+3. Specifying your custom report template file (i.e. the edited `<date>_cluster_analysis_report.Rmd>` file) when running the pipeline:<br />
+
+```
+$ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir> -r <custom_report_template_file> [options]
+```
 
 ### Output:
 Monroe `cluster_analysis` will write the final pdf report to the specified `<output_dir>`. All other output will be organized into three subdirectories:

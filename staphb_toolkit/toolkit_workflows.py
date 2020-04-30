@@ -74,13 +74,13 @@ def main():
 
     ##monroe_cluster_analysis-----------------------
     subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate a SNP-distance matrix & ML phylogenetic tree', add_help=False)
-    subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format")
+    subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format",nargs='?', default=False)
     subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_cluster_analysis.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
     subparser_monroe_cluster_analysis.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
-
+    subparser_monroe_cluster_analysis.add_argument('--get_rtemplate',action="store_true",help="Get a Rmd configuration template for report building.")
 
     #foushee-----------------------------------------
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
@@ -91,6 +91,7 @@ def main():
     parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
     parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for dryad.")
     parser_foushee.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
     parser_dryad.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
@@ -102,7 +103,7 @@ def main():
     parser_dryad.add_argument('--sep',metavar="sep_chars",type=str,help="Dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\".",default="_")
     parser_dryad.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_dryad.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
-    parser_dryad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for dryad.")
+    parser_dryad.add_argument('--get_rtemplate',action="store_true",help="Get a Nextflow configuration template for dryad.")
     parser_dryad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     args = parser.parse_args()
@@ -225,6 +226,19 @@ def main():
             child.interact()
 
         if args.monroe_command == 'cluster_analysis':
+            #give report template to user if requested
+            if args.get_rtemplate:
+                rtemplate_path = os.path.join(monroe_path,"report/report.Rmd")
+                dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cluster_analysis_report.Rmd")
+                copyfile(rtemplate_path,dest_path)
+                sys.exit()
+
+            #check for assemblies path
+            if not args.assemblies_path:
+                parser.print_help()
+                print("Please specify a path to a directory containing the raw reads.")
+                sys.exit(1)
+
             #build command
             command = nextflow_path + f" {config} run {monroe_path}/monroe_cluster_analysis.nf {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
