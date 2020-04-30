@@ -3,7 +3,7 @@ title: 'Monroe v1.0.0'
 layout: page
 ---
 Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detection.
-- SARS-CoV-2 genome assembly can be performed from read data generated using the [ARTIC PCR tiling protocols](https://artic.network/ncov-2019) (V1, V2, or V3) with either an Illumina sequencing platform (e.g. MiSeq) or an Oxford Nanopore Technologies MinIon device.
+- SARS-CoV-2 genome assembly can be performed from read data generated using the [ARTIC PCR tiling protocols](https://artic.network/ncov-2019) (V1, V2, or V3) with either an Illumina sequencing platform (e.g. MiSeq) or an Oxford Nanopore Technologies MinIon device
 - Cluster detection can be performed from input assembly files (fasta) generated from any sequencing protocol
 
 ## Data workflow:
@@ -68,10 +68,13 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_as
 | assembly_results  | Curating assembly quality metrics  | staphb/tiptoft:1.0.0 | Light-weight container with python3 |
 
 Default docker images and parameters listed above can be adjusted by:
-1. Copying the template `pe_assebly` config file (`$ staphb-wf monroe --get_config`)
+1. Copying the template `pe_assebly` config file (`$ staphb-wf monroe pe_assembly --get_config`)
 2. Using a text editor to change the `<date>_pe_assembly.config` file
-3. Specifying your custom config file (i.e. the edited `<date>_pe_assembly.config>` file) when running the pipeline: <br />
-`$ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_primer_version> -c <custom_config_file> [options]`
+3. Specifying your custom config file (i.e. the edited `<date>_pe_assembly.config>` file) when running the pipeline:<br />
+
+```
+$ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_primer_version> -c <custom_config_file> [options]
+```
 
 ## Oxford Nanopore Technlogies (ONT) Read Assembly:
 
@@ -100,14 +103,22 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 ### Docker Images
 The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
-| Monroe `ont_assembly` Process   | Function  | Docker Image  | Comments|
+| Process   | Function  | Docker Image  | Comments|
 |---|---|---|---|---|
-| guppy_basecalling  | high accuracy basecalling using GPU | genomicpariscentre/guppy-gpu| Used if `--ont_basecalling` is invoked; must have setup a GPU compatible device|
-| guppy_demultiplexing  | Generating pairwise snp-distance matrix from Mafft msa  | genomicpariscentre/guppy  | |
-| artic_guppyplex  |   |genomicpariscentre/guppy | |
-| artic_nanopolish_pipeline  | Performing genome assembly with NanoPolish   | staphb/artic-ncov2019-nanopolish  |  |
-| artic_medaka_pipeline  | Performing genome assembly with Medaka   | staphb/artic-ncov2019-nanopolish  |  |
+| guppy_basecalling  | Performing high accuracy basecalling using GPU | genomicpariscentre/guppy-gpu| Used if `--ont_basecalling` is invoked; must have setup a GPU compatible device|
+| guppy_demultiplexing  | Demultiplexing samples by barcodes present  | genomicpariscentre/guppy  | `guppy_barcoder` default parameters used |
+| artic_guppyplex  | Filtering read data by read-length to remove chimeric reads  |genomicpariscentre/guppy | `artic guppyplex` parameters set to: --min-length=400, --max-length=700  |
+| artic_nanopolish_pipeline  | Performing genome assembly with NanoPolish   | staphb/artic-ncov2019-nanopolish  | `artic minion` parameters set to: --normalize=200 |
+| artic_medaka_pipeline  | Performing genome assembly with Medaka   | staphb/artic-ncov2019-nanopolish  | `artic medaka` parameters set to: --normalize=200 |
 
+Default docker images and parameters listed above can be adjusted by:
+1. Copying the template `ont_assembly` config file (`$ staphb-wf monroe ont_assembly --get_config`)
+2. Using a text editor to change the `<date>_ont_assembly.config` file
+3. Specifying your custom config file (i.e. the edited `<date>_ont_assembly.config>` file) when running the pipeline: < br/>
+
+```
+$ staphb-wf monroe ont_assembly <input_dir> -o <output_dir> --primers <ARTIC_primer_version> -c <custom_config_file> [options]
+```
 
 ## Cluster Analysis:
 Monroe `cluster_analysis` uses [Mafft](https://mafft.cbrc.jp/alignment/software/) to perform multiple-sequence alignment of all SARS-CoV-2 genomes provided. The resulting alignment fasta file is used to generate a pairwise-snp distance matrix with [snp-dists](https://github.com/tseemann/snp-dists) and a maximum-likelihood phylogeneitc tree with [IQ-Tree](http://www.iqtree.org/).
@@ -137,7 +148,7 @@ Monroe `cluster_analysis` will write the final pdf report to the specified `<out
 ### Docker Images
 The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
-| Monroe `cluster_analysis` Process   | Function  | Docker Image  | Comments |
+| Process   | Function  | Docker Image  | Comments |
 |---|---|---|---|---|
 | msa  | Performing multi-sequence alignment with Mafft | staphb/mafft:7.450  | `mafft` default parameters used|
 | snp_matrix  | Generating pairwise snp-distance matrix from Mafft msa  | staphb/snp-dists:0.6.2  | `snp-dists` default parameters used|
@@ -145,10 +156,13 @@ The base NextFlow configuration profiles (Docker, Singularity) for Monroe `clust
 | render  | Curating all output into a single pdf report   | staphb/cluster-report-env:1.0  |   |
 
 Default docker images and parameters listed above can be adjusted by:
-1. Copying the template `cluster_analysis` config file (`$ staphb-wf monroe --get_config`)
+1. Copying the template `cluster_analysis` config file (`$ staphb-wf monroe cluster_analysis --get_config`)
 2. Using a text editor to change the `<date>_cluster_analysis.config` file
-3. Specifying your custom config file (i.e. the edited `<date>_cluster_analysis.config>` file) when running the pipeline: <br />
-`staphb-wf monroe cluster_analysis <input_dir> -o <output_dir> -c <custom_config_file> [options]`
+3. Specifying your custom config file (i.e. the edited `<date>_cluster_analysis.config>` file) when running the pipeline:<br />
+
+```
+staphb-wf monroe cluster_analysis <input_dir> -o <output_dir> -c <custom_config_file> [options]
+```
 
 ## Version History
 
