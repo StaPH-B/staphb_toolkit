@@ -32,7 +32,7 @@ $ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_prim
 
 ### Other Options
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom Nextflow configureation
+- `--config`, `-c`: Path to a custom NextFlow configuration file
 - `--resume`: Resume a previous run
 
 ### Output:
@@ -93,7 +93,7 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 - `--run_prefix`: Desired run prefix. Default = `artic_ncov19`
 - `--ont_basecalling`: perform high accuracy basecalling using GPU (only use if you have setup a GPU compatible device); must be invoked if input data is in Fast5 format.
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom Nextflow configureation
+- `--config`, `-c`: Path to a custom NextFlow configuration file
 - `--resume`: Resume a previous run
 
 ### Output:
@@ -132,7 +132,7 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 
 ### Other Options
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom Nextflow configureation
+- `--config`, `-c`: Path to a custom NextFlow configuration file
 - `--resume`: Resume a previous run
 - `get_rtemplate`: Create a report template file for pipeline customization; `<date>_cluster_analysis_report.Rmd` will be populated in the user's current working directory
 - `--report`,`-r`: Path to custom report tempalte file
