@@ -71,7 +71,7 @@ process iqtree {
     numGenomes=`grep -o '>' ${msa} | wc -l`
     if [ \$numGenomes -gt 3 ]
     then
-      iqtree -nt AUTO -s ${msa} -m 'GTR+G4' -bb 1000
+      iqtree -nt AUTO -s ${msa} -m ${params.iqtree_model} -bb ${params.iqtree_boostraps}
       mv \${date}_msa.fasta.contree \${date}_msa.tree
     fi
     """
