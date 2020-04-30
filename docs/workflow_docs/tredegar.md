@@ -1,7 +1,9 @@
 ---
-title: 'Tredegar v2.1'
+title: 'Tredegar'
 layout: page
 ---
+
+# Tredegar v2.1.0
 Bioinformatics pipeline for infectious disease WGS data QC
 
 ## Data workflow:
@@ -27,7 +29,7 @@ If an `<output_dir>` is not provided, results will be written to a `tredegar_run
 
 
 ## Other Options
-- `--profile`: Custom nextflow profile.
+- `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
 - `--config`,`-c`, Path to a custom NextFlow configuration file
 - `--get_config`: Get a Nextflow configuration template for Tredegar
 - `--resume`: Resume a previous run

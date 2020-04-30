@@ -1,7 +1,9 @@
 ---
-title: 'Monroe v1.0.0'
+title: 'Monroe'
 layout: page
 ---
+
+# Monroe v1.0.0
 Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detection.
 - SARS-CoV-2 genome assembly can be performed from read data generated using the [ARTIC PCR tiling protocols](https://artic.network/ncov-2019) (V1, V2, or V3) with either an Illumina sequencing platform (e.g. MiSeq) or an Oxford Nanopore Technologies MinIon device
 - Cluster detection can be performed from input assembly files (fasta) generated from any sequencing protocol
