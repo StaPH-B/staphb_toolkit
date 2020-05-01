@@ -98,6 +98,11 @@
         "tag": "1.2.1",
         "params": ""
       },
+      "ivar-SC2":{
+        "image": "staphb/ivar",
+        "tag": "1.2.1-SC2",
+        "params": ""
+      },
       "roary": {
          "image": "staphb/roary",
          "tag": "3.12.0",
