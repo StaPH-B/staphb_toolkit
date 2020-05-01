@@ -29,6 +29,7 @@ progs = {
 'flye':'Flye - De novo assembler for single molecule sequencing reads using repeat graphs',
 'iqtree':'IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.',
 'kma':'KMA - Mapping method designed to map raw reads directly against redundant databases, in an ultra-fast manner using seed and extend.',
+'ivar':'iVar - Computational package that contains functions broadly useful for viral amplicon-based sequencing.',
 'kraken':'Kraken - Taxonomic sequence classification system ',
 'kraken-build':'Kraken-build - Build a kraken database',
 'kraken2':'Kraken2 - The second version of the Kraken taxonomic sequence classification system',
@@ -110,6 +111,7 @@ def main():
     parser_filtong = subparsers.add_parser('filtlong', add_help=False)
     parser_flye = subparsers.add_parser('flye', add_help=False)
     parser_iqtree = subparsers.add_parser('iqtree', add_help=False)
+    parser_ivar = subparsers.add_parser('ivar', add_help=False)
     parser_kma = subparsers.add_parser('kma', add_help=False)
     parser_kraken = subparsers.add_parser('kraken', add_help=False)
     parser_krakenbuild = subparsers.add_parser('kraken-build', add_help=False)
@@ -234,6 +236,14 @@ def main():
 
     #Program specific execution code
     #-----------------------------------------
+    if program == 'ivar':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "ivar " + arg_string
+        ivar_configuration = config["parameters"]["ivar"]
+        ivar = sb_prog.Run(command=command, path=path_map, image=ivar_configuration["image"], tag=ivar_configuration["tag"])
+        ivar.run()
+
     if program == 'wtdbg2':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
