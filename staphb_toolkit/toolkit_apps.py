@@ -240,7 +240,7 @@ def main():
     #-----------------------------------------
     if program == 'ivar-SC2':
         if not re.search('[a-zA-Z]', arg_string):
-            arg_string = "-h"
+            arg_string = " "
         command = "ivar " + arg_string
         ivar_configuration = config["parameters"]["ivar-SC2"]
         ivar = sb_prog.Run(command=command, path=path_map, image=ivar_configuration["image"], tag=ivar_configuration["tag"])
@@ -248,7 +248,7 @@ def main():
 
     if program == 'ivar':
         if not re.search('[a-zA-Z]', arg_string):
-            arg_string = "-h"
+            arg_string = " "
         command = "ivar " + arg_string
         ivar_configuration = config["parameters"]["ivar"]
         ivar = sb_prog.Run(command=command, path=path_map, image=ivar_configuration["image"], tag=ivar_configuration["tag"])
