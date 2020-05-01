@@ -93,6 +93,11 @@
          "tag": "1.6.7",
          "params": ""
       },
+      "ivar":{
+        "image": "staphb/ivar",
+        "tag": "1.2.1",
+        "params": ""
+      },
       "roary": {
          "image": "staphb/roary",
          "tag": "3.12.0",
