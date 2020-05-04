@@ -180,7 +180,7 @@ for file in samtools_results:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
             if float(line["coverage"]) < 98:
-                status.append("coverage <80%")
+                status.append("coverage <98%")
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             if float(line["meanbaseq"]) < 30:
