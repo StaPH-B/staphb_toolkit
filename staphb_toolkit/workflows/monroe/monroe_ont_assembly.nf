@@ -88,6 +88,10 @@ process guppy_demultiplexing {
 process artic_guppyplex {
   publishDir "${params.outdir}/guppyplex", mode: 'copy'
 
+  //guppy plex likes to occasionally fail when running in the cloud, set to retry here once
+  errorStrategy 'retry'
+  maxRetries 1
+
   input:
     file(reads) from demultiplexed_reads.flatten()
 
