@@ -63,7 +63,7 @@ def main():
     ##monroe_ont_assembly----------------------------
     subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
     subparser_monroe_ont_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq or fast5 format")
-    subparser_monroe_ont_assembly.add_argument('sequencing_summary', type=str,help="path to the location of the sequencing summary")
+    subparser_monroe_ont_assembly.add_argument('--summary', type=str,help="path to the location of the sequencing summary, only needed when using nanopolish from fastq data")
     subparser_monroe_ont_assembly.add_argument('--run_prefix', type=str,help="desired run prefix. Default \"artic_ncov19\"",default="artic_ncov19")
     subparser_monroe_ont_assembly.add_argument('--ont_basecalling', default=False, action="store_true",help="perform high accuracy basecalling using GPU (only use if you have setup a GPU compatable device)")
     subparser_monroe_ont_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
@@ -248,12 +248,16 @@ def main():
 
         if args.monroe_command == 'ont_assembly':
             #build command
-            if(args.ont_basecalling):
+            if args.ont_basecalling:
                 basecall = f"--basecalling --fast5_dir {args.reads_path}"
             else:
                 basecall = f"--fastq_dir {args.reads_path}"
+            if args.summary:
+                seq_summary = f"--sequencing_summary {args.summary}"
+            else:
+                seq_summary = ""
 
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {basecall} --pipe ont --sequencing_summary {args.sequencing_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {basecall} --pipe ont {seq_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe ONT assembly:")
             child = pexpect.spawn(command)
