@@ -20,11 +20,6 @@ Channel
     .ifEmpty { exit 1, "Primers used must be included." }
     .set { polish_primers }
 
-Channel
-    .fromPath( "${params.sequencing_summary}")
-    .ifEmpty { exit 1, "Cannot find sequencing summary in: ${params.sequencing_summary}" }
-    .set { sequencing_summary }
-
 // If we have fast5 files then start with basecalling
 if(params.basecalling){
   Channel
@@ -38,6 +33,7 @@ if(params.basecalling){
 
     output:
       file "fastq/*.fastq" into fastq_reads
+      file "fastq/sequencing_summary.txt" into sequencing_summary
 
     script:
       if(params.basecalling_mode == "fast"){
@@ -63,6 +59,13 @@ else {
       .fromPath( "${params.fast5_dir}")
       .ifEmpty { exit 1, "Cannot find any fast5 files in: ${params.fast5_dir} Path must not end with /" }
       .set { polish_fast5 }
+
+if(params.polishing == "nanopolish"){
+  Channel
+      .fromPath( "${params.sequencing_summary}")
+      .ifEmpty { exit 1, "Cannot find sequencing summary in: ${params.sequencing_summary}" }
+      .set { sequencing_summary }
+  }
 }
 
 // Demultiplex fastqs
