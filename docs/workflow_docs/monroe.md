@@ -9,10 +9,10 @@ Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detect
 - Cluster detection can be performed from input assembly files (fasta) generated from any sequencing protocol
 
 ## Data workflow:
-Monroe consists of three separate NextFlow pipelines for Illumina paired-end read assembly (`pe_assebly`) Oxford Nanopore Technlogies read assembly (`ont_assembly`) cluster analysis from assembled SC2 genomes (`cluster_analysis`):
+Monroe consists of three separate Nextflow pipelines for Illumina paired-end read assembly (`pe_assebly`) Oxford Nanopore Technlogies read assembly (`ont_assembly`) cluster analysis from assembled SC2 genomes (`cluster_analysis`):
 ![Monroe pipeline](/assets/workflows/monroe/Monroe_v1.0.png)
 
-Monroe's NextFlow pipelines can be executed using the following command format:
+Monroe's Nextflow pipelines can be executed using the following command format:
 ```
 $ staphbe-wf monroe <monroe_pipeline> [options]
 ```
@@ -34,7 +34,7 @@ $ staphb-wf monroe pe_assembly <input_dir> -o <output_dir> --primers <ARTIC_prim
 
 ### Other Options
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom NextFlow configuration file
+- `--config`, `-c`: Path to a custom Nextflow configuration file
 - `--resume`: Resume a previous run
 
 ### Output:
@@ -42,7 +42,7 @@ Monroe `pe_assembly` will organize all output into four subdirectories under the
 - `<output_dir>/alignments`: Sorted BAM files after minimap2 mapping and ivar primer trimming
 - `<output_dir>/assemblies`: Consensus genome assemblies in fasta format as well as a `<date>_quality_metrics.tsv` file comprising of quality metrics for all genome assemblies
 - `<output_dir>/SC2_reads`: Paired read data that have mapped to the Wu-Han-1 reference genome
-- `<output_dir>/logs`: NextFlow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
+- `<output_dir>/logs`: Nextflow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
 
 Sample quality metrics file:
 
@@ -57,7 +57,7 @@ Sample quality metrics file:
 
 
 ### Docker Images
-The base NextFlow configuration profiles (Docker, Singularity) for Monroe `pe_assebly` incorporate the following StaPH-B Docker Images:
+The base Nextflow configuration profiles (Docker, Singularity) for Monroe `pe_assebly` incorporate the following StaPH-B Docker Images:
 
 | Process   | Function  | Docker Image  | Comment|
 |---|---|---|---|---|
@@ -95,13 +95,20 @@ $ staphb-wf monroe ont_assembly <input_dir> <sequencing_summary> -o <output_dir>
 - `--run_prefix`: Desired run prefix. Default = `artic_ncov19`
 - `--ont_basecalling`: perform high accuracy basecalling using GPU (only use if you have setup a GPU compatible device); must be invoked if input data is in Fast5 format.
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom NextFlow configuration file
+- `--config`, `-c`: Path to a custom Nextflow configuration file
 - `--resume`: Resume a previous run
 
 ### Output:
+Monroe `ont_assembly` will organize all output into five subdirectories under the specified `<output_dir>`:
+- `<output_dir>/demultiplexing`: demultiplexed read data
+- `<output_dir>/guppylex`: read data filtered by length
+- `<output_dir>/pipeline_nanopolish`: Nanopolish consensus assembly, if the nanopolish pipeline is specified
+- `<output_dir>/pipeline_medaka`: Medaka consensus assembly, if the medaka pipeline is specified
+- `<output_dir>/logs`: Nextflow execution report (Monroe_execution_report.html), trace file (Monroe_trace.txt), and task work directories.
+
 
 ### Docker Images
-The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
+The base Nextflow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
 | Process   | Function  | Docker Image  | Comments|
 |---|---|---|---|---|
@@ -134,7 +141,7 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir>
 
 ### Other Options
 - `--profile`: Nextflow profile, either Docker or Singularity. Default will try docker first, then singularity if the docker executable cannot be found.
-- `--config`, `-c`: Path to a custom NextFlow configuration file
+- `--config`, `-c`: Path to a custom Nextflow configuration file
 - `--resume`: Resume a previous run
 - `get_rtemplate`: Create a report template file for pipeline customization; `<date>_cluster_analysis_report.Rmd` will be populated in the user's current working directory
 - `--report`,`-r`: Path to custom report tempalte file
@@ -152,11 +159,11 @@ $ staphb-wf monroe cluster_analysis <input_dir> -o <output_dir> -r <custom_repor
 Monroe `cluster_analysis` will write the final pdf report to the specified `<output_dir>`. All other output will be organized into three subdirectories:
 - `<output_dir>/images`: PNG files of the maximum-likelihood tree and color-coded SNP-distance matrix
 - `<output_dir>/msa`: Mafft alignment file (fasta), IQ-Tree newick file, and SNP-dists pairwise-distance matrix
-- `<output_dir>/logs`: NextFlow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
+- `<output_dir>/logs`: Nextflow execution report (`Monroe_execution_report.html`), trace file (`Monroe_trace.txt`), and task work directories.
 
 
 ### Docker Images
-The base NextFlow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
+The base Nextflow configuration profiles (Docker, Singularity) for Monroe `cluster_analysis` incorporate the following StaPH-B Docker Images:
 
 | Process   | Function  | Docker Image  | Comments |
 |---|---|---|---|---|
