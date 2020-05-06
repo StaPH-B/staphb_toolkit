@@ -270,7 +270,7 @@ xmin <- 0
 
 # set x limits and plot tree
 gtree + xlim(xmin,xmax)
-ggsave('ML_tree.png', units = "in", width = 8.5, height = 10)
+ggsave('core_parsimony_tree.png', units = "in", width = 8.5, height = 10)
 ```
 
 ### Methods
@@ -278,4 +278,4 @@ The figures shown here were generated using sequence data processed the [Foushee
 
 Foushee uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter/PhiX removal Monroe prior to using [Mash](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0997-x), a fast genome distance estimation algorithm, to predict the taxonomic identity of all isolates by querying input read data against a pre-skecthed RefSeq database. This method allows for accurate taxonomic identification up to the species level. The [emm typer tool from Public Health England (PHE)](https://github.com/phe-bioinformatics/emm-typing-tool) is then used to make emm-type predictions for each (GAS) isolate. The cleaned read data are also used to perform de novo assemblies using [Shovill](https://github.com/tseemann/shovill) and assembly metrics are collected using [Quast](https://github.com/ablab/quast). <br />
 <br />
-Taxonomic prediction results are then used to bin GAS assemblies by emm-type before performing reference-free Single-Nucleotide Polymorphism (SNP) analysis on each emm-type group independently using [kSNP3](https://www.ncbi.nlm.nih.gov/pubmed/25913206). The resulting core_SNPs_matrix.fasta file is used to generate a pairwise SNP distance matrix using [snp-dists](https://github.com/tseemann/snp-dists). Output from snp-dists and ksnp3 are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env).
+Taxonomic prediction results are then used to bin GAS assemblies by emm-type before performing reference-free Single-Nucleotide Polymorphism (SNP) analysis on each emm-type group independently using [kSNP3](https://www.ncbi.nlm.nih.gov/pubmed/25913206). kSNP3 results are used to generate a pairwise SNP distance matrix using [snp-dists](https://github.com/tseemann/snp-dists). Output from snp-dists and ksnp3 are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env).
