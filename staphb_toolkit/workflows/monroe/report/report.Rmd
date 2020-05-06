@@ -232,7 +232,7 @@ write.table(snp_mat,"snp_distance_matrix.tsv",
 
 ### Phylogenetic tree
 
-Using variation within the genome between samples (SNPs), we can estimate how related isolates are. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree. Bootstrap values are shown on the tree. A bootstrap value greater than 95 suggests the placement of a branch on the tree is well supported.
+Using variation within the genome between samples (SNPs), we can estimate how related between isolates. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree.
 
 ```{r plot-tree, echo = FALSE, message = FALSE, warning = FALSE}
 
@@ -278,4 +278,8 @@ ggsave('ML_tree.png', units = "in", width = 8.5, height = 10)
 
 ### Methods
 
-The figures shown here were generated using sequence data processed with our data analysis pipeline, [Monroe](https://github.com/StaPH-B/staphb_toolkit/tree/dev). Sequences were assembled using a reference guided approach (reference genome: Wuhan-1; NCBI RefSeq NC_045512.2). The Pairwise-SNP matrix was generated from were called using (link to X). The phylogenetic tree was generated from a whole genome alignment (link to mafft). The tree was generated using a maximum-likelihood method with the GTR+G4 substitution model and bootstrapped with 1000 replicates (link to iqtree). Report generated using R and designed by Abigail Shockey. If you have questions about this report please contact X at X.
+The figures shown here were generated using sequence data processed with the cluster_analysis pipeline from the [Monroe workflow](https://github.com/StaPH-B/staphb_toolkit/tree/dev).
+
+Monroe cluster_analysis uses [Mafft](https://mafft.cbrc.jp/alignment/software/) to perform multiple-sequence alignment of all SARS-CoV-2 genomes provided. The resulting alignment fasta file is used to generate a pairwise-snp distance matrix with [snp-dists](https://github.com/tseemann/snp-dists) and a maximum-likelihood phylogeneitc tree with [IQ-Tree](http://www.iqtree.org/).
+
+Output from snp-dists and IQ-Tree are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env)
