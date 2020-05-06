@@ -129,11 +129,9 @@ tip_font_size <- 2
 ```
 
 ### Group-A Streptoccus (GAS) Analysis
-
 The analysis of GAS isolates has been completed. These results must always be used in conjunction with epidemiological data when determining if isolates are epidemiologically linked. This analysis should not be used as a replacement for a thorough epidemiological investigation.
 
 ### SNP Heatmap
-
 The number of Single Nucleotide Polymorphisms (SNPs) between each sample is shown on the heatmap below.
 
 ```{r root-tree, echo = FALSE, message = FALSE, warning = FALSE}
@@ -231,8 +229,7 @@ write.table(snp_mat,"snp_distance_matrix.tsv",
 \newpage
 
 ### Phylogenetic tree
-
-Using variation within the genome between samples (SNPs), we can estimate how related isolates are. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree. Bootstrap values are shown on the tree. A bootstrap value greater than 95 suggests the placement of a branch on the tree is well supported.
+Using variation within the genome between samples (SNPs), we can estimate how related isolates are. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree.
 
 ```{r plot-tree, echo = FALSE, message = FALSE, warning = FALSE}
 
@@ -277,5 +274,8 @@ ggsave('ML_tree.png', units = "in", width = 8.5, height = 10)
 ```
 
 ### Methods
+The figures shown here were generated using sequence data processed the [Foushee data analysis pipeline](https://github.com/StaPH-B/staphb_toolkit/tree/dev).  
 
-The figures shown here were generated using sequence data processed with our data analysis pipeline, [Foushee](https://github.com/StaPH-B/staphb_toolkit/tree/dev). Sequences were assembled using a de-novo approach [shovill](https://github.com/tseemann/shovill). SNP calls and parsimony tree [kSNP3](https://academic.oup.com/bioinformatics/article/31/17/2877/183216). The Pairwise-SNP matrix was snp-dists. The phylogenetic tree was generated from a whole genome alignment (link to mafft). The tree was generated using a maximum-likelihood method with the GTR+G4 substitution model and bootstrapped with 1000 replicates (link to iqtree). Report generated using R and designed by Abigail Shockey. If you have questions about this report please contact X at X.
+Foushee uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter/PhiX removal Monroe prior to using [Mash](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0997-x), a fast genome distance estimation algorithm, to predict the taxonomic identity of all isolates by querying input read data against a pre-skecthed RefSeq database. This method allows for accurate taxonomic identification up to the species level. The [emm typer tool from Public Health England (PHE)](https://github.com/phe-bioinformatics/emm-typing-tool) is then used to make emm-type predictions for each (GAS) isolate. The cleaned read data are also used to perform de novo assemblies using [Shovill](https://github.com/tseemann/shovill) and assembly metrics are collected using [Quast](https://github.com/ablab/quast). <br />
+<br />
+Taxonomic prediction results are then used to bin GAS assemblies by emm-type before performing reference-free Single-Nucleotide Polymorphism (SNP) analysis on each emm-type group independently using [kSNP3](https://www.ncbi.nlm.nih.gov/pubmed/25913206). The resulting core_SNPs_matrix.fasta file is used to generate a pairwise SNP distance matrix using [snp-dists](https://github.com/tseemann/snp-dists). Output from snp-dists and ksnp3 are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env).
