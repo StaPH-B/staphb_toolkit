@@ -94,7 +94,6 @@ process mash_dist{
 
 //Curate top Mash Tredegar_results
 process mash_species {
-  publishDir "${params.outdir}/mash/", mode: 'copy'
 
   input:
   file(mash_hits) from mash_dist.collect()
@@ -164,7 +163,6 @@ process shovill {
 
 //Assembly Quality Report
 process quast {
-  publishDir "${params.outdir}/quast/",mode:'copy'
 
   input:
   set val(name), file(assembly) from assembled_genomes_quality
@@ -214,7 +212,6 @@ with open(mash_species) as tsv:
 EMPTY = file('empty')
 process results{
   publishDir "${params.outdir}", mode: 'copy'
-  echo true
 
 
   input:
@@ -299,7 +296,7 @@ with open("assembly_metrics.csv",'w') as csvout:
 }
 
 process ksnp3 {
-  publishDir "${params.outdir}/ksnp3", mode: 'copy'
+  publishDir "${params.outdir}/cluster_analysis/snps", mode: 'copy'
 
   input:
   file(qc_metrics) from qc_metrics
@@ -354,8 +351,6 @@ for file in assembly_paths:
 
 // Generate SNP matrix from ksnp3 matrix
 process snp_dists{
-  publishDir "${params.outdir}/cluster_analysis", mode: 'copy'
-  echo true
 
   input:
   file(alignment) from ksnp_matrix.collect()
@@ -376,8 +371,7 @@ process snp_dists{
 process render{
   publishDir "${params.outdir}/cluster_analysis/", mode: 'copy', pattern: "*.pdf"
   publishDir "${params.outdir}/cluster_analysis/images", mode: 'copy', pattern: "*.png"
-  publishDir "${params.outdir}/cluster_analysis/", mode: 'copy', pattern: "*ordered_snp_distance_matrix.tsv", overwrite: false
-  echo true
+  publishDir "${params.outdir}/cluster_analysis/snps/", mode: 'copy', pattern: "*ordered_snp_distance_matrix.tsv", overwrite: false
 
   input:
   file(pairwise_snp_distance_matrix) from matrix.collect()
