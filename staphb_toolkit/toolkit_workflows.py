@@ -89,7 +89,7 @@ def main():
     parser_foushee.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"foushee/report/report.Rmd"))
     parser_foushee.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
-    parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for dryad.")
+    parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
     parser_foushee.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     #dryad-----------------------------------------
@@ -103,6 +103,8 @@ def main():
     parser_dryad.add_argument('--sep',metavar="sep_chars",type=str,help="Dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\".",default="_")
     parser_dryad.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_dryad.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_dryad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
+
     parser_dryad.add_argument('--get_rtemplate',action="store_true",help="Get a Nextflow configuration template for dryad.")
     parser_dryad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
