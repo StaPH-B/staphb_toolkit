@@ -67,6 +67,7 @@ progs = {
 'skesa':'SKESA - NCBI\'s de novo genome assemlber',
 'snippy':'Snippy - Rapid haploid variant calling and core genome alignment',
 'snp-dists':'SNP-dists - Pairwise SNP distance matrix from a FASTA sequence alignment',
+'snp-sites': 'SNP-sites - Finds SNP sites from a multi-FASTA alignment file',
 'spades':'SPAdes - St. Petersburg genome assembler',
 'sra-toolkit':'SRA ToolKit - Collection of tools and libraries for using data in the INSDC Sequence Read Archives.',
 'staramr':'StarAMR - Scans genome contigs against the ResFinder, PlasmidFinder, and PointFinder databases.',
@@ -151,6 +152,7 @@ def main():
     parser_skesa = subparsers.add_parser('skesa', add_help=False)
     parser_snippy = subparsers.add_parser('snippy', add_help=False)
     parser_snpdists = subparsers.add_parser('snp-dists', add_help=False)
+    parser_snpsites = subparsers.add_parser('snp-sites', add_help=False)
     parser_spades = subparsers.add_parser('spades', add_help=False)
     parser_sratoolkit = subparsers.add_parser('sra-toolkit', add_help=False)
     parser_staramr = subparsers.add_parser('staramr', add_help=False)
@@ -304,6 +306,15 @@ def main():
         snp_dists = sb_prog.Run(command=command, path=path_map, image=snp_dists_configuration["image"],
                                 tag=snp_dists_configuration["tag"])
         snp_dists.run()
+
+    if program == 'snp-sites':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "snp-sites " + arg_string
+        snp_sites_configuration = config["parameters"]["snp-sites"]
+        snp_sites = sb_prog.Run(command=command, path=path_map, image=snp_sites_configuration["image"],
+                                tag=snp_sites_configuration["tag"])
+        snp_sites.run()
 
     if program == 'snippy':
         if not re.search('[a-zA-Z]', arg_string):
