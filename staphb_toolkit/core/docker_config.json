@@ -153,6 +153,11 @@
          "tag": "0.6.2",
          "params": ""
       },
+      "snp-sites": {
+         "image": "staphb/snp-sites",
+         "tag": "2.3.3",
+         "params": ""
+      },
       "cfsan-snp-pipeline": {
          "image": "staphb/cfsan-snp-pipeline",
          "tag": "2.0.2",
