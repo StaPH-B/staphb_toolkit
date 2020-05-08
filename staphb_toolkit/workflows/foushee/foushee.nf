@@ -210,7 +210,7 @@ with open(mash_species) as tsv:
 
 //Collect and qc metrics
 EMPTY = file('empty')
-process results{
+process assembly_results{
   publishDir "${params.outdir}", mode: 'copy'
 
 
@@ -232,7 +232,6 @@ class result_values:
     def __init__(self,id):
         self.id = id
         self.est_genome_length = "NA"
-        self.est_cvg = "NA"
         self.number_contigs = "NA"
         self.species_prediction = "NA"
         self.subspecies_prediction = "NA"
@@ -287,10 +286,10 @@ for file in quast_results:
 #create output file
 with open("assembly_metrics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
+    writer.writerow(["sample", "est_genome_length", "number_contigs", "species_prediction", "subspecies_prediction"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.est_genome_length,result.est_cvg,result.number_contigs,result.species_prediction,result.subspecies_prediction])
+        writer.writerow([result.id,result.est_genome_length,result.number_contigs,result.species_prediction,result.subspecies_prediction])
 
 """
 }
@@ -380,7 +379,7 @@ process render{
 
   output:
   file "*foushee_cluster_report.pdf"
-  file "*ML_tree.png"
+  file "*_core_parsimony_tree.png"
   file "*SNP_heatmap.png"
   file "*snp_distance_matrix.tsv"
   shell:
@@ -388,12 +387,19 @@ process render{
 for i in *pairwise_snp_distance_matrix.tsv
 do
   emm_type=\$(echo \$i | cut -d _ -f 1)
-  cp ${rmd} ./report_template.Rmd
-  Rscript /reports/render.R \${emm_type}_pairwise_snp_distance_matrix.tsv \${emm_type}_tree.core.tre ./report_template.Rmd
-  mv report.pdf \${emm_type}_foushee_cluster_report.pdf
-  mv ML_tree.png \${emm_type}_ML_tree.png
-  mv SNP_heatmap.png \${emm_type}_SNP_heatmap.png
-  mv snp_distance_matrix.tsv \${emm_type}_ordered_snp_distance_matrix.tsv
+  if [ -s \${emm_type}_tree.core.tre ]
+  then
+    cp ${rmd} ./\${emm_type}_report_template.Rmd
+    Rscript /reports/render.R \${emm_type}_pairwise_snp_distance_matrix.tsv \${emm_type}_tree.core.tre ./\${emm_type}_report_template.Rmd
+    mv report.pdf \${emm_type}_foushee_cluster_report.pdf
+    mv core_parsimony_tree.png \${emm_type}_core_parsimony_tree.png
+    mv SNP_heatmap.png \${emm_type}_SNP_heatmap.png
+    mv snp_distance_matrix.tsv \${emm_type}_ordered_snp_distance_matrix.tsv
+  else
+  # also publish matrices for emmtypes with less than 3 isolates & remove empty tree file
+    mv \${emm_type}_pairwise_snp_distance_matrix.tsv \${emm_type}_ordered_snp_distance_matrix.tsv
+    rm \${emm_type}_tree.core.tre
+  fi
 done
 """
 }
