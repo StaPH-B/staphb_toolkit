@@ -32,6 +32,8 @@ navbar-links:
     - Custom Configurations: "configs"
   Workflows:
     - Dryad: "workflow_docs/dryad"
+    - Foushee: "workflow_docs/foushee"
+    - Monroe: "workflow_docs/monroe"
     - Tredegar: "workflow_docs/tredegar"
     - Contributing Workflows: "contributing"
 
