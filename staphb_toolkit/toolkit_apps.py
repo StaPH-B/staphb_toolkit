@@ -6,6 +6,7 @@
 
 import sys,os,re
 import argparse
+from shutil import copy
 import json
 import staphb_toolkit.core.sb_programs as sb_prog
 from staphb_toolkit.core.autopath import path_replacer
@@ -86,9 +87,12 @@ def main():
             sys.stderr.write('\nerror: %s\n' % message)
             sys.exit(1)
 
+    docker_config_path = os.path.abspath(os.path.dirname(__file__) + '/' + 'core/docker_config.json')
+
     parser = MyParser(usage="staphb-tk [optional arguments] <application> [application arguments]",add_help=True)
     subparsers = parser.add_subparsers(title='custom program execution',metavar='',dest="subparser_name",parser_class=MyParser)
-    parser.add_argument("--docker_config","-c", default="/core/docker_config.json",metavar="<path>", help="Configuration file for container images and tags; if none provided, configuration will be set to staphb_toolkit/core/docker_config.json")
+    parser.add_argument("--docker_config","-c", default=docker_config_path,metavar="<path>", help="Configuration file for container images and tags; if none provided, default container versions will be used.")
+    parser.add_argument("--get_docker_config",default=False,action="store_true",help="Get the defult docker container configureation file.")
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
     parser.add_argument("--update",default=False,action="store_true",help="Check for and install a ToolKit update.")
     parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
@@ -181,6 +185,7 @@ def main():
     #check for updates
     if parser_args[0].update:
         autoupdate.check_for_updates()
+        sys.exit(0)
 
     if parser_args[0].auto_update:
         #get current status
@@ -193,10 +198,16 @@ def main():
     if autoupdate.check_update_status():
         autoupdate.check_for_updates()
 
+    #give user docker config if asked
+    if parser_args[0].get_docker_config:
+        cwd = os.getcwd()
+        copy(docker_config_path,cwd)
+        sys.exit(0)
+
     #display list of programs if needed
     if parser_args[0].list:
         print_prog_list()
-        sys.exit(1)
+        sys.exit(0)
 
     if program == None:
         parser.print_help()
