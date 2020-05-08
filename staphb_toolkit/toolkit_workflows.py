@@ -104,7 +104,6 @@ def main():
     parser_dryad.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_dryad.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
     parser_dryad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
-
     parser_dryad.add_argument('--get_rtemplate',action="store_true",help="Get a Nextflow configuration template for dryad.")
     parser_dryad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
