@@ -90,6 +90,7 @@ def main():
     subparsers = parser.add_subparsers(title='custom program execution',metavar='',dest="subparser_name",parser_class=MyParser)
     parser.add_argument("--docker_config","-c", default="/core/docker_config.json",metavar="<path>", help="Configuration file for container images and tags; if none provided, configuration will be set to staphb_toolkit/core/docker_config.json")
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
+    parser.add_argument("--update",default=False,action="store_true",help="Check for and install a ToolKit update.")
     parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
     ###custom apps
     ## Mash Species
@@ -178,6 +179,9 @@ def main():
     args = parser_args[1]
 
     #check for updates
+    if parser_args[0].update:
+        autoupdate.check_for_updates()
+
     if parser_args[0].auto_update:
         #get current status
         update_status = autoupdate.check_update_status()
