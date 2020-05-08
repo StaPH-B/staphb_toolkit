@@ -25,6 +25,7 @@ def main():
             sys.exit(2)
 
     parser = MyParser(usage="staphb-wf [optional arguments] <workflow> [workflow arguments]")
+    parser.add_argument("--update",default=False,action="store_true",help="Check for and install a ToolKit update.")
     parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
     subparsers = parser.add_subparsers(title='workflows',metavar='',dest="subparser_name")
 
@@ -109,6 +110,9 @@ def main():
 
     args = parser.parse_args()
     #check for updates
+    if parser_args[0].update:
+        autoupdate.check_for_updates()
+
     if args.auto_update:
         #get current status
         update_status = autoupdate.check_update_status()
