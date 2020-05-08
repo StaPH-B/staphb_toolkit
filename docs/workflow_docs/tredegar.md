@@ -100,7 +100,7 @@ Default docker images and parameters listed above can be adjusted by:
 3. Specifying your custom config file (i.e. the edited `<date>_tredegar.config>` file) when running the pipeline:<br />
 
 ```
-$ staphb-wf tredegar.py <input_dir> -o <output_dir> -c <custom_config_file> [optoins]
+$ staphb-wf tredegar <input_dir> -o <output_dir> -c <custom_config_file> [optoins]
 ```
 
 ## Version History
