@@ -29,7 +29,7 @@ def call(container,command,cwd='',paths={},remove=True):
     command_list = shlex.split(command)
 
     ###run the container
-    output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd],stream=True)
+    output = Client.execute(command_list,bind=volumes,options=['--pwd',cwd,'--cleanenv'],stream=True)
 
     try:
         ###stream the output
