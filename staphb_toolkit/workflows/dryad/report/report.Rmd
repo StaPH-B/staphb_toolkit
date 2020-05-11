@@ -1,0 +1,272 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+    - \usepackage{fancyhdr}
+    - \usepackage{fontspec}
+    - \usepackage{xcolor}
+    - \geometry{left = 0.5in,right = 0.5in}
+mainfont: Roboto
+sansfont: Roboto
+urlcolor: purplepeopleeater
+---
+<!-- define color and adjust lengths for header and footer-->
+\definecolor{purplepeopleeater}{RGB}{106,13,75}
+\addtolength{\headheight}{3.0cm}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\footskip}{-0.225in}
+
+<!-- % setup header -->
+\pagestyle{fancy}
+\fancyhf{}
+
+<!-- header content -->
+\fancyhead[L]{\raisebox{-0.25\height}{\includegraphics[height = 2.5cm]{dryad_logo_250.png}}}
+\fancyhead[R]{\Huge Genomic Clustering Report\\
+\Large `r paste(Sys.Date())`}
+
+<!-- create red header line -->
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+
+<!-- footer content -->
+\fancyfoot[C]{For research use only, not for clinical use.}
+\fancyfoot[R]{\thepage}
+
+<!-- create red footer line -->
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\footrule}{\hbox to\headwidth{%
+    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+
+```{r include=FALSE}
+
+## Libraries
+library(ggplot2)
+library(ggtree)
+library(phytools)
+library(dplyr)
+library(kableExtra)
+library(viridis)
+library(pander)
+
+date <- Sys.Date()
+
+## Figure size
+knitr::opts_chunk$set(out.width="7.5in", out.height="8in", fig.align="left")
+
+```
+
+```{r heatmap-ploting-defaults, echo = FALSE, message = FALSE, warning = FALSE}
+
+# alter these plotting defaults as necessary
+
+# heatmap width relative to plot
+heatmap_width <- 5
+
+# font size for heatmap row and column names
+axis_font_size <- 3
+
+# font size for heatmap values
+cell_font_size <- 3
+
+# tree offset from heatmap
+tree_offset <- 9
+
+# offset of column names from heatmap; should be negative
+col_offset <- -3
+
+# offset of row names names from heatmap
+row_offset <- -8
+
+# legend title font size
+legend_title_size <- 10
+
+# legend body font size
+legend_text_size <- 8
+
+# height of heatmap colourbar
+colourbar_height <- 0.5
+
+# width of heatmap colourbar
+colourbar_width <- 7
+
+```
+
+```{r tree-plot-defaults, echo = FALSE, message = FALSE, warning = FALSE}
+
+# alter these plotting defaults as necessary
+
+# bootstrap cutoff; plot boostrap values above this threshold
+boot_thresh <- 95
+
+# size of node label text
+node_text_size <- 1.75
+
+# nudge node label text horizontally
+x_nudge <- -0.00005
+
+#
+scale_offset <- 0.1
+
+# tree scale font size
+scale_font_size <- 2
+
+# tip label font size
+tip_font_size <- 2
+
+```
+
+### Dryad Analysis
+
+The dryad analyses have been completed. These results must always be used in conjunction with epidemiological data when determining if isolates are epidemiologically linked. This analysis should not be used as a replacement for a thorough epidemiological investigation.
+
+`r if(exists("ar_df")) {
+
+"### Antibiotic Resistance Genes
+
+The table below contains antibiotic resistance genes identified by AMRFinderPlus in each isolate."
+}`
+
+```{r ar-table, echo=FALSE, message=FALSE, warning=FALSE}
+if (exists("ar_df")){
+    pander(ar_df)
+}
+
+```
+
+### SNP Heatmap
+
+The number of Single Nucleotide Polymorphisms (SNPs) between each sample is shown on the heatmap below. There is no hard and fast rule for determining how many SNPs are needed to classify an outbreak. Generally it is best to look for patterns in the data between the SNP data and the core-genome tree.
+
+```{r root-tree, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block midpoint-roots the tree
+
+# read tree and midpoint root
+tree <- read.tree(nwk)
+mpt <- midpoint.root(tree)
+
+# store midpoint-rooted tree as dataframe
+mpt.fort <- fortify(mpt)
+
+# get vertical order of tip labels from tree dataframe
+mpt.tip <- mpt.fort[which(mpt.fort$isTip ==  TRUE),]
+mpt.ord <- mpt.tip$label[order(mpt.tip$y)]
+
+# store base plot of midpoint-rooted tree
+gtree <- ggtree(mpt, branch.length = "none")
+
+```
+
+```{r format-matrix, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block formats the matrix
+
+# R places an X in front of #s when reading in a dataframe
+colnames(snp_mat) <- gsub("X","",colnames(snp_mat))
+
+# replace any "." with "-" in column names
+colnames(snp_mat) <- gsub("\\.","-",colnames(snp_mat))
+
+# order snp matrix by vertical order of tip labels
+snp_mat <- snp_mat[c(mpt.ord),c(mpt.ord)]
+
+```
+
+```{r plot-tree-and-heatmap, echo = FALSE, message = FALSE, warning = FALSE}
+
+### Split isolate IDs by delimiter "-" and "_" (for >= 20 isolates)
+
+# ggtree will often crop the figure too small; subtract from ymin and add to ymax to fix this
+ymin <- min(gtree$data$y) - 7
+ymax <- max(gtree$data$y) + 1
+
+# main tree plotting function
+gheatmap(gtree, snp_mat,
+    width = heatmap_width,
+    offset = tree_offset,
+    cell_labels = TRUE,
+    cell_font_size = cell_font_size,
+    font.size = axis_font_size,
+    colnames_angle = 90,
+    rownames_angle = 0,
+    colnames_offset_y = col_offset,
+    rownames_offset_x = row_offset) +
+
+# set heatmap colourbar colors and limits
+scale_fill_viridis(limits = c(1,(max(snp_mat)+1)),
+    na.value = "white",
+    name = "SNPs",
+    guide = "colourbar") +
+
+# set plot y limits
+ylim(ymin,ymax) +
+
+# remove whitespace around plot and add legend
+theme(plot.margin = unit(c(0,0,0,0), "mm"),
+    legend.box = "horizontal",
+    legend.text = element_text(size = legend_text_size),
+    legend.title = element_text(size = legend_title_size),
+    legend.position = "bottom",
+    legend.margin = margin(0,0,0,0)) +
+
+# place heatmap colourbar beneath the heatmap (rather than beside)
+guides(fill = guide_colourbar(title.position = "top",
+    title.hjust = 0.5,
+    barheight = colourbar_height,
+    barwidth = colourbar_width))
+
+```
+\newpage
+
+### Core-genome phylogenetic tree
+
+The core-genome is the core set of genes shared across all isolates in the sample. Using variation within that core set of genes, we can estimate how related isolates are. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree. Bootstrap values are shown on the tree. A bootstrap value greater than 95 suggests the placement of a branch on the tree is well supported.
+
+```{r plot-tree, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block plots the midpint-rooted tree with bootstrap values
+
+# main tree plotting function
+gtree <- ggtree(mpt, color = "black", alpha = 0.75, size = 0.5) +
+
+# add boostrap values as node labels
+geom_nodelab(aes(x = branch,
+  label = label,
+  subset = !isTip & (as.numeric(label) >= boot_thresh)),
+  vjust = -0.5,
+  nudge_x = x_nudge,
+  size = node_text_size) +
+
+# add tip labels
+geom_tiplab(size = tip_font_size) +
+
+# add tree scale
+geom_treescale(offset = scale_offset,
+    fontsize = scale_font_size,
+    y = 0,
+    x = 0) +
+
+# remove whitespace around plot
+theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+# ggtree will often crop the figure too small; add to xmax to fix this
+# we've found the following function calculates a decent value to add to xmax:
+
+log10_ceiling <- function(x) {
+    10^(ceiling(log10(x)))
+}
+
+xmax <- max(gtree$data$x) + (log10_ceiling(max(gtree$data$x))/5)
+xmin <- 0
+
+# set x limits and plot tree
+gtree + xlim(xmin,xmax)
+
+```
+
+### Methods
+
+The figures shown here were generated using sequence data processed with our data analysis pipeline, Dryad v2.0.0 ([https://github.com/k-florek/dryad](https://github.com/k-florek/dryad)). SNPs were called using the Center for Food Safety and Applied Nutrition ([CFSAN](https://github.com/CFSAN-Biostatistics/snp-pipeline)) SNP pipeline within Dryad. The core-genome tree was generated using an alignment of coding regions shared across 99% of isolates. The tree was generated using a maximum-likelihood method with the GTR+G substitution model and bootstrapped with 1000 replicates. Report generated using R and designed by Abigail Shockey. If you have questions about this report please contact Kelsey Florek at [kelsey.florek@slh.wisc.edu](mailto:kelsey.florek@slh.wisc.edu).
