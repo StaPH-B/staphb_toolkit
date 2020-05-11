@@ -29,21 +29,13 @@ def main():
     parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
     subparsers = parser.add_subparsers(title='workflows',metavar='',dest="subparser_name")
 
-    #check if we are using docker or singularity
-    if which('docker'):
-        profile = '-profile docker'
-    elif which('singularity'):
-        profile = '-profile singularity'
-    else:
-        profile = ''
-
     #parser for workflows
     #tredegar-----------------------------------------
     parser_tredegar = subparsers.add_parser('tredegar', help='Quality control of WGS read data.', add_help=False)
     parser_tredegar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
     parser_tredegar.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="tredegar_results")
     parser_tredegar.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-    parser_tredegar.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_tredegar.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_tredegar.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for tredegar.")
     parser_tredegar.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
@@ -59,7 +51,7 @@ def main():
     subparser_monroe_pe_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
-    subparser_monroe_pe_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    subparser_monroe_pe_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
 
     ##monroe_ont_assembly----------------------------
     subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
@@ -68,7 +60,7 @@ def main():
     subparser_monroe_ont_assembly.add_argument('--run_prefix', type=str,help="desired run prefix. Default \"artic_ncov19\"",default="artic_ncov19")
     subparser_monroe_ont_assembly.add_argument('--ont_basecalling', default=False, action="store_true",help="perform high accuracy basecalling using GPU (only use if you have setup a GPU compatable device)")
     subparser_monroe_ont_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
-    subparser_monroe_ont_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    subparser_monroe_ont_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     subparser_monroe_ont_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_ont_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
     subparser_monroe_ont_assembly.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
@@ -80,7 +72,7 @@ def main():
     subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_cluster_analysis.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
-    subparser_monroe_cluster_analysis.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    subparser_monroe_cluster_analysis.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     subparser_monroe_cluster_analysis.add_argument('--get_rtemplate',action="store_true",help="Get a Rmd configuration template for report building.")
 
     #foushee-----------------------------------------
@@ -89,28 +81,50 @@ def main():
     parser_foushee.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="foushee_results")
     parser_foushee.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"foushee/report/report.Rmd"))
     parser_foushee.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-    parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
+    parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
     parser_foushee.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     #dryad-----------------------------------------
     parser_dryad = subparsers.add_parser('dryad', help='A comprehensive tree building program.', add_help=False)
-    parser_dryad.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
-    parser_dryad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"dryad_results\".",default="dryad_results")
-    parser_dryad.add_argument('--core-genome','-cg',default=False, action="store_true", help="Construct a core-genome tree.")
-    parser_dryad.add_argument('--snp','-s',default=False, action="store_true", help="Construct a SNP tree. Note: Requires a reference genome in fasta format (-r).")
-    parser_dryad.add_argument('-r',metavar='<path>', type=str,help="Reference genome for SNP pipeline.")
-    parser_dryad.add_argument('-ar',default=False, action="store_true", help="Detect AR mechanisms.")
-    parser_dryad.add_argument('--sep',metavar="sep_chars",type=str,help="Dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\".",default="_")
-    parser_dryad.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-    parser_dryad.add_argument('--config','-c', type=str,help="Nextflow custom configureation.")
-    parser_dryad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
-    parser_dryad.add_argument('--get_rtemplate',action="store_true",help="Get a Nextflow configuration template for dryad.")
-    parser_dryad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_dryad = parser_dryad.add_subparsers(title='dryad apps',metavar='',dest='dryad_app')
 
+    subparser_dryad_main = subparser_dryad.add_parser('main',help="dryad workflow")
+    subparser_dryad_main.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
+    subparser_dryad_main.add_argument('--output','-o',metavar="<output_path>",type=str,help="path to ouput directory, default \"dryad_results\"",default="dryad_results")
+    subparser_dryad_main.add_argument('--core-genome','-cg',default=False, action="store_true", help="construct a core-genome tree")
+    subparser_dryad_main.add_argument('--snp','-s',default=False, action="store_true", help="construct a SNP tree, requires a reference sequence in fasta format (-r)")
+    subparser_dryad_main.add_argument('-r',metavar='<path>', type=str,help="reference sequence for SNP pipeline")
+    subparser_dryad_main.add_argument('-ar',default=False, action="store_true", help="detect AR mechanisms")
+    subparser_dryad_main.add_argument('--sep',metavar="sep_chars",type=str,help="dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\"",default="_")
+    subparser_dryad_main.add_argument('--profile', type=str,choices=["docker", "singularity"],help="specify nextflow profile, dryad will try to use docker first, then singularity")
+    subparser_dryad_main.add_argument('--config','-c', type=str,help="Nextflow custom configuration")
+    subparser_dryad_main.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
+    subparser_dryad_main.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_dryad_main.add_argument('--report',action="store_true",help="generte a pdf report")
+
+    subparser_dryad_report = subparser_dryad.add_parser('rebuild_report',help='rebuild a previously generated PDF report')
+    subparser_dryad_report.add_argument('rmd',type=str,help="path to Rmarkdown file (.Rmd)",nargs='?', default=False)
+    subparser_dryad_report.add_argument('snp_matrix',type=str,help="path to snp matrix",nargs='?', default=False)
+    subparser_dryad_report.add_argument('cg_tree',type=str,help="path to core genome tree",nargs='?', default=False)
+    subparser_dryad_report.add_argument('--ar',type=str,help="path to ar TSV file")
+    subparser_dryad_report.add_argument('--profile', type=str,choices=["docker", "singularity"],help="specify nextflow profile, dryad_report will try to use docker first, then singularity")
+    subparser_dryad_report.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
+    subparser_dryad_report.add_argument('--config','-c', type=str,help="Nextflow custom configuration")
+
+    #----------------------------------------------
     args = parser.parse_args()
+
+    #check if we are using docker or singularity
+    if which('docker'):
+        profile = '-profile docker'
+    elif which('singularity'):
+        profile = '-profile singularity'
+    else:
+        profile = ''
+
     #check for updates
-    if parser_args[0].update:
+    if args.update:
         autoupdate.check_for_updates()
 
     if args.auto_update:
@@ -148,7 +162,7 @@ def main():
 
         #check for reads_path
         if not args.reads_path:
-            parser.print_help()
+            parser_tredegar.print_help()
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
@@ -240,7 +254,7 @@ def main():
 
             #check for assemblies path
             if not args.assemblies_path:
-                parser.print_help()
+                subparser_monroe_cluster_analysis.print_help()
                 print("Please specify a path to a directory containing the raw reads.")
                 sys.exit(1)
 
@@ -283,7 +297,7 @@ def main():
 
         #check for reads_path
         if not args.reads_path:
-            parser.print_help()
+            parser_foushee.print_help()
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
@@ -320,6 +334,10 @@ def main():
         #dryad path
         dryad_path = os.path.join(workflows_path,"dryad/")
 
+        if args.dryad_app == None:
+            parser_dryad.print_help()
+            sys.exit(1)
+
         #give config to user if requested
         if args.get_config:
             config_path = os.path.join(dryad_path,"configs/dryad_config_template.config")
@@ -327,49 +345,110 @@ def main():
             copyfile(config_path,dest_path)
             sys.exit()
 
-        #check for reads_path
-        if not args.reads_path:
-            parser.print_help()
-            print("Please specify a path to a directory containing the raw reads.")
-            sys.exit(1)
+        #rebuild report subroutine
+        if args.dryad_app == "rebuild_report":
+            #check for rmd path
+            if not args.rmd or not args.snp_matrix or not args.cg_tree:
+                subparser_dryad_report.print_help()
+                sys.exit(1)
 
-        #check for reference sequence
-        if args.snp and args.r == None:
-            parser_dryad.print_help()
-            print("Please specify a reference sequence for the SNP pipeline.")
-            sys.exit(1)
+            #check for config or profile
+            config = ""
+            if args.config:
+                config = "-C " + os.path.abspath(args.config)
+                profile = ""
+            elif args.profile:
+                if which(args.profile):
+                    profile = '-profile ' + args.profile
+                else:
+                    print(f"{args.profile} is not installed or found in PATH.")
+            elif not profile:
+                print('Singularity or Docker is not installed or not found in PATH.')
+                sys.exit(1)
 
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = args.profile
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
-            sys.exit(1)
+            #set work dir into local logs dir if profile not aws
+            work = ""
+            output_path = os.path.join(os.getcwd(),'rebuild_results')
+            output_work = os.path.join(output_path,'report_work')
+            if profile:
+                work = f"-w {output_work}"
 
-        #set work dir into local logs dir if profile not aws
-        work = ""
-        if profile:
-            work = f"-w {args.output}/logs/work"
+            rmd = os.path.abspath(args.rmd)
+            logo_path = os.path.join(dryad_path, '/assets/dryad_logo_250.png')
+            snp_mat = "--snp_matrix " + os.path.abspath(args.snp_matrix)
+            cg_tree = "--cg_tree " + os.path.abspath(args.cg_tree)
+            if args.ar:
+                ar_tsv = "--ar_tsv " + os.path.abspath(args.ar)
+            else:
+                ar_tsv = ""
 
-        #build nextflow command
-        selections = ""
-        if args.ar:
-            selections += " --ar"
-        if args.core_genome:
-            selections += " --cg"
-        if args.snp:
-            selections += f" --snp --snp_reference {args.r}"
-        #add other arguments
-        other_args = f"--name_split_on {args.sep} --outdir {args.output}"
-        #build command
-        command = nextflow_path
-        command = command + f" {config} run {dryad_path}/dryad.nf {profile} {args.resume} --reads {args.reads_path} {selections} {other_args} {work}"
+            #build command
+            command = nextflow_path
+            command = command + f" {config} run {dryad_path}/rebuild_report.nf {profile} --logo {logo_path} --outdir {output_path} --rmd {rmd} {snp_mat} {cg_tree} {ar_tsv} {work}"
 
-        #run command using nextflow in a subprocess
-        print("Starting the Dryad pipeline:")
-        child = pexpect.spawn(command)
-        child.interact()
+            #run command using nextflow in a subprocess
+            print("Rebuilding Dryad Report:")
+            child = pexpect.spawn(command)
+            child.interact()
+
+        #dryad main application
+        if args.dryad_app == "main":
+            #check for reads_path
+            if not args.reads_path:
+                subparser_dryad_main.print_help()
+                print("Please specify a path to a directory containing the raw reads.")
+                sys.exit(1)
+
+            #check for reference sequence
+            if args.snp and args.r == None:
+                subparser_dryad_main.print_help()
+                print("Please specify a reference sequence for the SNP pipeline.")
+                sys.exit(1)
+
+            #check for config or profile
+            config = ""
+            if args.config:
+                config = "-C " + os.path.abspath(args.config)
+                profile = ""
+            elif args.profile:
+                if which(args.profile):
+                    profile = '-profile ' + args.profile
+                else:
+                    print(f"{args.profile} is not installed or found in PATH.")
+            elif not profile:
+                print('Singularity or Docker is not installed or not found in PATH.')
+                sys.exit(1)
+
+            #set work dir into local logs dir if profile not aws
+            work = ""
+            if profile:
+                work = f"-w {args.output}/logs/work"
+
+            #build nextflow command
+            logo_path = os.path.join(dryad_path,"assets/dryad_logo_250.png")
+            selections = ""
+            if args.ar:
+                selections += " --ar"
+            if args.core_genome:
+                selections += " --cg"
+            if args.snp:
+                selections += f" --snp --snp_reference {args.r}"
+            if args.report and args.snp and args.core_genome:
+                report_template_path = os.path.abspath(os.path.dirname(__file__) + '/report/report.Rmd')
+                selections += f" --report {report_template_path} --logo {logo_path}"
+
+            #path for multiqc config
+            mqc_config_path = f"--multiqc_config " + os.path.join(dryad_path,"configs/multiqc_config.yaml")
+            mqc_logo_path =  f"--multiqc_logo " + logo_path
+
+            #add other arguments
+            other_args = f"--name_split_on {args.sep} --outdir {args.output}"
+
+            #build command
+            command = nextflow_path
+            command = command + f" {config} run {dryad_path}/dryad.nf {profile} {args.resume} --reads {args.reads_path} {selections} {other_args} {mqc_config_path} {mqc_logo_path} -with-trace {args.output}/logs/dryad_trace.txt -with-report {args.output}/logs/dryad_execution_report.html {work}"
+
+            #run command using nextflow in a subprocess
+            print("Starting the Dryad pipeline:")
+            child = pexpect.spawn(command)
+            child.interact()
