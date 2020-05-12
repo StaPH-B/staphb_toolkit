@@ -17,320 +17,255 @@
       }
    },
    "parameters": {
+     "abricate": {
+        "image": "staphb/abricate",
+        "tag": "1.0.0"
+     },
+     "augur": {
+        "image": "staphb/augur",
+        "tag": "6.3.0"
+     },
+     "auspice": {
+        "image": "staphb/auspice",
+        "tag": "2.12.0"
+     },
+     "bbtools": {
+        "image": "staphb/bbtools",
+        "tag": "38.76"
+     },
+     "bwa": {
+        "image": "staphb/bwa",
+        "tag": "0.7.17"
+     },
+     "canu-racon": {
+        "image": "staphb/canu-racon",
+        "tag": "2.0"
+     },
+     "cfsan-snp-pipeline": {
+        "image": "staphb/cfsan-snp-pipeline",
+        "tag": "2.0.2"
+     },
+     "circlator": {
+         "image": "staphb/circlator",
+         "tag": "1.5.6"
+     },
+     "clustalo": {
+        "image": "staphb/clustalo",
+        "tag": "1.2.4"
+     },
+     "emm-typing-tool": {
+        "image": "staphb/emm-typing-tool",
+        "tag": "0.0.1"
+     },
+     "fastani": {
+         "image": "staphb/fastani",
+         "tag": "1.1"
+     },
+     "fasttree": {
+         "image": "staphb/fasttree",
+         "tag": "2.1.11"
+     },
+     "fastqc": {
+         "image": "staphb/fastqc",
+         "tag": "0.11.8"
+     },
+     "filtlong": {
+         "image": "staphb/filtlong",
+         "tag": "0.2.0-cv1"
+     },
+     "flye": {
+        "image": "staphb/flye",
+        "tag": "2.7"
+     },
+     "iqtree": {
+        "image": "staphb/iqtree",
+        "tag": "1.6.7"
+     },
+     "ivar":{
+       "image": "staphb/ivar",
+       "tag": "1.2.1"
+     },
+     "ivar-SC2":{
+       "image": "staphb/ivar",
+       "tag": "1.2.1-SC2"
+     },
+     "kma":{
+        "image": "staphb/kma",
+        "tag": "1.2.21"
+     },
+     "kraken": {
+        "image": "staphb/kraken",
+        "tag": "1.1.1"
+     },
+     "kraken2": {
+        "image": "staphb/kraken2",
+        "tag": "2.0.8-beta"
+     },
+     "ksnp3": {
+        "image": "staphb/ksnp3",
+        "tag": "3.1"
+     },
+     "legsta": {
+        "image": "staphb/legsta-cv1",
+        "tag": "0.3.7"
+     },
+     "lyveset": {
+        "image": "staphb/lyveset",
+        "tag": "1.1.4f"
+     },
+     "mafft": {
+        "image": "staphb/mafft",
+        "tag": "7.450"
+     },
       "mash": {
          "image": "staphb/mash",
-         "tag": "2.1",
-         "mash_dist": {
-            "db": "/db/RefSeqSketchesDefaults.msh",
-            "dist_params": ""
-         },
-         "mash_sketch": {
-            "sketch_params": ""
-         }
+         "tag": "2.2"
       },
-      "spades": {
-         "image": "staphb/spades",
-         "tag": "3.13.0",
-         "params": ""
+      "mashtree" : {
+         "image": "staphb/mashtree",
+         "tag": "1.0.4"
       },
-      "raxml":{
-	 "image": "staphb/raxml",
-	 "tag": "8.2.12",
-	 "params": ""
+      "medaka" : {
+         "image": "staphb/medaka",
+         "tag": "0.8.1"
       },
-      "bwa": {
-         "image": "staphb/bwa",
-         "tag": "0.7.17",
-         "params": ""
+      "minimap2": {
+         "image": "staphb/minimap2",
+         "tag": "2.17"
       },
-      "seqyclean": {
-         "image": "staphb/seqyclean",
-         "tag": "1.10.09",
-         "params": ""
+      "mlst" : {
+         "image": "staphb/mlst",
+         "tag": "2.19.0"
       },
-      "shovill": {
-         "image": "staphb/shovill",
-         "tag": "1.0.4",
-         "params": ""
+      "mugsy": {
+         "image": "staphb/mugsy",
+         "tag": "1r2.3"
       },
-      "clustalo": {
-         "image": "staphb/clustalo",
-         "tag": "1.2.4",
-         "params": ""
+      "multiqc": {
+         "image": "staphb/multiqc",
+         "tag": "1.8"
       },
-      "quast": {
-         "image": "staphb/quast",
-         "tag": "5.0.2",
-         "params": ""
+      "nanoplot": {
+         "image": "staphb/nanoplot",
+         "tag": "1.29.0"
       },
-      "lyveset": {
-         "image": "staphb/lyveset",
-         "tag": "1.1.4f",
-         "params": ""
+      "ncbi-amrfinder-plus": {
+         "image": "staphb/ncbi-amrfinderplus",
+         "tag": "3.1.1b"
+      },
+      "orthofinder": {
+         "image": "staphb/orthofinder",
+         "tag": "2.17"
+      },
+      "pilon": {
+         "image": "staphb/pilon",
+         "tag": "1.23.0"
+      },
+      "plasmidseeker": {
+         "image": "staphb/plasmidseeker",
+         "tag": "1.0"
       },
       "prokka": {
          "image": "staphb/prokka",
-         "tag": "1.14.5",
-         "params": ""
+         "tag": "1.14.5"
       },
-      "serotypefinder": {
-         "image": "staphb/serotypefinder",
-         "tag": "1.1",
-         "params": ""
+      "quast": {
+         "image": "staphb/quast",
+         "tag": "5.0.2"
       },
-      "seqsero": {
-         "image": "staphb/seqsero",
-         "tag": "1.0.1",
-         "params": ""
+      "rasusa": {
+         "image": "staphb/rasusa",
+         "tag": "0.2.0"
       },
-      "abricate": {
-         "image": "staphb/abricate",
-         "tag": "0.8.13",
-         "params": ""
+      "raxml":{
+  	     "image": "staphb/raxml",
+  	      "tag": "8.2.12"
+        },
+        "roary": {
+           "image": "staphb/roary",
+           "tag": "3.12.0",
+           "params": ""
+        },
+        "salmid": {
+           "image": "staphb/salmid",
+           "tag": "0.1.23"
+        },
+        "samtools": {
+           "image": "staphb/samtools",
+           "tag": "1.10"
+        },
+        "seqsero": {
+           "image": "staphb/seqsero",
+           "tag": "1.0.1"
+        },
+        "seqsero2": {
+           "image": "staphb/seqsero2",
+           "tag": "1.1.0"
+        },
+        "seqyclean": {
+           "image": "staphb/seqyclean",
+           "tag": "1.10.09"
+        },
+        "seroba": {
+           "image": "staphb/seroba",
+           "tag": "1.0.0"
+        },
+        "serotypefinder": {
+           "image": "staphb/serotypefinder",
+           "tag": "1.1"
+        },
+        "shovill": {
+           "image": "staphb/shovill",
+           "tag": "1.1.0"
+        },
+        "sistr": {
+           "image": "staphb/sistr",
+           "tag": "1.0.2"
+        },
+        "skesa": {
+           "image": "staphb/skesa",
+           "tag": "2.3.0"
+        },
+        "snippy": {
+           "image": "staphb/snippy",
+           "tag": "4.6.0"
+        },
+        "snp-dists": {
+           "image": "staphb/snp-dists",
+           "tag": "0.6.2"
+        },
+        "snp-sites": {
+           "image": "staphb/snp-sites",
+           "tag": "2.3.3"
+        },
+      "spades": {
+         "image": "staphb/spades",
+         "tag": "3.14.0"
       },
-      "iqtree": {
-         "image": "staphb/iqtree",
-         "tag": "1.6.7",
-         "params": ""
+      "sra-toolkit": {
+         "image": "staphb/sratoolkit",
+         "tag": "2.9.2"
       },
-      "ivar":{
-        "image": "staphb/ivar",
-        "tag": "1.2.1",
-        "params": ""
+      "staramr": {
+         "image": "staphb/staramr",
+         "tag": "0.7.1"
       },
-      "ivar-SC2":{
-        "image": "staphb/ivar",
-        "tag": "1.2.1-SC2",
-        "params": ""
+      "tiptoft": {
+         "image": "staphb/tiptoft",
+         "tag": "1.0.0"
       },
-      "roary": {
-         "image": "staphb/roary",
-         "tag": "3.12.0",
-         "params": ""
+      "trimmomatic": {
+         "image": "staphb/trimmomatic",
+         "tag": "0.39"
       },
       "unicycler": {
          "image": "staphb/unicycler",
          "tag": "0.4.7",
          "params": ""
       },
-      "trimmomatic": {
-         "image": "staphb/trimmomatic",
-         "tag": "0.39",
-         "params": ""
-      },
-      "seqsero2": {
-         "image": "staphb/seqsero2",
-         "tag": "1.0.0",
-         "params": ""
-      },
-      "ncbi_blast": {
-         "image": "staphb/abricate",
-         "tag": "latest",
-         "params": ""
-      },
-      "samtools": {
-         "image": "staphb/samtools",
-         "tag": "1.10",
-         "params": ""
-      },
-      "minimap2": {
-         "image": "staphb/minimap2",
-         "tag": "2.17",
-         "params": ""
-      },
-      "emm-typing-tool": {
-         "image": "staphb/emm-typing-tool",
-         "tag": "0.0.1",
-         "params": ""
-      },
-      "ksnp3": {
-         "image": "staphb/ksnp3",
-         "tag": "3.1",
-         "params": ""
-      },
-      "snp-dists": {
-         "image": "staphb/snp-dists",
-         "tag": "0.6.2",
-         "params": ""
-      },
-      "snp-sites": {
-         "image": "staphb/snp-sites",
-         "tag": "2.3.3",
-         "params": ""
-      },
-      "cfsan-snp-pipeline": {
-         "image": "staphb/cfsan-snp-pipeline",
-         "tag": "2.0.2",
-         "params": {
-            "mirrored_input": "soft"
-         }
-      },
-      "bbtools": {
-         "image": "staphb/bbtools",
-         "tag": "38.76",
-         "params": ""
-      },
-      "canu-racon": {
-         "image": "staphb/canu-racon",
-         "tag": "1.9",
-         "params": ""
-      },
-      "cdc-spn": {
-         "image": "staphb/cdc-spn",
-         "tag": "0.1",
-         "params": {
-           "db": "/Spn_Scripts_Reference/SPN_Reference_DB/"
-         }
-      },
-     "circlator": {
-         "image": "staphb/circlator",
-         "tag": "1.5.6",
-         "params": ""
-     },
-     "fastani": {
-         "image": "staphb/fastani",
-         "tag": "1.1",
-         "params": ""
-     },
-     "fasttree": {
-         "image": "staphb/fasttree",
-         "tag": "2.1.11",
-         "params": ""
-     },
-     "fastqc": {
-         "image": "staphb/fastqc",
-         "tag": "0.11.8",
-         "params": ""
-     },
-     "filtlong": {
-         "image": "staphb/filtlong",
-         "tag": "0.2.0-cv1",
-         "params": ""
-     },
-     "flye": {
-        "image": "staphb/flye",
-        "tag": "2.5",
-        "params": ""
-     },
-     "kma":{
-        "image": "staphb/kma",
-        "tag": "1.2.21",
-        "params": ""
-     },
-     "kraken": {
-        "image": "staphb/kraken",
-        "tag": "1.1.1",
-        "params": ""
-     },
-     "kraken2": {
-        "image": "staphb/kraken2",
-        "tag": "2.0.8-beta",
-        "params": ""
-     },
-     "legsta": {
-        "image": "staphb/legsta",
-        "tag": "0.3.7-cv1",
-        "params": ""
-     },
-     "mashtree" : {
-        "image": "staphb/mashtree",
-        "tag": "1.0.4",
-        "params": ""
-     },
-     "medaka" : {
-        "image": "staphb/medaka",
-        "tag": "0.8.1",
-        "params": ""
-     },
-     "mlst" : {
-        "image": "staphb/mlst",
-        "tag": "2.19.0",
-        "params": ""
-     },
-     "mugsy": {
-        "image": "staphb/mugsy",
-        "tag": "1r2.3",
-        "params": ""
-     },
-     "multiqc": {
-        "image": "staphb/multiqc",
-        "tag": "1.8",
-        "params": ""
-     },
-     "nanoplot": {
-        "image": "staphb/nanoplot",
-        "tag": "1.29.0",
-        "params": ""
-     },
-     "ncbi-amrfinder-plus": {
-        "image": "staphb/ncbi-amrfinderplus",
-        "tag": "3.1.1b",
-        "params": ""
-     },
-     "orthofinder": {
-        "image": "staphb/orthofinder",
-        "tag": "2.17",
-        "params": ""
-     },
-     "pilon": {
-        "image": "staphb/pilon",
-        "tag": "1.23.0",
-        "params": ""
-     },
-     "plasmidseeker": {
-        "image": "staphb/plasmidseeker",
-        "tag": "1.0",
-        "params": ""
-     },
-     "rasusa": {
-        "image": "staphb/rasusa",
-        "tag": "0.1.0",
-        "params": ""
-     },
-     "salmid": {
-        "image": "staphb/salmid",
-        "tag": "0.1.23",
-        "params": ""
-     },
-     "seroba": {
-        "image": "staphb/seroba",
-        "tag": "1.0.0",
-        "params": ""
-     },
-     "sistr": {
-        "image": "staphb/sistr",
-        "tag": "1.0.2",
-        "params": ""
-     },
-     "skesa": {
-        "image": "staphb/skesa",
-        "tag": "2.3.0",
-        "params": ""
-     },
-     "snippy": {
-        "image": "staphb/snippy",
-        "tag": "4.6.0",
-        "params": ""
-     },
-     "sra-toolkit": {
-        "image": "staphb/sratoolkit",
-        "tag": "2.9.2",
-        "params": ""
-     },
-     "staramr": {
-        "image": "staphb/staramr",
-        "tag": "0.5.1",
-        "params": ""
-     },
-     "tiptoft": {
-        "image": "staphb/tiptoft",
-        "tag": "1.0.0",
-        "params": ""
-     },
      "wtdbg2": {
         "image": "staphb/wtdbg2",
-        "tag": "2.5",
-        "params": ""
+        "tag": "2.5"
      }
    },
    "execution_info":{

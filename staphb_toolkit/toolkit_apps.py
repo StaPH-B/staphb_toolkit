@@ -17,6 +17,7 @@ from datetime import date
 #program dictionary
 progs = {
 'abricate':'Abricate - Mass screening of contigs for antimicrobial and virulence genes',
+'augur': 'Pipeline components for real-time phylodynamic analysis',
 'bbtools':'BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data',
 'bwa':'BWA - mapping low-divergent sequences against a large reference genome',
 'canu-racon':'Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.',
@@ -37,7 +38,7 @@ progs = {
 'kraken-build':'Kraken-build - Build a kraken database',
 'kraken2':'Kraken2 - The second version of the Kraken taxonomic sequence classification system',
 'kraken2-build':'Karken2-build - Build a kraken2 database',
-'ksnp3':'kSNP2 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.',
+'ksnp3':'kSNP3 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.',
 'legsta':'Legsta - In silico Legionella pneumophila Sequence Based Typing',
 'lyveset':'LYVE-SET - a method of using hqSNPs to create a phylogeny.',
 'mash':'MASH - Fast genome and metagenome distance estimation using MinHash',
@@ -106,6 +107,7 @@ def main():
     #parser for applications
     #-----------------------------------------
     parser_abricate = subparsers.add_parser('abricate', add_help=False)
+    parser_augur = subparsers.add_parser('augur', add_help=False)
     parser_bbtols = subparsers.add_parser('bbtools', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', add_help=False)
     parser_canuracon = subparsers.add_parser('canu-racon', add_help=False)
@@ -678,6 +680,14 @@ def main():
         abricate_configuration = config["parameters"]["abricate"]
         abricate = sb_prog.Run(command=command, path=path_map, image=abricate_configuration["image"], tag=abricate_configuration["tag"])
         abricate.run()
+
+    if program == 'augur':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "augur " + arg_string
+        augur_configuration = config["parameters"]["augur"]
+        augur = sb_prog.Run(command=command, path=path_map, image=augur_configuration["image"], tag=augur_configuration["tag"])
+        augur.run()
 
     if program == 'iqtree':
         if not re.search('[a-zA-Z]', arg_string):
