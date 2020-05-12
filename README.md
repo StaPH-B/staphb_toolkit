@@ -15,16 +15,16 @@ The ToolKit itself can be installed using pip or git:
 
 To install using pip:
 ```
-pip install staphb_toolkit
+$ pip install staphb_toolkit
 ```
 
 To install using git:
 ```
-`git clone https://github.com/StaPH-B/staphb_toolkit.git`
-`./staphb_toolkit/setup.py`
+$ git clone https://github.com/StaPH-B/staphb_toolkit.git
+$ ./staphb_toolkit/setup.py
 ```
 
 Test the pipeline with the following command:  
 ```
-staphb-tk test
+$ staphb-tk test
 ```
