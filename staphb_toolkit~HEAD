@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+
+#authors:
+# Kelsey Florek (kelsey.florek@slh.wisc.edu)
+# Kevin Libuit (kevin.libuit@dgs.virginia.gov)
+
+import sys,os,re
+import argparse
+import json
+import core.calldocker as cd
+import core.sb_programs as sb_prog
+from core.autopath import path_replacer
+from lib.sb_mash_species import MashSpecies
+from lib.sb_cfsan_snp import CFSAN_SNP
+
+if __name__ == '__main__':
+
+    #setup argparser to display help if no arguments
+    class MyParser(argparse.ArgumentParser):
+        def error(self, message):
+            sys.stderr.write('error: %s\n' % message)
+            self.print_help()
+            sys.exit(2)
+
+    parser = MyParser(usage="staphb_toolkit [optional arguments] <application> [application arguments]")
+    subparsers = parser.add_subparsers(title='application',metavar='',dest="subparser_name",required=True,parser_class=MyParser)
+    parser.add_argument("--overide_path",default=False, action='store_true',help="Overide the automatic path mounting that is performed for docker containers (Not yet operational)")
+    parser.add_argument("--configuration", default="/core/docker_config.json", help="Configuration file for container images and tags; if none provided, confiugraiton will be set to staphb_toolkit/core/docker_config.json")
+
+    #parser for applications
+    #-----------------------------------------
+    parser_abricate = subparsers.add_parser('abricate', help='Abricate - Mass screening of contigs for antimicrobial and virulence genes', add_help=False)
+    parser_bwa = subparsers.add_parser('bwa', help='BWA - mapping low-divergent sequences against a large reference genome', add_help=False)
+    parser_clustalo = subparsers.add_parser('clustalo', help='ClustalO - A fast multiple sequence alignment program', add_help=False)
+    parser_iqtree = subparsers.add_parser('iqtree', help='IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.', add_help=False)
+    parser_lyveset = subparsers.add_parser('lyveset', help='LYVE-SET - a method of using hqSNPs to create a phylogeny.', add_help=False)
+    parser_mash = subparsers.add_parser('mash', help='MASH - Fast genome and metagenome distance estimation using MinHash', add_help=False)
+    parser_minimap2 = subparsers.add_parser('minimap2', help='Minimap2 - a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database.', add_help=False)
+    parser_ncbi_blast = subparsers.add_parser('ncbi_blast', help='BLAST - finds regions of local similarity between sequences.', add_help=False)
+    parser_prokka = subparsers.add_parser('prokka', help='Prokka - Rapid prokaryotic genome annotation', add_help=False)
+    parser_quast = subparsers.add_parser('quast', help='Quast - Genome assembly evaluation tool.', add_help=False)
+    parser_roary = subparsers.add_parser('roary', help='Roary - Rapid large-scale prokaryote pan genome analysis.', add_help=False)
+    parser_samtools = subparsers.add_parser('samtools', help='Samtools - A suite of programs for interacting with high-throughput sequencing data. It consists of three separate repositories.', add_help=False)
+    parser_seqsero = subparsers.add_parser('seqsero', help='SeqSero - Salmonella serotyping from genome sequencing data.', add_help=False)
+    parser_seqyclean = subparsers.add_parser('seqyclean', help='SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis', add_help=False)
+    parser_serotypefinder = subparsers.add_parser('serotypefinder', help='SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.', add_help=False)
+    parser_shovill = subparsers.add_parser('shovill', help='Shovill - Faster SPAdes assembler', add_help=False)
+    parser_spades = subparsers.add_parser('spades', help='SPAdes - St. Petersburg genome assembler', add_help=False)
+    parser_unicycler = subparsers.add_parser('unicycler', help='Unicycler - an assembly pipeline for bacterial genomes.', add_help=False)
+    parser_raxml = subparsers.add_parser('raxml', help='Raxml - Maximum likelihood tree builder.', add_help=False)
+
+    ###lib apps
+    ## sb_mash_species
+    parser_sb_mash_species = subparsers.add_parser('sb_mash_species', help='Using MASH to query read data against the RefSeq database using to identify the isolate species.', usage="sb_mash_species <input> [options]")
+    parser_sb_mash_species.add_argument("input", type=str, help="path to dir containing read files")
+    parser_sb_mash_species.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
+    parser_sb_mash_species.add_argument("-c", type=str, help="path to alternative configuration file", required=False)
+
+    ## sb_cfsan_snp
+    parser_sb_cfsan_snp = subparsers.add_parser('sb_cfsan_snp', help='Running CFSAN SNP on directory of read files.', usage="sb_cfsan_snp -i <input_dir> -r <reference_genome> [options]")
+    parser_sb_cfsan_snp.add_argument("input", type=str, help="path to dir containing read files")
+    parser_sb_cfsan_snp.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
+    parser_sb_cfsan_snp.add_argument("-r",metavar='path', default="", type=str, help="Path to reference genome", required=True)
+    parser_sb_cfsan_snp.add_argument("-c", type=str, help="path to alternative configuration file", required=False)
+
+    #-----------------------------------------
+
+    #handel the arguments and perform automatic path replacement
+    parser_args = parser.parse_known_args()
+    program = parser_args[0].subparser_name
+    args = parser_args[1]
+    if not parser_args[0].overide_path:
+        arg_string,path_map = path_replacer(args,os.getcwd())
+    # set the configuration file
+    if parser_args[0].configuration == "/core/docker_config.json":
+        # use default
+        config_file_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + parser_args[0].configuration
+    else:
+        config_file_path = os.path.abspath(parser_args[0].configuration)
+
+    with open(config_file_path, 'r') as config_file:
+        config = json.load(config_file)
+
+    #Program specific execution code
+    #-----------------------------------------
+    if program == 'spades':
+        command = "spades.py "+arg_string
+        spades_configuration = config["parameters"]["spades"]
+        spades = sb_prog.Run(command=command, path=path_map, image=spades_configuration["image"], tag =spades_configuration["tag"])
+        spades.run()
+    
+
+    if program == 'raxml':
+        command = "raxmlHPC "+arg_string
+        raxml_configuration = config["parameters"]["raxml"]
+        raxml = sb_prog.Run(command=command, path=path_map, image=raxml_configuration["image"], tag =raxml_configuration["tag"])
+        raxml.run()
+
+    if program == 'mash':
+        command = "mash "+arg_string
+        mash_configuration = config["parameters"]["mash"]
+        mash = sb_prog.Run(command=command, path=path_map, image=mash_configuration["image"], tag = mash_configuration["tag"])
+        mash.run()
+
+    if program == 'seqyclean':
+        command = "seqyclean "+arg_string
+        seqyclean_configuration = config["parameters"]["seqyclean"]
+        seqyclean = sb_prog.Run(command=command, path=path_map, image=seqyclean_configuration["image"], tag = seqyclean_configuration["tag"])
+        seqyclean.run()
+
+    if program == 'shovill':
+        command = "shovill " + arg_string
+        shovill_configuration = config["parameters"]["shovill"]
+        shovill = sb_prog.Run(command=command, path=path_map, image=shovill_configuration["image"], tag=shovill_configuration["tag"])
+        shovill.run()
+
+    if program == 'prokka':
+        command = "prokka " + arg_string
+        prokka_configuration = config["parameters"]["prokka"]
+        prokka = sb_prog.Run(command=command, path=path_map, image=prokka_configuration["image"], tag=prokka_configuration["tag"])
+        prokka.run()
+
+    if program == 'clustalo':
+        command = "clustalo " + arg_string
+        clustalo_configuration = config["parameters"]["clustalo"]
+        clustalo = sb_prog.Run(command=command, path=path_map, image=clustalo_configuration["image"], tag=clustalo_configuration["tag"])
+        clustalo.run()
+
+    if program == 'abricate':
+        command = "abricate " + arg_string
+        abricate_configuration = config["parameters"]["abricate"]
+        abricate = sb_prog.Run(command=command, path=path_map, image=abricate_configuration["image"], tag=abricate_configuration["tag"])
+        abricate.run()
+
+    if program == 'iqtree':
+        command = "iqtree " + arg_string
+        iqtree_configuration = config["parameters"]["iqtree"]
+        iqtree = sb_prog.Run(command=command, path=path_map, image=iqtree_configuration["image"], tag=iqtree_configuration["tag"])
+        iqtree.run()
+
+    if program == 'lyveset':
+        command = "" + arg_string
+        lyveset_configuration = config["parameters"]["lyveset"]
+        lyveset = sb_prog.Run(command=command, path=path_map, image=lyveset_configuration["image"], tag=lyveset_configuration["tag"])
+        lyveset.run()
+
+    if program == 'quast':
+        command = "quast.py " + arg_string
+        quast_configuration = config["parameters"]["quast"]
+        quast = sb_prog.Run(command=command, path=path_map, image=quast_configuration["image"], tag=quast_configuration["tag"])
+        quast.run()
+
+    if program == 'roary':
+        command = "roary " + arg_string
+        roary_configuration = config["parameters"]["roary"]
+        roary = sb_prog.Run(command=command, path=path_map, image=roary_configuration["image"], tag=roary_configuration["tag"])
+        roary.run()
+
+    if program == 'seqsero':
+        command = "seqsero " + arg_string
+        seqsero_configuration = config["parameters"]["seqsero"]
+        seqsero = sb_prog.Run(command=command, path=path_map, image=seqsero_configuration["image"], tag=seqsero_configuration["tag"])
+        seqsero.run()
+
+    if program == 'samtools':
+        command = "samtools " + arg_string
+        samtools_configuration = config["parameters"]["samtools"]
+        samtools = sb_prog.Run(command=command, path=path_map, image=samtools_configuration["image"], tag=samtools_configuration["tag"])
+        samtools.run()
+
+    if program == 'serotypefinder':
+        command = "serotypefinder " + arg_string
+        serotypefinder_configuration = config["parameters"]["serotypefinder"]
+        serotypefinder = sb_prog.Run(command=command, path=path_map, image=serotypefinder_configuration["image"], tag=serotypefinder_configuration["tag"])
+        serotypefinder.run()
+
+    if program == 'bwa':
+        command = "bwa " + arg_string
+        bwa_configuration = config["parameters"]["bwa"]
+        bwa = sb_prog.Run(command=command, path=path_map, image=bwa_configuration["image"], tag=bwa_configuration["tag"])
+        bwa.run()
+
+    if program == 'minimap2':
+        command = "minimap2 " + arg_string
+        minimap2_configuration = config["parameters"]["minimap2"]
+        minimap2 = sb_prog.Run(command=command, path=path_map, image=minimap2_configuration["image"], tag=minimap2_configuration["tag"])
+        minimap2.run()
+
+    if program == 'ncbi_blast':
+        command = "" + arg_string
+        ncbi_blast_configuration = config["parameters"]["ncbi_blast"]
+        ncbi_blast = sb_prog.Run(command=command, path=path_map, image=ncbi_blast_configuration["image"], tag=ncbi_blast_configuration["tag"])
+        ncbi_blast.run()
+
+    if program == 'unicycler':
+        command = "unicycler " + arg_string
+        unicycler_configuration = config["parameters"]["unicycler"]
+        unicycler = sb_prog.Run(command=command, path=path_map, image=unicycler_configuration["image"], tag=unicycler_configuration["tag"])
+        unicycler.run()
+
+    # Lib File specific execution code
+    # -----------------------------------------
+    if program == 'sb_mash_species':
+        # get output dir if supplied, if not set it to cwd
+        if parser_args[0].o:
+            output_dir = os.path.abspath(parser_args[0].o)
+        else:
+            output_dir = os.getcwd()
+
+        # get input path, if not supplied print help
+        try:
+            path = os.path.abspath(parser_args[0].input)
+        except AttributeError as e:
+            parser_sb_mash_species.print_help()
+            sys.exit(2)
+
+        # set config file if given
+        if parser_args[0].c:
+            config=parser_args[0].c
+        else:
+            config=None
+
+        # create and run the mash species object
+        sb_mash_species_obj = MashSpecies(path=path,output_dir=output_dir, configuration=config)
+        sb_mash_species_obj.run()
+
+    if program == 'sb_cfsan_snp':
+        # set reference based on user input
+        reference = parser_args[0].r
+
+        #get output dir if supplied, if not set it to cwd
+        if parser_args[0].o:
+            output_dir = os.path.abspath(parser_args[0].o)
+        else:
+            output_dir = os.getcwd()
+
+        #get input path, if not supplied print help
+        try:
+            path = os.path.abspath(parser_args[0].input)
+        except AttributeError as e:
+            parser_sb_cfsan_snp.print_help()
+            sys.exit(2)
+
+        # set config file if given
+        if parser_args[0].c:
+            config = parser_args[0].c
+        else:
+            config = None
+
+        #create and run the mash species object
+        sb_cfsan_snp_obj = CFSAN_SNP(path=path,output_dir=output_dir,reference=reference, configuration=config)
+        sb_cfsan_snp_obj.run()
