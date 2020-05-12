@@ -52,8 +52,7 @@ class MashSpecies():
 
             # command for creating the mash sketch
             mash_configuration = self.config["parameters"]["mash"]
-            mash_sketch_configuration = mash_configuration["mash_sketch"]
-            mash_sketch_command = f"mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read} {mash_sketch_configuration['sketch_params']}"
+            mash_sketch_command = f"bash -c 'mkdir -p /dataout/{id} && mash sketch -r -m 2 -o /dataout/{id}/{sketch_name} /datain/{fwd_read} /datain/{rev_read}'"
 
             # create mash sketch object
             mash_sketch = sb_programs.Run(command=mash_sketch_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
@@ -65,8 +64,7 @@ class MashSpecies():
 
             # command for calculating mash distance
             mash_configuration = self.config["parameters"]["mash"]
-            mash_dist_configuration = mash_configuration["mash_dist"]
-            mash_dist_command = f"mash dist {mash_dist_configuration['db']} /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result} {mash_dist_configuration['dist_params']}"
+            mash_dist_command = f"bash -c 'mash dist /db/RefSeqSketchesDefaults.msh /dataout/{id}/{sketch_name} > /dataout/{id}/{mash_result}'"
 
             # create mash distance object
             mash_dist = sb_programs.Run(command=mash_dist_command, path=mash_mounting, image=mash_configuration["image"], tag=mash_configuration["tag"])
