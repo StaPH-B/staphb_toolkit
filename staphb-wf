@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+import staphb_toolkit.toolkit_workflows as tk_work
+
+if __name__ == '__main__':
+    tk_work.main()

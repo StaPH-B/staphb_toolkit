@@ -1,0 +1,281 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+    - \usepackage{fancyhdr}
+    - \usepackage{fontspec}
+    - \usepackage{xcolor}
+    - \geometry{left = 0.5in,right = 0.5in}
+mainfont: Roboto
+sansfont: Roboto
+urlcolor: purplepeopleeater
+---
+<!-- define color and adjust lengths for header and footer-->
+\definecolor{purplepeopleeater}{RGB}{106,13,75}
+\addtolength{\headheight}{3.0cm}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\footskip}{-0.225in}
+
+<!-- % setup header -->
+\pagestyle{fancy}
+\fancyhf{}
+
+<!-- header content -->
+<!-- Uncomment the line of code below to include a header -->
+<!-- \fancyhead[L]{\raisebox{-0.25\height}{\includegraphics[height = 2.5cm]{path_to_your_header_here.png}}} -->
+\fancyhead[R]{\Huge Genomic Clustering Report\\
+\Large `r paste(Sys.Date())`}
+
+<!-- create red header line -->
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\headrule}{\hbox to\headwidth{%
+    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+
+<!-- footer content -->
+\fancyfoot[C]{For research use only, not for clinical use.}
+\fancyfoot[R]{\thepage}
+
+<!-- create red footer line -->
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\footrule}{\hbox to\headwidth{%
+    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+
+```{r include=FALSE}
+
+## Libraries
+library(ggplot2)
+library(ggtree)
+library(phytools)
+library(viridisLite)
+library(viridis)
+library(tidyverse)
+
+date <- Sys.Date()
+
+## Figure size
+
+# get date of report generation
+date <- Sys.Date()
+
+# set figure size
+knitr::opts_chunk$set(out.width = "7.5in", out.height = "8in", fig.align = "left")
+
+# set seed for reproducibility
+set.seed(123)
+
+
+
+```
+
+```{r heatmap-ploting-defaults, echo = FALSE, message = FALSE, warning = FALSE}
+
+# alter these plotting defaults as necessary
+
+# heatmap width relative to plot
+heatmap_width <- 30
+
+# font size for heatmap row and column names
+axis_font_size <- 2.25
+
+# font size for heatmap values
+cell_font_size <- 2.25
+
+# tree offset from heatmap
+tree_offset <- 50
+
+# offset of column names from heatmap; should be negative
+col_offset <- -2
+
+# offset of row names names from heatmap
+row_offset <- -40
+
+# legend title font size
+legend_title_size <- 8
+
+# legend body font size
+legend_text_size <- 6
+
+# height of heatmap colourbar
+colourbar_height <- 0.5
+
+# width of heatmap colourbar
+colourbar_width <- 7
+
+```
+
+```{r tree-plot-defaults, echo = FALSE, message = FALSE, warning = FALSE}
+
+# alter these plotting defaults as necessary
+
+# bootstrap cutoff; plot boostrap values above this threshold
+boot_thresh <- 95
+
+# size of node label text
+node_text_size <- 1.75
+
+# nudge node label text horizontally
+x_nudge <- 0
+
+# tree scale offset
+scale_offset <- 0.1
+
+# tree scale font size
+scale_font_size <- 2
+
+# tip label font size
+tip_font_size <- 2
+
+```
+
+### Group-A Streptoccus (GAS) Analysis
+The analysis of GAS isolates has been completed. These results must always be used in conjunction with epidemiological data when determining if isolates are epidemiologically linked. This analysis should not be used as a replacement for a thorough epidemiological investigation.
+
+### SNP Heatmap
+The number of Single Nucleotide Polymorphisms (SNPs) between each sample is shown on the heatmap below.
+
+```{r root-tree, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block midpoint-roots the tree
+
+# read tree and midpoint root
+tree <- read.tree(nwk)
+mpt <- midpoint.root(tree)
+
+# store midpoint-rooted tree as dataframe
+mpt.fort <- fortify(mpt)
+
+# get vertical order of tip labels from tree dataframe
+mpt.tip <- mpt.fort[which(mpt.fort$isTip ==  TRUE),]
+mpt.ord <- mpt.tip$label[order(mpt.tip$y)]
+
+# store base plot of midpoint-rooted tree
+gtree <- ggtree(mpt, branch.length = "none")
+
+```
+
+```{r format-matrix, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block formats the matrix
+
+# R places an X in front of #s when reading in a dataframe
+colnames(snp_mat) <- gsub("X","",colnames(snp_mat))
+
+# replace any "." with "-" in column names
+colnames(snp_mat) <- gsub("\\.","-",colnames(snp_mat))
+
+# order snp matrix by vertical order of tip labels
+snp_mat <- snp_mat[c(mpt.ord),c(mpt.ord)]
+
+```
+
+```{r plot-tree-and-heatmap, echo = FALSE, message = FALSE, warning = FALSE}
+
+### Split isolate IDs by delimiter "-" and "_" (for >= 20 isolates)
+
+# ggtree will often crop the figure too small; subtract from ymin and add to ymax to fix this
+ymin <- min(gtree$data$y) - 5
+ymax <- max(gtree$data$y) + 1
+
+# main tree plotting function
+gheatmap(gtree, snp_mat,
+    width = heatmap_width,
+    offset = tree_offset,
+    cell_labels = TRUE,
+    cell_font_size = cell_font_size,
+    font.size = axis_font_size,
+    colnames_angle = 90,
+    rownames_angle = 0,
+    colnames_offset_y = col_offset,
+    rownames_offset_x = row_offset) +
+
+# set heatmap colourbar colors and limits
+scale_fill_viridis(limits = c(1,(max(snp_mat)+1)),
+    na.value = "white",
+    name = "SNPs",
+    guide = "colourbar") +
+
+# set plot y limits
+ylim(ymin,ymax) +
+
+# remove whitespace around plot and add legend
+theme(plot.margin = unit(c(0,0,0,0), "mm"),
+    legend.box = "horizontal",
+    legend.text = element_text(size = legend_text_size),
+    legend.title = element_text(size = legend_title_size),
+    legend.position = "bottom",
+    legend.margin = margin(0,0,0,0)) +
+
+# place heatmap colourbar beneath the heatmap (rather than beside)
+guides(fill = guide_colourbar(title.position = "top",
+    title.hjust = 0.5,
+    barheight = colourbar_height,
+    barwidth = colourbar_width))
+
+ggsave('SNP_heatmap.png', units = "in", width = 8.5, height = 10)
+
+snp_mat <- snp_mat[,ncol(snp_mat):1]
+snp_mat <- snp_mat[nrow(snp_mat):1,]
+snp_mat$Iso <- rownames(snp_mat)
+snp_mat <- snp_mat[,c(ncol(snp_mat),1:(ncol(snp_mat)-1))]
+colnames(snp_mat) <- c("",rownames(snp_mat))
+
+write.table(snp_mat,"snp_distance_matrix.tsv",
+            row.names = T,
+            col.names = T,
+            sep = "\t",
+            quote = F)
+```
+\newpage
+
+### Phylogenetic tree
+Using variation within the genome between samples (SNPs), we can estimate how related isolates are. We do this by determining if isolates share a similar common ancestor. Here we are looking for isolates that cluster together and share a small amount of horizontal distance on the tree.
+
+```{r plot-tree, echo = FALSE, message = FALSE, warning = FALSE}
+
+# This block plots the midpint-rooted tree with bootstrap values
+
+# main tree plotting function
+gtree <- ggtree(mpt, color = "black", alpha = 0.75, size = 0.5) +
+
+# add boostrap values as node labels
+#geom_nodelab(aes(x = branch,
+#  label = label,
+#  subset = !isTip & (as.numeric(label) >= boot_thresh)),
+#  vjust = -0.5,
+#  nudge_x = x_nudge,
+#  size = node_text_size) +
+
+# add tip labels
+geom_tiplab(size = tip_font_size) +
+
+# add tree scale
+geom_treescale(offset = scale_offset,
+    fontsize = scale_font_size,
+    y = 0,
+    x = 0) +
+
+# remove whitespace around plot
+theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+# ggtree will often crop the figure too small; add to xmax to fix this
+# we've found the following function calculates a decent value to add to xmax:
+
+log10_ceiling <- function(x) {
+    10^(ceiling(log10(x)))
+}
+
+xmax <- max(gtree$data$x) + (log10_ceiling(max(gtree$data$x))/5)
+xmin <- 0
+
+# set x limits and plot tree
+gtree + xlim(xmin,xmax)
+ggsave('core_parsimony_tree.png', units = "in", width = 8.5, height = 10)
+```
+
+### Methods
+The figures shown here were generated using sequence data processed the [Foushee data analysis pipeline](https://github.com/StaPH-B/staphb_toolkit/tree/dev).  
+
+Foushee uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter/PhiX removal Monroe prior to using [Mash](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0997-x), a fast genome distance estimation algorithm, to predict the taxonomic identity of all isolates by querying input read data against a pre-skecthed RefSeq database. This method allows for accurate taxonomic identification up to the species level. The [emm typer tool from Public Health England (PHE)](https://github.com/phe-bioinformatics/emm-typing-tool) is then used to make emm-type predictions for each (GAS) isolate. The cleaned read data are also used to perform de novo assemblies using [Shovill](https://github.com/tseemann/shovill) and assembly metrics are collected using [Quast](https://github.com/ablab/quast). <br />
+<br />
+Taxonomic prediction results are then used to bin GAS assemblies by emm-type before performing reference-free Single-Nucleotide Polymorphism (SNP) analysis on each emm-type group independently using [kSNP3](https://www.ncbi.nlm.nih.gov/pubmed/25913206). kSNP3 results are used to generate a pairwise SNP distance matrix using [snp-dists](https://github.com/tseemann/snp-dists). Output from snp-dists and ksnp3 are curated into a single pdf report using the [StaPH-B cluster-report-env](https://hub.docker.com/r/staphb/cluster-report-env).
