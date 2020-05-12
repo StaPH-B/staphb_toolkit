@@ -55,7 +55,8 @@ def main():
 
     ##monroe_ont_assembly----------------------------
     subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
-    subparser_monroe_ont_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq or fast5 format")
+    subparser_monroe_ont_assembly.add_argument('fast5_path', type=str,help="path to the location of the reads in a fast5 format")
+    subparser_monroe_ont_assembly.add_argument('--fastq_path', type=str,help="path to the location of the reads in a fastq format, needed if not performing bascalling")
     subparser_monroe_ont_assembly.add_argument('--summary', type=str,help="path to the location of the sequencing summary, only needed when using nanopolish from fastq data")
     subparser_monroe_ont_assembly.add_argument('--run_prefix', type=str,help="desired run prefix. Default \"artic_ncov19\"",default="artic_ncov19")
     subparser_monroe_ont_assembly.add_argument('--ont_basecalling', default=False, action="store_true",help="perform high accuracy basecalling using GPU (only use if you have setup a GPU compatable device)")
@@ -268,15 +269,20 @@ def main():
         if args.monroe_command == 'ont_assembly':
             #build command
             if args.ont_basecalling:
-                basecall = f"--basecalling --fast5_dir {args.reads_path}"
+                read_paths = f"--basecalling --fast5_dir {args.fast5_path}"
+            elif args.fast5_path and args.fastq_path:
+                read_paths = f"--fast5_dir {args.fast5_path} --fastq_dir {args.fastq_path}"
             else:
-                basecall = f"--fastq_dir {args.reads_path}"
+                subparser_monroe_ont_assembly.print_help()
+                print("Please provide path to both fastq and fast5 or perform basecalling.")
+                sys.exit(1)
+                
             if args.summary:
                 seq_summary = f"--sequencing_summary {args.summary}"
             else:
                 seq_summary = ""
 
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {basecall} --pipe ont {seq_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {read_paths} --pipe ont {seq_summary} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe ONT assembly:")
             child = pexpect.spawn(command)
