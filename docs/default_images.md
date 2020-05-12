@@ -1,5 +1,5 @@
 ---
-title: 'Default Docker Images'
+title: 'Default Images'
 layout: page
 ---
 
@@ -19,16 +19,16 @@ layout: page
 | [FastANI](https://hub.docker.com/r/staphb/fastani)  |  `staphb/fastani:1.1`| https://github.com/ParBLiSS/FastANI |
 | [FastTree](https://hub.docker.com/r/staphb/fasttree)  | `staphb/fasttree:2.1.11` | http://www.microbesonline.org/fasttree/ |
 | [FastQC](https://hub.docker.com/r/staphb/fastqc)  |  `staphb/fastqc:0.11.8` | https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ |
-| [Filtlong](https://hub.docker.com/r/staphb/filtlong)  | `staphb/filtlong:0.2.0` | https://github.com/rrwick/filtlong |
+| [Filtlong](https://hub.docker.com/r/staphb/filtlong)  | `staphb/filtlong:0.2.0-cv1` | https://github.com/rrwick/filtlong |
 | [Flye](https://hub.docker.com/r/staphb/flye)  |  `staphb/flye:2.7` | https://github.com/fenderglass/Flye |
 | [iqtree](https://hub.docker.com/r/staphb/iqtree/)  |  `staphb/iqtree:1.6.7` | http://www.iqtree.org/ |
 | [iVar](https://hub.docker.com/r/staphb/ivar/)  | `staphb/ivar:1.2.1` | https://github.com/andersen-lab/ivar |
 | [iVar-SC2](https://hub.docker.com/r/staphb/ivar/)  | `staphb/ivar:1.2.1-SC2` | https://github.com/andersen-lab/ivar |
 | [kma](https://hub.docker.com/r/staphb/kma/)  | `staphb/kma:1.2.21` | https://bitbucket.org/genomicepidemiology/kma/ |
-| [Kraken](https://hub.docker.com/r/staphb/kraken/)  |  `staphb/kraken:1.0, 1.1.1` | https://github.com/DerrickWood/kraken |
+| [Kraken](https://hub.docker.com/r/staphb/kraken/)  |  `staphb/kraken:1.1.1` | https://github.com/DerrickWood/kraken |
 | [Kraken2](https://hub.docker.com/r/staphb/kraken2/)  |  `staphb/kraken2:2.0.8-beta` | https://github.com/DerrickWood/kraken2 |
 | [kSNP3](https://hub.docker.com/r/staphb/ksnp3/)  | `staphb/ksnp3:3.1` | https://sourceforge.net/projects/ksnp/ |
-| [legsta](https://hub.docker.com/r/staphb/legsta/)  | `staphb/legsta:0.3.7` | https://github.com/tseemann/legsta |
+| [legsta](https://hub.docker.com/r/staphb/legsta/)  | `staphb/legsta:0.3.7-cv1` | https://github.com/tseemann/legsta |
 | [Lyve-SET (includes CG-Pipeline scripts and raxml)](https://hub.docker.com/r/staphb/lyveset/)  | `staphb/lyvset:1.1.4f` | https://github.com/lskatz/lyve-SET https://github.com/lskatz/CG-Pipeline |
 | [MAFFT](https://hub.docker.com/r/staphb/mafft/)  | `staphb/mafft:7.450` | https://mafft.cbrc.jp/alignment/software/ |
 | [Mash](https://hub.docker.com/r/staphb/mash/)  |  `staphb/mash:2.2` | https://github.com/marbl/Mash |
