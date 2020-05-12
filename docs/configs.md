@@ -4,7 +4,7 @@ layout: page
 ---
 
 # Configuring Custom Docker Images and Parameters for the `staph-tk` Command
-Default StaPH-B Docker images and parameters utilized by the `staph-tk` command are listed [here](/default_images)
+Default StaPH-B Docker images utilized by the `staph-tk` command are listed [here](/default_images)
 
 These can be modified by:
 1. Creating a copy of the Docker configuration template file using the `$ staphb-tk --get_docker_config` command
