@@ -7,7 +7,7 @@
 import sys,os,re
 import argparse
 from shutil import which, copyfile
-from datetime import date
+from datetime import date, datetime
 import pexpect
 import staphb_toolkit.core.update_app as autoupdate
 
@@ -146,6 +146,9 @@ def main():
         sys.exit(1)
     program = args.subparser_name
 
+    #current time for log files
+    exec_time = datetime.now().strftime("%y_%m_%d_%H_%M_%S_")
+
     #################################
     #Program specific execution code#
     #################################
@@ -183,12 +186,12 @@ def main():
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile:
+        if profile and not args.config:
             work = f"-w {args.output}/logs/work"
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {tredegar_path}/tredegar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/Tredegar_trace.txt -with-report {args.output}/logs/Tredegar_execution_report.html {work}"
+        command = command + f" {config} run {tredegar_path}/tredegar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Tredegar_trace.txt -with-report {args.output}/logs/{exec_time}Tredegar_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
@@ -236,12 +239,12 @@ def main():
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile:
+        if profile and not args.config:
             work = f"-w {args.output}/logs/work"
 
         if args.monroe_command == 'pe_assembly':
             #build command
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)
@@ -262,7 +265,7 @@ def main():
                 sys.exit(1)
 
             #build command
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_cluster_analysis.nf {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_cluster_analysis.nf {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe cluster analysis:")
             child = pexpect.spawn(command)
@@ -287,7 +290,7 @@ def main():
             else:
                 seq_summary = ""
 
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {read_paths} --pipe ont {seq_summary} --polishing {args.polish_method} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/Monroe_trace.txt -with-report {args.output}/logs/Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {read_paths} --pipe ont {seq_summary} --polishing {args.polish_method} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe ONT assembly:")
             child = pexpect.spawn(command)
@@ -326,12 +329,12 @@ def main():
 
         #set work dir into local logs dir if profile not aws
         work = ""
-        if profile:
+        if profile and not args.config:
             work = f"-w {args.output}/logs/work"
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {foushee_path}/foushee.nf {profile} {args.resume} --reads {args.reads_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/Foushee_trace.txt -with-report {args.output}/logs/Foushee_execution_report.html {work}"
+        command = command + f" {config} run {foushee_path}/foushee.nf {profile} {args.resume} --reads {args.reads_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Foushee_trace.txt -with-report {args.output}/logs/{exec_time}Foushee_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
@@ -381,7 +384,7 @@ def main():
             work = ""
             output_path = os.path.join(os.getcwd(),'rebuild_results')
             output_work = os.path.join(output_path,'report_work')
-            if profile:
+            if profile and not args.config:
                 work = f"-w {output_work}"
 
             rmd = os.path.abspath(args.rmd)
@@ -395,7 +398,7 @@ def main():
 
             #build command
             command = nextflow_path
-            command = command + f" {config} run {dryad_path}/rebuild_report.nf {profile} --logo {logo_path} --outdir {output_path} --rmd {rmd} {snp_mat} {cg_tree} {ar_tsv} {work}"
+            command = command + f" {config} run {dryad_path}/rebuild_report.nf {profile} --logo {logo_path} --outdir {output_path} --rmd {rmd} {snp_mat} {cg_tree} {ar_tsv} -with-trace {args.output}/logs/{exec_time}dryad_trace.txt -with-report {args.output}/logs/{exec_time}dryad_execution_report.html {work}"
 
             #run command using nextflow in a subprocess
             print("Rebuilding Dryad Report:")
@@ -432,7 +435,7 @@ def main():
 
             #set work dir into local logs dir if profile not aws
             work = ""
-            if profile:
+            if profile and not args.config:
                 work = f"-w {args.output}/logs/work"
 
             #build nextflow command
@@ -457,7 +460,7 @@ def main():
 
             #build command
             command = nextflow_path
-            command = command + f" {config} run {dryad_path}/dryad.nf {profile} {args.resume} --reads {args.reads_path} {selections} {other_args} {mqc_config_path} {mqc_logo_path} -with-trace {args.output}/logs/dryad_trace.txt -with-report {args.output}/logs/dryad_execution_report.html {work}"
+            command = command + f" {config} run {dryad_path}/dryad.nf {profile} {args.resume} --reads {args.reads_path} {selections} {other_args} {mqc_config_path} {mqc_logo_path} -with-trace {args.output}/logs/{exec_time}dryad_trace.txt -with-report {args.output}/logs/{exec_time}dryad_execution_report.html {work}"
 
             #run command using nextflow in a subprocess
             print("Starting the Dryad pipeline:")
