@@ -12,6 +12,7 @@ import staphb_toolkit.core.sb_programs as sb_prog
 from staphb_toolkit.core.autopath import path_replacer
 from staphb_toolkit.apps.sb_mash_species import MashSpecies
 import staphb_toolkit.core.update_app as autoupdate
+from datetime import date
 
 #program dictionary
 progs = {
@@ -201,7 +202,7 @@ def main():
     #give user docker config if asked
     if parser_args[0].get_docker_config:
         cwd = os.getcwd()
-        copy(docker_config_path,cwd)
+        copy(docker_config_path,os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_docker_config.json"))
         sys.exit(0)
 
     #display list of programs if needed
