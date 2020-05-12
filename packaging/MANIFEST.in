@@ -1,0 +1,4 @@
+recursive-include staphb_toolkit/workflows *
+include staphb_toolkit/lib/nextflow
+include staphb_toolkit/core/docker_config.json
+include staphb_toolkit/requirements.txt
