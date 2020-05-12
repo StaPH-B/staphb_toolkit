@@ -15,6 +15,7 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
 ## Usage Guide
   * [Installing](/install)
   * [Using the Toolkit](/using_tk)
+  * [Default Docker Images](/default_images)
   * [Running Workflows](/workflows)
     - [Dryad](/workflow_docs/dryad)
     - [Foushee](/workflow_docs/foushee)
