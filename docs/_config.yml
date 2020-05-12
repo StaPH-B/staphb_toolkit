@@ -43,7 +43,7 @@ navbar-links:
 
 # If you want to have an image logo in the top-left corner instead of the title text,
 # then specify the following parameter
-title-img: "assets/staphb-tk_logo.png"
+title-img: "/staphb_toolkit/assets/staphb-tk_logo.png"
 
 # --- Background colour/image options --- #
 
