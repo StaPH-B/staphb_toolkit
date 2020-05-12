@@ -4,7 +4,7 @@ layout: page
 ---
 
 # Dryad
-![dryad](/assets/workflows/dryad/dryad_logo_250.png)  
+![dryad](/staphb_toolkit/assets/workflows/dryad/dryad_logo_250.png)  
 
 ![Latest Release](https://img.shields.io/github/v/release/k-florek/dryad)  
 [![Build Status](https://travis-ci.org/k-florek/dryad.svg?branch=master)](https://travis-ci.org/k-florek/dryad)
@@ -12,7 +12,7 @@ layout: page
 [Dryad](https://github.com/k-florek/dryad/) - a pipeline to construct reference free core-genome or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will perform both a reference free core-genome analysis based off of the approach outlined by [Oakeson et. al](https://www.ncbi.nlm.nih.gov/pubmed/30158193) and/or a SNP analysis using the [CFSAN-SNP](https://snp-pipeline.readthedocs.io/en/latest/readme.html) pipeline. Antimicrobial resistance genes can also be identified using [AMRFinderPlus v3.1.1](https://github.com/ncbi/amr).
 
 ## Data workflow:
-![Dryad pipeline](/assets/workflows/dryad/dryad_workflow_2.0.0.png)
+![Dryad pipeline](/staphb_toolkit/assets/workflows/dryad/dryad_workflow_2.0.0.png)
 
 ## Quality Checks
 Dryad performs a number of quality control steps including trimming, removing sequencing adapters, and removing contaminating phiX sequences. The workflow also performs a number of quality checks on the both the sequencing reads and assemblies.
