@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="staphb_toolkit",
-    version="1.0.0",
+    version="1.0.1",
     author="Kelsey Florek, Kevin Libuit",
     author_email="kelsey.florek@slh.wisc.edu, kevin.libuit@dgs.virginia.gov",
     description="A ToolKit of commonly used Public Health Bioinformatics Tools",
