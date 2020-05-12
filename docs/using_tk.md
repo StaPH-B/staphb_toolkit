@@ -3,7 +3,7 @@ title: "Using the ToolKit"
 layout: page
 ---
 
-Using the ToolKit is simply done by running the commands `staphb-tk` for running individual tools or `staphb-wf` for running the different workflows incorporated into the toolkit. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/workflows) page.
+Using the ToolKit is simply done by running the commands `staphb-tk` for running individual tools or `staphb-wf` for running the different workflows incorporated into the toolkit. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/staphb_toolkit/workflows) page.
 
 ## Contents
   * [Running Applications](#running-applications-using-the-toolkit)
@@ -132,7 +132,7 @@ wtdbg2                   WTDBG2 - Fuzzy Bruijn graph approach to long noisy read
 ```
 <br>
 ## Using the ToolKit to run workflows
-The ToolKit also provides the ability to run workflows using the `staphb-wf` command. Information and usage of specific workflows is available on the [workflow page](/workflows).
+The ToolKit also provides the ability to run workflows using the `staphb-wf` command. Information and usage of specific workflows is available on the [workflow page](/staphb_toolkit/workflows).
 ```
 usage: staphb-wf [optional arguments] <workflow> [workflow arguments]
 

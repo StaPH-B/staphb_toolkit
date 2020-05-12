@@ -4,7 +4,7 @@ layout: page
 ---
 
 # Configuring Custom Docker Images and Parameters for the `staph-tk` Command
-Default StaPH-B Docker images utilized by the `staph-tk` command are listed [here](/default_images)
+Default StaPH-B Docker images utilized by the `staph-tk` command are listed [here](/staphb_toolkit/default_images)
 
 These can be modified by:
 1. Creating a copy of the Docker configuration template file using the `$ staphb-tk --get_docker_config` command
@@ -57,7 +57,7 @@ Please raise issues and bug reports at https://github.com/andersen-lab/ivar/
 <br /><br />
 
 # Configuring a Custom Nextflow Profile for the `staph-wf` Command
-Workflows within the StaPH-B ToolKit are written with default docker and singularity Nextflow profiles that can assigned with the `--profile` tag during execution. These profiles, along with workflow-specific configuration files, instruct the toolkit to run the workflow using local compute resources and designate the default docker images and parameters incorporated into each workflow--these default settings have been are available for each workflow [here](/workflows).
+Workflows within the StaPH-B ToolKit are written with default docker and singularity Nextflow profiles that can assigned with the `--profile` tag during execution. These profiles, along with workflow-specific configuration files, instruct the toolkit to run the workflow using local compute resources and designate the default docker images and parameters incorporated into each workflow--these default settings have been are available for each workflow [here](/staphb_toolkit/workflows).
 
 These default settings can be modified by:
 1. Creating a copy of the workflow configuration template file using the `$ staphb-wf <workflow> --get_config` command
