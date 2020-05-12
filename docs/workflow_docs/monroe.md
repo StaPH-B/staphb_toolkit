@@ -10,7 +10,7 @@ Bioinformatics pipeline for SARS-CoV-2 genome assembly and sample cluster detect
 
 ## Data workflow:
 Monroe consists of three separate Nextflow pipelines for Illumina paired-end read assembly (`pe_assebly`) Oxford Nanopore Technlogies read assembly (`ont_assembly`) cluster analysis from assembled SC2 genomes (`cluster_analysis`):
-![Monroe pipeline](/assets/workflows/monroe/Monroe_v1.0.png)
+![Monroe pipeline](/staphb_toolkit/assets/workflows/monroe/Monroe_v1.0.png)
 
 Monroe's Nextflow pipelines can be executed using the following command format:
 ```
@@ -46,7 +46,7 @@ Monroe `pe_assembly` will organize all output into four subdirectories under the
 
 Sample quality metrics file:
 
-![Monroe pipeline](/assets/workflows/monroe/quality_metrics.png)
+![Monroe pipeline](/staphb_toolkit/assets/workflows/monroe/quality_metrics.png)
 - sample: isolate ID pulled from the fastq file
 - aligned_bases: number of bases mapped to the SARS-CoV-2 reference genome
 - percent_cvg: percent of reference genome with mapped read data

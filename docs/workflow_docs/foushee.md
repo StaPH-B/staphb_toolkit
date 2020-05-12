@@ -7,7 +7,7 @@ layout: page
 Bioinformatics pipeline for reference-free SNP analysis of Group-A *Streptococcus* (GAS) isolates
 
 ## Data workflow:
-![Foushee pipeline](/assets/workflows/foushee/Foushee_v1.0.png)
+![Foushee pipeline](/staphb_toolkit/assets/workflows/foushee/Foushee_v1.0.png)
 
 ## Reference-free SNP analysis for GAS isolates of the same emm-type
 Foushee uses [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic) and [BBDuk](http://seqanswers.com/forums/showthread.php?t=42776) to perform read trimming and adapter/PhiX removal Monroe prior to using [Mash](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0997-x), a fast genome distance estimation algorithm, to predict the taxonomic identity of all isolates by querying input read data against a pre-skecthed RefSeq database. This method allows for accurate taxonomic identification up to the species level. The [emm typer tool from Public Health England (PHE)](https://github.com/phe-bioinformatics/emm-typing-tool) is then used to make emm-type predictions for each (GAS) isolate. The cleaned read data are also used to perform de novo assemblies using [Shovill](https://github.com/tseemann/shovill) and assembly metrics are collected using [Quast](https://github.com/ablab/quast). <br />
@@ -43,7 +43,7 @@ Foushee will write the assembly metrics tsv file to the specified `<output_dir>`
 
 
 ## Sample Assembly Metrics
-![sample assembly metrics report](/assets/workflows/foushee/assembly_metrics_sample.png)
+![sample assembly metrics report](/staphb_toolkit/assets/workflows/foushee/assembly_metrics_sample.png)
 - sample: isolate ID pulled from the fastq file
 - est_genome_length: Average Q-score for the forward and reverse reads, respectively, calculated by CG Pipeline
 - number_contigs: Total number of contigs in assembly calculated by Quast
