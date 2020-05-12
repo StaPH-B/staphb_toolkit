@@ -1,3 +1,6 @@
 __pycache__
 *.simg
 _site
+packaging/build/*
+packaging/dist/*
+*.egg-info
