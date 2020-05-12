@@ -1,5 +1,7 @@
 # StaPH-B ToolKit
+![Latest Release](https://img.shields.io/github/v/release/StaPH-B/staphb_toolkit)  
 [![Build Status](https://travis-ci.org/StaPH-B/staphb_toolkit.svg?branch=master)](https://travis-ci.org/StaPH-B/staphb_toolkit)  
+ 
 A python library designed to make programs held within the StaPH-B Docker repository more accessible to public health scientists.
 
 ## Summary
