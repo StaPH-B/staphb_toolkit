@@ -13,11 +13,11 @@ Workflows in the ToolKit are run using [Nextflow](https://www.nextflow.io/). The
 
 ## Dryad
 Dryad is a pipeline to detect antimicrobial resistance genes, construct reference free core-genome, and/or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will perform both a reference free core-genome analysis based off of the approach outlined by [Oakeson et. al](https://www.ncbi.nlm.nih.gov/pubmed/30158193) and/or a SNP analysis using the [CFSAN-SNP](https://snp-pipeline.readthedocs.io/en/latest/readme.html) pipeline.
-Read the usage guide [here](/workflow_docs/dryad).
+Read the usage guide [here](/staphb_toolkit/workflow_docs/dryad).
 
 ## Foushee
 
 ## Monroe
 
 ## Tredegar
-Read the usage guide [here](/workflow_docs/tredegar).
+Read the usage guide [here](/staphb_toolkit/workflow_docs/tredegar).

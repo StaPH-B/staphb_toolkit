@@ -13,12 +13,12 @@ The StaPH-B ToolKit is a Python application (Python 3.6) that utilizes modern wo
 This tool was developed and tested for use on an Ubuntu/Debian OS. However, the tool could also be used on other Linux/Unix and MacOS systems as long as the dependencies are met.
 
 ## Usage Guide
-  * [Installing](/install)
-  * [Using the Toolkit](/using_tk)
-  * [Default Docker Images](/default_images)
-  * [Running Workflows](/workflows)
-    - [Dryad](/workflow_docs/dryad)
-    - [Foushee](/workflow_docs/foushee)
-    - [Monroe](/workflow_docs/monroe)
-    - [Tredegar](/workflow_docs/tredegar)
-  * [Custom Configurations](/configs)
+  * [Installing](/staphb_toolkit/install)
+  * [Using the Toolkit](/staphb_toolkit/using_tk)
+  * [Default Docker Images](/staphb_toolkit/default_images)
+  * [Running Workflows](/staphb_toolkit/workflows)
+    - [Dryad](/staphb_toolkit/workflow_docs/dryad)
+    - [Foushee](/staphb_toolkit/workflow_docs/foushee)
+    - [Monroe](/staphb_toolkit/workflow_docs/monroe)
+    - [Tredegar](/staphb_toolkit/workflow_docs/tredegar)
+  * [Custom Configurations](/staphb_toolkit/configs)
