@@ -46,7 +46,7 @@ def check_for_updates():
         sys.exit(1)
 
     #run pip update
-    cmd = cmd + " install staphb-toolkit-kflorek --upgrade"
+    cmd = cmd + " install staphb-toolkit --upgrade"
     print("Checking for updates...")
     sub.Popen(shlex.split(cmd),stdout=sub.DEVNULL,stderr=sub.STDOUT).wait()
     print("Done.")
