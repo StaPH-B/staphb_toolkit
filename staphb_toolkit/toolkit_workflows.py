@@ -72,7 +72,7 @@ def main():
     subparser_monroe_cluster_analysis = monroe_subparsers.add_parser('cluster_analysis',help='Perform multiple sequence alinmment of SC2 assemblies to generate a SNP-distance matrix & ML phylogenetic tree', add_help=False)
     subparser_monroe_cluster_analysis.add_argument('assemblies_path', type=str,help="path to the location of the SC2 assemblies in a fasta format",nargs='?', default=False)
     subparser_monroe_cluster_analysis.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
-    subparser_monroe_cluster_analysis.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
+    subparser_monroe_cluster_analysis.add_argument('--rtemplate','-rt', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"monroe/report/report.Rmd"))
     subparser_monroe_cluster_analysis.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_cluster_analysis.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
     subparser_monroe_cluster_analysis.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
@@ -82,7 +82,7 @@ def main():
     parser_foushee = subparsers.add_parser('foushee', help='Reference-free SNP calling for Streptococcus pyogenes isolates.', add_help=False)
     parser_foushee.add_argument('reads_path', type=str,help="path to the directory of raw reads in the fastq format",nargs='?', default=False)
     parser_foushee.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"tredegar_results\".",default="foushee_results")
-    parser_foushee.add_argument('--report','-r', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"foushee/report/report.Rmd"))
+    parser_foushee.add_argument('--rtemplate','-rt', type=str, help="path to report rmarkdown", default=os.path.join(workflows_path,"foushee/report/report.Rmd"))
     parser_foushee.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_foushee.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_foushee.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for foushee.")
@@ -265,7 +265,7 @@ def main():
                 sys.exit(1)
 
             #build command
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_cluster_analysis.nf {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_cluster_analysis.nf {profile} {args.resume} --pipe cluster --assemblies {args.assemblies_path} --report {args.rtemplate} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe cluster analysis:")
             child = pexpect.spawn(command)
@@ -334,7 +334,7 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {foushee_path}/foushee.nf {profile} {args.resume} --reads {args.reads_path} --report {args.report} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Foushee_trace.txt -with-report {args.output}/logs/{exec_time}Foushee_execution_report.html {work}"
+        command = command + f" {config} run {foushee_path}/foushee.nf {profile} {args.resume} --reads {args.reads_path} --report {args.rtemplate} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Foushee_trace.txt -with-report {args.output}/logs/{exec_time}Foushee_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
