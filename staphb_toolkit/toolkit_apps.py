@@ -92,7 +92,7 @@ def main():
     docker_config_path = os.path.abspath(os.path.dirname(__file__) + '/' + 'core/docker_config.json')
 
     parser = MyParser(usage="staphb-tk [optional arguments] <application> [application arguments]",add_help=True)
-    subparsers = parser.add_subparsers(title='custom program execution',metavar='',dest="subparser_name",parser_class=MyParser)
+    subparsers = parser.add_subparsers(title='custom toolkit applications',metavar='',dest="subparser_name",parser_class=MyParser)
     parser.add_argument("--docker_config","-c", default=docker_config_path,metavar="<path>", help="Configuration file for container images and tags; if none provided, default container versions will be used.")
     parser.add_argument("--get_docker_config",default=False,action="store_true",help="Get the default docker container configureation file.")
     parser.add_argument("--list","-l",default=False,action="store_true",help="List all of the software available in the toolkit.")
@@ -100,8 +100,8 @@ def main():
     parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
     ###custom apps
     ## Mash Species
-    parser_mash_species = subparsers.add_parser('mash_species',help='MASH Species uses a custom database to identify the isolate species.', usage="sb_mash_species <input> [options]")
-    parser_mash_species.add_argument("input", type=str, nargs='?', help="path to dir containing read files")
+    parser_mash_species = subparsers.add_parser('mash_species',help='MASH_species uses a pre-sketched RefSeq database to identify the isolate species from paired-end read data.', usage="sb_mash_species <input> [options]")
+    parser_mash_species.add_argument("input", type=str, nargs='?', help="path to dir containing paire-end read files")
     parser_mash_species.add_argument("-o",metavar='path', default="", type=str, help="Path for output directory",required=False)
 
     #parser for applications
