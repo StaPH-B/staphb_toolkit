@@ -429,7 +429,7 @@ process mlst {
   """
 }
 
-if (params.report != "") {
+if (params.report) {
 
   Channel
     .fromPath(params.report)
