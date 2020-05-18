@@ -89,7 +89,7 @@ process artic_guppyplex {
   publishDir "${params.outdir}/guppyplex", mode: 'copy'
 
   //guppy plex likes to occasionally fail when running in the cloud, set to retry here once
-  errorStrategy 'retry'
+  errorStrategy { task.attempt > 2 ? 'ignore' : 'retry' }
   maxRetries 1
 
   input:
