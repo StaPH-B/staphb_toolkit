@@ -104,13 +104,13 @@ process shovill {
   set val(name), file(reads) from cleaned_reads
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes
+  tuple name, file("${name}.fasta") into assembled_genomes_quality, assembled_genomes
 
   shell:
   '''
   ram=`awk '/MemAvailable/ { printf "%.0f \\n", $2/1024/1024 }' /proc/meminfo`
   shovill --cpus 0 --ram $ram  --outdir . --R1 !{reads[0]} --R2 !{reads[1]} --force
-  mv contigs.fa !{name}.contigs.fa
+  mv contigs.fa !{name}.fasta
   '''
 }
 
@@ -134,7 +134,7 @@ process quast {
 
 //Step4: Determine reference genome from assembled raw_reads
 process centroid {
-  errorStrategy 'ignore'
+  publishDir "${params.outdir}/results/reference_genome", mode: 'copy'
 
   input:
   file(assembly) from assembled_genomes.collect()
