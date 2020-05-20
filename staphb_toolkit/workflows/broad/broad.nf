@@ -135,10 +135,9 @@ process quast {
 //Step4: Determine reference genome from assembled raw_reads
 process centroid {
   errorStrategy 'ignore'
-  tag "$name"
 
   input:
-  set val(name), file(assembly) from assembled_genomes
+  file(assembly) from assembled_genomes.collect()
 
   output:
   file("broad_results") into centroid_out
