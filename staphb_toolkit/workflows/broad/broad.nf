@@ -140,14 +140,14 @@ process centroid {
   file(assembly) from assembled_genomes
 
   output:
-  file("broad_results") into centroid_out
+  file("reference_genome") into centroid_out
 
   script:
   """
   mkdir assemblies
   mv *.fasta ./assemblies
   centroid.py ./assemblies
-  mv centroid_out.txt broad_results 
+  mv centroid_out.txt reference_genome 
   """
 
 }
