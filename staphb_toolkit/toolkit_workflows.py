@@ -448,7 +448,7 @@ def main():
             if args.snp:
                 selections += f" --snp --snp_reference {args.r}"
             if args.report and args.snp and args.core_genome:
-                report_template_path = os.path.abspath(os.path.dirname(__file__) + '/report/report.Rmd')
+                report_template_path = os.path.join(dryad_path,"report/report.Rmd")
                 selections += f" --report {report_template_path} --logo {logo_path}"
 
             #path for multiqc config

@@ -429,18 +429,42 @@ process mlst {
   """
 }
 
-if (params.report) {
+if (params.report && !params.ar) {
 
-  Channel
-    .fromPath(params.report)
-    .set { report }
-
-  Channel
-    .fromPath(params.logo)
-    .set { logo }
+  report = file(params.report)
+  logo = file(params.logo)
 
   process render{
     publishDir "${params.outdir}/results", mode: 'copy'
+    stageInMode = "copy"
+
+    input:
+    file snp from snp_mat
+    file tree from cgtree
+    file rmd from report
+    file dryad_logo from logo
+
+    output:
+    file("cluster_report.pdf")
+    file("report_template.Rmd")
+
+    shell:
+    """
+    Rscript /reports/render.R ${snp} ${tree} ${rmd}
+    mv report.pdf cluster_report.pdf
+    mv ${rmd} report_template.Rmd
+    """
+  }
+}
+
+if (params.report && params.ar) {
+
+  report = file(params.report)
+  logo = file(params.logo)
+
+  process renderWithAR{
+    publishDir "${params.outdir}/results", mode: 'copy'
+    stageInMode = "copy"
 
     input:
     file snp from snp_mat
@@ -455,7 +479,6 @@ if (params.report) {
 
     shell:
     """
-
     Rscript /reports/render.R ${snp} ${tree} ${rmd} ${ar}
     mv report.pdf cluster_report.pdf
     mv ${rmd} report_template.Rmd
