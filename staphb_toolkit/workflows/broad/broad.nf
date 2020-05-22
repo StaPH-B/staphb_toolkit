@@ -98,7 +98,7 @@ process cleanreads {
 process shovill {
   errorStrategy 'ignore'
   tag "$name"
-  publishDir "${params.outdir}/results/assembled", mode: 'copy'
+  publishDir "${params.outdir}/logs/assemblies", mode: 'copy'
 
   input:
   set val(name), file(reads) from cleaned_reads
@@ -134,20 +134,21 @@ process quast {
 
 //Step4: Determine reference genome from assembled raw_reads
 process centroid {
-  publishDir "${params.outdir}/results/reference_genome", mode: 'copy'
+  publishDir "${params.outdir}/", mode: 'copy'
 
   input:
-  file(assembly) from assembled_genomes
+  file(assembly) from assembled_genomes.collect()
 
   output:
-  file("reference_genome") into centroid_out
+  file("*_centroid_ref.fasta") into centroid_out
 
   script:
   """
   mkdir assemblies
   mv *.fasta ./assemblies
   centroid.py ./assemblies
-  mv centroid_out.txt reference_genome 
+  ref=\$(cat centroid_out.txt | awk -F. '{print \$1}')
+  ln ./assemblies/\${ref}.fasta ./\${ref}_centroid_ref.fasta
   """
 
 }
