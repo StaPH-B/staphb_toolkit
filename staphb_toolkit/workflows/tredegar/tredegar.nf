@@ -11,7 +11,7 @@ params.outdir = ""
 //setup channel to read in and pair the fastq files
 Channel
     .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nEnsure read data is compressed (gzip) before rerunning." }
     .set { raw_reads }
 
 //Step0: Preprocess reads - change name to end at first underscore
@@ -53,7 +53,7 @@ process mash_dist{
 
 //Curate top Mash Tredegar_results
 process mash_species {
-  publishDir "${params.outdir}/mash/", mode: 'copy'
+  publishDir "${params.outdir}/logs/mash/", mode: 'copy'
 
   input:
   file(mash_hits) from mash_dist.collect()
@@ -137,7 +137,7 @@ process cleanreads {
 //Assemble cleaned reads with Shovill
 process shovill {
   tag "$name"
-  publishDir "${params.outdir}/shovill", mode: 'copy'
+  publishDir "${params.outdir}/logs/shovill", mode: 'copy'
 
   memory '8 GB'
   ram=6
@@ -158,7 +158,7 @@ process shovill {
 
 //Assembly Quality Report
 process quast {
-  publishDir "${params.outdir}/quast/",mode:'copy'
+  publishDir "${params.outdir}/logs/quast/",mode:'copy'
 
   input:
   set val(name), file(assembly) from assembled_genomes_quality
@@ -177,7 +177,7 @@ process quast {
 
 //QC of read data
 process cg_pipeline {
-  publishDir "${params.outdir}/cg_pipeline",mode:'copy'
+  publishDir "${params.outdir}/logs/cg_pipeline",mode:'copy'
 
   input:
   set val(name), file(reads) from raw_reads_qc
@@ -217,7 +217,7 @@ os.system("run_assembly_readMetrics.pl {} {} -e {} > {}_readMeterics.tsv".format
 
 //GAS serotyping
 process emmtype_finder {
-  publishDir "${params.outdir}/emmtyper/",mode:'copy'
+  publishDir "${params.outdir}/logs/emmtyper/",mode:'copy'
 
   input:
   set val(name), file(reads) from raw_reads_gas
@@ -248,7 +248,7 @@ with open(mash_species) as tsv:
 
 //Salmonella serotyping
 process seqsero {
-  publishDir "${params.outdir}/seqsero/",mode:'copy'
+  publishDir "${params.outdir}/logs/seqsero/",mode:'copy'
 
   input:
   set val(name), file(reads) from raw_reads_salmonella
@@ -281,7 +281,7 @@ with open(mash_species) as tsv:
 
 //Ecoli serotyping
 process serotypefinder {
-  publishDir "${params.outdir}/serotypefinder/",mode:'copy'
+  publishDir "${params.outdir}/logs/serotypefinder/",mode:'copy'
 
   input:
   set val(name), file(assembly) from assembled_genomes_serotypefinder
