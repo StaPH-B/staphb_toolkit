@@ -115,6 +115,15 @@ def main():
     subparser_dryad_report.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
     subparser_dryad_report.add_argument('--config','-c', type=str,help="Nextflow custom configuration")
 
+    #broad-----------------------------------------
+    parser_broad = subparsers.add_parser('broad', help='Determining an ideal reference genome.', add_help=False)
+    parser_broad.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
+    parser_broad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"broad_results\".",default="broad_results")
+    parser_broad.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_broad.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+    parser_broad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for broad.")
+    parser_broad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+
     #----------------------------------------------
     args = parser.parse_args()
 
@@ -466,3 +475,49 @@ def main():
             print("Starting the Dryad pipeline:")
             child = pexpect.spawn(command)
             child.interact()
+
+    #broad--------------------------------
+
+    if program == 'broad':
+        #tredegar path
+        broad_path = os.path.join(workflows_path,"broad/")
+
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(broad_path,"configs/broad_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_broad.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser_broad.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
+
+
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile and not args.config:
+            work = f"-w {args.output}/logs/work"
+
+        #build command
+        command = nextflow_path
+        command = command + f" {config} run {broad_path}/broad.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}broad_trace.txt -with-report {args.output}/logs/{exec_time}broad_execution_report.html {work}"
+        print(command)
+
+        #run command using nextflow in a subprocess
+        print("Starting the Broad pipeline:")
+        child = pexpect.spawn(command)
+        child.interact()

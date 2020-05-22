@@ -21,6 +21,7 @@ progs = {
 'bbtools':'BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data',
 'bwa':'BWA - mapping low-divergent sequences against a large reference genome',
 'canu-racon':'Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.',
+'centroid' : 'centroid - a tool for determining an ideal reference genome from a set of fasta files' ,
 'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory',
 'circlator':'Circlator - A tool to circularize genome assemblies',
 'clustalo':'ClustalO - A fast multiple sequence alignment program',
@@ -111,6 +112,7 @@ def main():
     parser_bbtols = subparsers.add_parser('bbtools', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', add_help=False)
     parser_canuracon = subparsers.add_parser('canu-racon', add_help=False)
+    parser_centroid = subparsers.add_parser('centroid', add_help=False)
     parser_cfsansnp = subparsers.add_parser('cfsan-snp', add_help=False)
     parser_circlator = subparsers.add_parser('circlator', add_help=False)
     parser_clustalo = subparsers.add_parser('clustalo', add_help=False)
@@ -761,6 +763,14 @@ def main():
         minimap2_configuration = config["parameters"]["minimap2"]
         minimap2 = sb_prog.Run(command=command, path=path_map, image=minimap2_configuration["image"], tag=minimap2_configuration["tag"])
         minimap2.run()
+
+    if program == 'centroid':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "centroid.py " + arg_string
+        centroid_configuration = config["parameters"]["centroid"]
+        centroid = sb_prog.Run(command=command, path=path_map, image=centroid_configuration["image"], tag=centroid_configuration["tag"])
+        centroid.run()
 
     if program == 'unicycler':
         if not re.search('[a-zA-Z]', arg_string):
