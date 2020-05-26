@@ -135,6 +135,7 @@ process quast {
 //Step4: Identify and annotate prophage genomes from assembled raw_reads
 process prophage {
   publishDir "${params.outdir}/", mode: 'copy'
+  tag "$name"
 
   input:
   file(assembly) from assembled_genomes
@@ -146,7 +147,7 @@ process prophage {
   """
   mkdir assemblies
   mv *.fasta ./assemblies
-  VIBRANT_run.py -i ./assemblies/*.fasta
+  VIBRANT_run.py -i ./assemblies/*.fasta -folder ${name}.vibrant_out
   """
 
 }
