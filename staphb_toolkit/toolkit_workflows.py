@@ -569,7 +569,7 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {cedard_path}/cedar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cedar_trace.txt -with-report {args.output}/logs/{exec_time}cedar_execution_report.html {work}"
+        command = command + f" {config} run {cedar_path}/cedar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cedar_trace.txt -with-report {args.output}/logs/{exec_time}cedar_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
