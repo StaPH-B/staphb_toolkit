@@ -144,7 +144,7 @@ process prophage {
 
   script:
   """
-  VIBRANT_run.py ${assembly}
+  VIBRANT_run.py -i ${assembly}
   """
 
 }
