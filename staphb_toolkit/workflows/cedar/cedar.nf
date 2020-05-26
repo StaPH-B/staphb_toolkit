@@ -147,7 +147,7 @@ process prophage {
   """
   mkdir assemblies
   mv *.fasta ./assemblies
-  VIBRANT_run.py -i ./assemblies/*.fasta -folder ${name}.vibrant_out
+  VIBRANT_run.py -i ./assemblies/*.fasta
+  mv VIBRANT_${name} ${name}.vibrant_out
   """
-
 }
