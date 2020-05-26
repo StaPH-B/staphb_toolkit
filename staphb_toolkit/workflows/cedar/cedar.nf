@@ -140,7 +140,7 @@ process prophage {
   file(assembly) from assembled_genomes
 
   output:
-  file("*_centroid_ref.fasta") into prophage_out
+  file("*vibrant_out") into prophage_out
 
   script:
   """
