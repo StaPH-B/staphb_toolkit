@@ -138,10 +138,10 @@ process prophage {
   tag "$name"
 
   input:
-  file(assembly) from assembled_genomes
+  set val(name), file(assembly) assembled_genomes
 
   output:
-  file("*vibrant_out") into prophage_out
+  file("${name}.vibrant_out") into prophage_out
 
   script:
   """
