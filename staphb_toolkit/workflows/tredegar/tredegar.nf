@@ -139,9 +139,6 @@ process shovill {
   tag "$name"
   publishDir "${params.outdir}/logs/shovill", mode: 'copy'
 
-  memory '8 GB'
-  ram=6
-
   input:
   set val(name), file(reads) from cleaned_reads
 
