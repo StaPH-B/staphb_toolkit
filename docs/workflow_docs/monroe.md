@@ -14,7 +14,7 @@ Monroe consists of three separate Nextflow pipelines for Illumina paired-end rea
 
 Monroe's Nextflow pipelines can be executed using the following command format:
 ```
-$ staphbe-wf monroe <monroe_pipeline> [options]
+$ staphb-wf monroe <monroe_pipeline> [options]
 ```
 - `<monroe_pipeline>` must be `pe_assembly`, `ont_assembly`, or `cluster_analysis`
 
