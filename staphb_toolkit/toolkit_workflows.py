@@ -115,14 +115,14 @@ def main():
     subparser_dryad_report.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
     subparser_dryad_report.add_argument('--config','-c', type=str,help="Nextflow custom configuration")
 
-    #broad-----------------------------------------
-    parser_broad = subparsers.add_parser('broad', help='Determining an ideal reference genome.', add_help=False)
-    parser_broad.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
-    parser_broad.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"broad_results\".",default="broad_results")
-    parser_broad.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-    parser_broad.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
-    parser_broad.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for broad.")
-    parser_broad.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    #hickory-----------------------------------------
+    parser_hickory = subparsers.add_parser('hickory', help='Determining an ideal reference genome.', add_help=False)
+    parser_hickory.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
+    parser_hickory.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"hickory_results\".",default="hickory_results")
+    parser_hickory.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_hickory.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+    parser_hickory.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for hickory.")
+    parser_hickory.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
     #----------------------------------------------
     args = parser.parse_args()
@@ -476,22 +476,22 @@ def main():
             child = pexpect.spawn(command)
             child.interact()
 
-    #broad--------------------------------
+    #hickory--------------------------------
 
-    if program == 'broad':
-        #tredegar path
-        broad_path = os.path.join(workflows_path,"broad/")
+    if program == 'hickory':
+        #Hickory path
+        hickory_path = os.path.join(workflows_path,"hickory/")
 
         #give config to user if requested
         if args.get_config:
-            config_path = os.path.join(broad_path,"configs/broad_config_template.config")
-            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_broad.config")
+            config_path = os.path.join(hickory_path,"configs/hickory_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_hickory.config")
             copyfile(config_path,dest_path)
             sys.exit()
 
         #check for reads_path
         if not args.reads_path:
-            parser_broad.print_help()
+            parser_hickory.print_help()
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
@@ -514,10 +514,10 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {broad_path}/broad.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}broad_trace.txt -with-report {args.output}/logs/{exec_time}broad_execution_report.html {work}"
+        command = command + f" {config} run {hickory_path}/hickory.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}hickory_trace.txt -with-report {args.output}/logs/{exec_time}hickory_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
-        print("Starting the Broad pipeline:")
+        print("Starting the hickory pipeline:")
         child = pexpect.spawn(command)
         child.interact()
