@@ -518,6 +518,6 @@ def main():
         print(command)
 
         #run command using nextflow in a subprocess
-        print("Starting the hickory pipeline:")
+        print("Starting the Hickory pipeline:")
         child = pexpect.spawn(command)
         child.interact()
