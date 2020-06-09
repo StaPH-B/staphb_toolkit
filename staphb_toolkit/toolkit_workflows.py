@@ -99,7 +99,6 @@ def main():
     subparser_dryad_main.add_argument('--snp','-s',default=False, action="store_true", help="construct a SNP tree, requires a reference sequence in fasta format (-r)")
     subparser_dryad_main.add_argument('-r',metavar='<path>', type=str,help="reference sequence for SNP pipeline")
     subparser_dryad_main.add_argument('-ar',default=False, action="store_true", help="detect AR mechanisms")
-    subparser_dryad_main.add_argument('--sep',metavar="sep_chars",type=str,help="dryad identifies sample names from the name of the read file by splitting the name on the specified separating characters, default \"_\"",default="_")
     subparser_dryad_main.add_argument('--profile', type=str,choices=["docker", "singularity"],help="specify nextflow profile, dryad will try to use docker first, then singularity")
     subparser_dryad_main.add_argument('--config','-c', type=str,help="Nextflow custom configuration")
     subparser_dryad_main.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
@@ -465,7 +464,7 @@ def main():
             mqc_logo_path =  f"--multiqc_logo " + logo_path
 
             #add other arguments
-            other_args = f"--name_split_on {args.sep} --outdir {args.output}"
+            other_args = f"--outdir {args.output}"
 
             #build command
             command = nextflow_path
