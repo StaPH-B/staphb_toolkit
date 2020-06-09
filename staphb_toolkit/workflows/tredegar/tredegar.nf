@@ -10,7 +10,7 @@ params.outdir = ""
 
 //setup channel to read in and pair the fastq files
 Channel
-    .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
+    .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fq}.gz", size: 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nEnsure read data is compressed (gzip) before rerunning." }
     .set { raw_reads }
 
@@ -20,7 +20,7 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_mash, raw_reads_trim, raw_reads_qc, raw_reads_gas, raw_reads_salmonella
+  tuple name, file(reads) into raw_reads_mash, raw_reads_trim, raw_reads_qc, raw_reads_gas, raw_reads_salmonella
 
   script:
   if(params.name_split_on!=""){

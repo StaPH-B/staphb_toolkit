@@ -13,7 +13,7 @@ params.pipe = ""
 
 //setup channel to read in and pair the fastq files
 Channel
-    .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.fastq.gz", size: 2 )
+    .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fq}.gz", size: 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
 
@@ -23,7 +23,7 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file("*{R1,R2,_1,_2}.fastq.gz") into raw_reads_trim
+  tuple name, file(reads) into raw_reads_trim
   script:
   if(params.name_split_on!=""){
     name = name.split(params.name_split_on)[0]
