@@ -87,7 +87,7 @@ for file in mash_list:
       if "_sp." not in top_hit:
         break
   # specify the top hit as the species for this id
-  id = file.split('_')[0]
+  id = file.split('_top_hit')[0]
   mash_species[id] = top_hit
 
 with open("mash_species.tsv", 'w') as f:
