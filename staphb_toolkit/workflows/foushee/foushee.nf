@@ -127,7 +127,7 @@ for file in mash_list:
       if "_sp." not in top_hit:
         break
   # specify the top hit as the species for this id
-  id = file.split('_')[0]
+  id = file.split('_top_hits')[0]
   mash_species[id] = top_hit
 
 with open("mash_species.tsv", 'w') as f:
@@ -143,9 +143,6 @@ with open("mash_species.tsv", 'w') as f:
 process shovill {
   tag "$name"
   publishDir "${params.outdir}/shovill", mode: 'copy'
-
-  memory '8 GB'
-  ram=6
 
   input:
   set val(name), file(reads) from cleaned_reads
@@ -197,6 +194,7 @@ import glob
 
 reads =  glob.glob("*fastq*")
 mash_species = "${mash_species}"
+print(reads)
 name = "${name}"
 db = "${params.emmtyper_db}"
 # Run Emmtyper if isolate predicted as Streptococcus_pyogenes
@@ -205,6 +203,8 @@ with open(mash_species) as tsv:
   for line in tsv_reader:
     if line[0] == name and line[1] == "Streptococcus_pyogenes":
         os.system("emm_typing.py -1 {} -2 {} -o . -m {}".format(reads[0],reads[1],db))
+    else:
+        print(name + " not identified as Streptococcus pyogenes")
 """
 }
 
