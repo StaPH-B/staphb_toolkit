@@ -4,6 +4,9 @@ import re
 import subprocess as sub
 import shlex
 
+#version number
+version = "1.1.0"
+
 #selfupdate check file
 selfupdate_status = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),'selfupdate')
 
@@ -48,5 +51,15 @@ def check_for_updates():
     #run pip update
     cmd = cmd + " install staphb-toolkit --upgrade"
     print("Checking for updates...")
-    sub.Popen(shlex.split(cmd),stdout=sub.DEVNULL,stderr=sub.STDOUT).wait()
-    print("Done.")
+    p = sub.Popen(shlex.split(cmd),stdout=sub.PIPE,stderr=sub.PIPE)
+    out, err = p.communicate()
+    if err:
+        print(err.decode("utf-8"))
+    else:
+        sout = out.decode("utf-8")
+        if "Successfully installed staphb-toolkit" in sout:
+            v = sout[-6:].strip()
+            print(f"Updated to version {v}")
+            print("Done.")
+        else:
+            print("No new updates.")
