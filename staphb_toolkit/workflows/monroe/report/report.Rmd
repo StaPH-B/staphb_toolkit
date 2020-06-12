@@ -158,14 +158,6 @@ gtree <- ggtree(mpt, branch.length = "none")
 
 ```{r format-matrix, echo = FALSE, message = FALSE, warning = FALSE}
 
-# This block formats the matrix
-
-# R places an X in front of #s when reading in a dataframe
-colnames(snp_mat) <- gsub("X","",colnames(snp_mat))
-
-# replace any "." with "-" in column names
-colnames(snp_mat) <- gsub("\\.","-",colnames(snp_mat))
-
 # order snp matrix by vertical order of tip labels
 snp_mat <- snp_mat[c(mpt.ord),c(mpt.ord)]
 
