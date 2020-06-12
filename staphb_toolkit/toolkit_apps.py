@@ -92,7 +92,7 @@ def main():
 
     docker_config_path = os.path.abspath(os.path.dirname(__file__) + '/' + 'core/docker_config.json')
 
-    parser = MyParser(usage="staphb-tk [optional arguments] <application> [application arguments]",add_help=True)
+    parser = MyParser(description=f"StaPH-B ToolKit Programs v{autoupdate.version}",usage="staphb-tk [optional arguments] <application> [application arguments]",add_help=True)
     subparsers = parser.add_subparsers(title='custom toolkit applications',metavar='',dest="subparser_name",parser_class=MyParser)
     parser.add_argument("--docker_config","-c", default=docker_config_path,metavar="<path>", help="Configuration file for container images and tags; if none provided, default container versions will be used.")
     parser.add_argument("--get_docker_config",default=False,action="store_true",help="Get the default docker container configureation file.")
