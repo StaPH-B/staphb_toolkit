@@ -48,14 +48,14 @@ process trim {
   set val(name), file(reads) from raw_reads_trim
 
   output:
-  tuple name, file("${name}*{_1,_2}.fastq.gz") into trimmed_reads
+  tuple name, file("${name}_trimmed{_1,_2}.fastq.gz") into trimmed_reads
 
   script:
   """
   cpus=`grep -c ^processor /proc/cpuinfo`
   java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads \$cpus ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
-  mv ${name}*1P.fastq.gz ${name}_1.fastq.gz
-  mv ${name}*2P.fastq.gz ${name}_2.fastq.gz
+  mv ${name}*1P.fastq.gz ${name}_trimmed_1.fastq.gz
+  mv ${name}*2P.fastq.gz ${name}_trimmed_2.fastq.gz
   """
 }
 //Step2: Remove PhiX contamination
