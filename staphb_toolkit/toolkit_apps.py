@@ -110,7 +110,7 @@ def main():
     #-----------------------------------------
     parser_abricate = subparsers.add_parser('abricate', add_help=False)
     parser_augur = subparsers.add_parser('augur', add_help=False)
-    parser_bbtols = subparsers.add_parser('bbtools', add_help=False)
+    parser_bbtools = subparsers.add_parser('bbtools', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', add_help=False)
     parser_canuracon = subparsers.add_parser('canu-racon', add_help=False)
     parser_centroid = subparsers.add_parser('centroid', add_help=False)
@@ -134,6 +134,7 @@ def main():
     parser_ksnp3 = subparsers.add_parser('ksnp3', add_help=False)
     parser_legsta = subparsers.add_parser('legsta', add_help=False)
     parser_lyveset = subparsers.add_parser('lyveset', add_help=False)
+    parser_mafft = subparsers.add_parser('mafft', add_help=False)
     parser_mash = subparsers.add_parser('mash', add_help=False)
     parser_mashtree = subparsers.add_parser('mashtree', add_help=False)
     parser_medaka = subparsers.add_parser('medaka', add_help=False)
@@ -510,8 +511,9 @@ def main():
 
     if program == 'canu-racon':
         if not re.search('[a-zA-Z]', arg_string):
-            arg_string = "-h"
-        command = "racon " + arg_string
+            print("This is a bundled application that requires a specific commands to be used (i.e. staphb-tk canu-racon canu -h) please see the documentation for Canu, Minimap2 and Racon to use.")
+            sys.exit()
+        command = " " + arg_string
         program_configuration = config["parameters"]["canu-racon"]
 
     if program == 'bbtools':
