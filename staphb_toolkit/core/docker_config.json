@@ -151,7 +151,7 @@
       },
       "ncbi-amrfinder-plus": {
          "image": "staphb/ncbi-amrfinderplus",
-         "tag": "3.1.1b"
+         "tag": "3.8.4"
       },
       "orthofinder": {
          "image": "staphb/orthofinder",
