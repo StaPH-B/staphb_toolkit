@@ -17,6 +17,7 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
   * [Using the Toolkit](/staphb_toolkit/using_tk)
   * [Default Docker Images](/staphb_toolkit/default_images)
   * [Running Workflows](/staphb_toolkit/workflows)
+    - [Cutshaw](/staphb_toolkit/workflows_docs/cutshaw)
     - [Dryad](/staphb_toolkit/workflow_docs/dryad)
     - [Foushee](/staphb_toolkit/workflow_docs/foushee)
     - [Monroe](/staphb_toolkit/workflow_docs/monroe)
