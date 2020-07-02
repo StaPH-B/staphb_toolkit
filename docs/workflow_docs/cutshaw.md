@@ -61,7 +61,7 @@ If an `<output_dir>` is not provided, results will be written to a `tredegar_run
 ## Output:
 The final report file will be written directly to the `<output_dir>`.
 
-![Sample report](/staphb_toolkit/assets/workflows/cutshaw/sample_report.html)
+[Sample report](/staphb_toolkit/assets/workflows/cutshaw/sample_report.html)
 
 
 ## Version History
