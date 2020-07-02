@@ -7,7 +7,7 @@ layout: page
 Bioinformatics Pipeline for Instrument Validation and Assessment Technical Proficiency in WGS Protocols
 
 ## Data workflow:
-![Tredegar pipeline](/staphb_toolkit/assets/workflows/tredegar/Tredegar_v2.1.png)
+![Cutshaw pipeline](/staphb_toolkit/assets/workflows/cutshaw/Cutshaw_v1.0.png)
 
 Cutshaw, a DCLS-developed workflow based on the [U.S. Food and Drug Administration’s (FDA) Center for Food Safety and Applied Nutrition (CFSAN) GenomeTrakr Proficiency Assessment workflow](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000185), was developed to assess a scientist’s proficiency on the Illumina MiSeq sequencing platform. CutShaw was developed in collaboration with FDA CFSAN and derives minimum quality thresholds from the [2018 Genomics for Food Safety (Gen-FS) Proficiency Testing exercise](https://github.com/CFSAN-Biostatistics/wgs_competency).
 
@@ -61,9 +61,8 @@ If an `<output_dir>` is not provided, results will be written to a `tredegar_run
 ## Output:
 The final report file will be written directly to the `<output_dir>`.
 
-[Sample report]
+![Sample report](/staphb_toolkit/assets/workflows/cutshaw/sample_report.html)
 
-```
 
 ## Version History
 
