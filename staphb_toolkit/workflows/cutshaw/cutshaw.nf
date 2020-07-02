@@ -403,17 +403,16 @@ with open("seq_results.tsv",'w') as csvout:
 
 
 process render{
-  publishDir "${params.outdir}/", mode: 'copy', pattern: "*_report.pdf"
+  publishDir "${params.outdir}/", mode: 'copy'
 
 
   input:
   file(seq_results) from qc_metrics
 
   output:
-  file "*_report.pdf"
+  file "Cutshaw-report.pdf"
   shell:
 """
-ls /
-create_competency_report.sh -p "{params.title}" -t "{params.title}" -T /wgs_competency/report_template.Rnw -o . -s {seq_results} -S /wgs_competency/seq_stats.tsv
+create_competency_report.sh -p "Cutshaw-report" -t "${params.title}" -T /wgs_competency/report_template.Rnw -o . -s ${seq_results} -S /wgs_competency/seq_stats.tsv
 """
 }
