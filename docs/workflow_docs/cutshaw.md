@@ -61,12 +61,12 @@ If an `<output_dir>` is not provided, results will be written to a `tredegar_run
 ## Output:
 The final report file will be written directly to the `<output_dir>`.
 
-[Sample report](/staphb_toolkit/assets/workflows/cutshaw/sample_report.html)
+![Sample report](/staphb_toolkit/assets/workflows/cutshaw/sample_report.html)
 
 
 ## Version History
 
-<b>Current version: v1.0.0 July 03, 2020</b>
+<b>Current version: v1.0.0 July 02, 2020</b>
 
 Version 1.0.0 is the first stable version of Cutshaw
 
