@@ -127,6 +127,7 @@ def main():
     parser_cutshaw = subparsers.add_parser('cutshaw', help='WGS competency assessment and instrument validation.', add_help=False)
     parser_cutshaw.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
     parser_cutshaw.add_argument('--isolate_key', type=str,help="path to the location of the isolation key file",nargs='?', default=False)
+    parser_cutshaw.add_argument('--report_title', type=str,help="title of the cutshaw report (e.g. name of instrument or scientist being assessed)",nargs='?',default="Unnamed Scientist/Instrument")
     parser_cutshaw.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cutshaw_results\".",default="cutshaw_results")
     parser_cutshaw.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_cutshaw.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
@@ -569,7 +570,7 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {cutshaw_path}/cutshaw.nf {profile} {args.resume} --reads {args.reads_path} --pt_genomes {cutshaw_path}/pt_genomes/* --isolate_key {args.isolate_key} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Cutshaw_trace.txt -with-report {args.output}/logs/{exec_time}Cutshaw_execution_report.html {work}"
+        command = command + f" {config} run {cutshaw_path}/cutshaw.nf {profile} {args.resume} --reads {args.reads_path} --pt_genomes {cutshaw_path}/pt_genomes/* --isolate_key {args.isolate_key} --title {args.report_title} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Cutshaw_trace.txt -with-report {args.output}/logs/{exec_time}Cutshaw_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
