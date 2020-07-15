@@ -1,0 +1,6 @@
+./LMP18-H2446.fasta
+./SAP18-H9654.fasta
+./LMP18-H8393.fasta
+./SAP18-6199.fasta
+./SAP18-8729.fasta
+./SAP18-0432.fasta

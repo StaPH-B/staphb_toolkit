@@ -42,6 +42,7 @@ progs = {
 'ksnp3':'kSNP3 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.',
 'legsta':'Legsta - In silico Legionella pneumophila Sequence Based Typing',
 'lyveset':'LYVE-SET - a method of using hqSNPs to create a phylogeny.',
+'mafft':'MAFFT - multiple sequence alignment program for amino acid or nucleotide sequences',
 'mash':'MASH - Fast genome and metagenome distance estimation using MinHash',
 'mashtree':'MashTree - Create a tree using Mash distances',
 'medaka':'Medaka - Sequence correction provided by ONT Research',
@@ -109,7 +110,7 @@ def main():
     #-----------------------------------------
     parser_abricate = subparsers.add_parser('abricate', add_help=False)
     parser_augur = subparsers.add_parser('augur', add_help=False)
-    parser_bbtols = subparsers.add_parser('bbtools', add_help=False)
+    parser_bbtools = subparsers.add_parser('bbtools', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', add_help=False)
     parser_canuracon = subparsers.add_parser('canu-racon', add_help=False)
     parser_centroid = subparsers.add_parser('centroid', add_help=False)
@@ -133,6 +134,7 @@ def main():
     parser_ksnp3 = subparsers.add_parser('ksnp3', add_help=False)
     parser_legsta = subparsers.add_parser('legsta', add_help=False)
     parser_lyveset = subparsers.add_parser('lyveset', add_help=False)
+    parser_mafft = subparsers.add_parser('mafft', add_help=False)
     parser_mash = subparsers.add_parser('mash', add_help=False)
     parser_mashtree = subparsers.add_parser('mashtree', add_help=False)
     parser_medaka = subparsers.add_parser('medaka', add_help=False)
@@ -264,518 +266,391 @@ def main():
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = " "
         command = "ivar " + arg_string
-        ivar_configuration = config["parameters"]["ivar-SC2"]
-        ivar = sb_prog.Run(command=command, path=path_map, image=ivar_configuration["image"], tag=ivar_configuration["tag"])
-        ivar.run()
+        program_configuration = config["parameters"]["ivar-SC2"]
 
     if program == 'ivar':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = " "
         command = "ivar " + arg_string
-        ivar_configuration = config["parameters"]["ivar"]
-        ivar = sb_prog.Run(command=command, path=path_map, image=ivar_configuration["image"], tag=ivar_configuration["tag"])
-        ivar.run()
+        program_configuration = config["parameters"]["ivar"]
 
     if program == 'wtdbg2':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "wtdbg2 " + arg_string
-        wtdbg2_configuration = config["parameters"]["wtdbg2"]
-        wtdbg2 = sb_prog.Run(command=command, path=path_map, image=wtdbg2_configuration["image"],
-                             tag=wtdbg2_configuration["tag"])
-        wtdbg2.run()
+        program_configuration = config["parameters"]["wtdbg2"]
 
     if program == 'trimmomatic':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "trimmomatic " + arg_string
-        trimmomatic_configuration = config["parameters"]["trimmomatic"]
-        trimmomatic = sb_prog.Run(command=command, path=path_map, image=trimmomatic_configuration["image"], tag=trimmomatic_configuration["tag"])
-        trimmomatic.run()
+        program_configuration = config["parameters"]["trimmomatic"]
 
     if program == 'tiptoft':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "tiptoft " + arg_string
-        tiptoft_configuration = config["parameters"]["tiptoft"]
-        tiptoft = sb_prog.Run(command=command, path=path_map, image=tiptoft_configuration["image"], tag=tiptoft_configuration["tag"])
-        tiptoft.run()
+        program_configuration = config["parameters"]["tiptoft"]
 
     if program == 'staramr':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "staramr " + arg_string
-        staramr_configuration = config["parameters"]["staramr"]
-        staramr = sb_prog.Run(command=command, path=path_map, image=staramr_configuration["image"], tag=staramr_configuration["tag"])
-        staramr.run()
+        program_configuration = config["parameters"]["staramr"]
 
     if program == 'sra-toolkit':
-        command = " " + arg_string
-        sra_toolkit_configuration = config["parameters"]["sra-toolkit"]
-        sra_toolkit = sb_prog.Run(command=command, path=path_map, image=sra_toolkit_configuration["image"], tag=sra_toolkit_configuration["tag"])
         if not re.search('[a-zA-Z]', arg_string):
             print("SRA toolkit tool must be specified, e.g. staphb-tk sra-toolkit fasterq-dump, staphb-tk sra-toolkit sra-pileup, etc. \n\nMore info on SRA Toolkit usage at: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc.")
-        else:
-            sra_toolkit.run()
+            sys.exit()
+        command = " " + arg_string
+        program_configuration = config["parameters"]["sra-toolkit"]
 
     if program == 'snp-dists':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "snp-dists " + arg_string
-        snp_dists_configuration = config["parameters"]["snp-dists"]
-        snp_dists = sb_prog.Run(command=command, path=path_map, image=snp_dists_configuration["image"],
-                                tag=snp_dists_configuration["tag"])
-        snp_dists.run()
+        program_configuration = config["parameters"]["snp-dists"]
 
     if program == 'snp-sites':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "snp-sites " + arg_string
-        snp_sites_configuration = config["parameters"]["snp-sites"]
-        snp_sites = sb_prog.Run(command=command, path=path_map, image=snp_sites_configuration["image"],
-                                tag=snp_sites_configuration["tag"])
-        snp_sites.run()
+        program_configuration = config["parameters"]["snp-sites"]
 
     if program == 'snippy':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "snippy " + arg_string
-        snippy_configuration = config["parameters"]["snippy"]
-        snippy = sb_prog.Run(command=command, path=path_map, image=snippy_configuration["image"], tag=snippy_configuration["tag"])
-        snippy.run()
+        program_configuration = config["parameters"]["snippy"]
 
     if program == 'skesa':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "skesa " + arg_string
-        skesa_configuration = config["parameters"]["skesa"]
-        skesa = sb_prog.Run(command=command, path=path_map, image=skesa_configuration["image"], tag=skesa_configuration["tag"])
-        skesa.run()
+        program_configuration = config["parameters"]["skesa"]
 
     if program == 'sistr':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "sistr " + arg_string
-        sistr_configuration = config["parameters"]["sistr"]
-        sistr = sb_prog.Run(command=command, path=path_map, image=sistr_configuration["image"], tag=sistr_configuration["tag"])
-        sistr.run()
+        program_configuration = config["parameters"]["sistr"]
 
     if program == 'seroba':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "seroba " + arg_string
-        seroba_configuration = config["parameters"]["seroba"]
-        seroba = sb_prog.Run(command=command, path=path_map, image=seroba_configuration["image"], tag=seroba_configuration["tag"])
-        seroba.run()
+        program_configuration = config["parameters"]["seroba"]
 
     if program == 'seqsero2':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "SeqSero2_package.py " + arg_string
-        seqsero2_configuration = config["parameters"]["seqsero2"]
-        seqsero2 = sb_prog.Run(command=command, path=path_map, image=seqsero2_configuration["image"],
-                               tag=seqsero2_configuration["tag"])
-        seqsero2.run()
+        program_configuration = config["parameters"]["seqsero2"]
 
     if program == 'salmid':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "SalmID.py " + arg_string
-        salmid_configuration = config["parameters"]["salmid"]
-        salmid = sb_prog.Run(command=command, path=path_map, image=salmid_configuration["image"], tag=salmid_configuration["tag"])
-        salmid.run()
+        program_configuration = config["parameters"]["salmid"]
 
     if program == 'rasusa':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "rasusa " + arg_string
-        rasusa_configuration = config["parameters"]["rasusa"]
-        rasusa = sb_prog.Run(command=command, path=path_map, image=rasusa_configuration["image"], tag=rasusa_configuration["tag"])
-        rasusa.run()
+        program_configuration = config["parameters"]["rasusa"]
 
     if program == 'plasmidseeker':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "plasmidseeker.pl " + arg_string
-        plasmidseeker_configuration = config["parameters"]["plasmidseeker"]
-        plasmidseeker = sb_prog.Run(command=command, path=path_map, image=plasmidseeker_configuration["image"],
-                                    tag=plasmidseeker_configuration["tag"])
-        plasmidseeker.run()
+        program_configuration = config["parameters"]["plasmidseeker"]
 
     if program == 'pilon':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "--help"
         command = "pilon " + arg_string
-        pilon_configuration = config["parameters"]["pilon"]
-        pilon = sb_prog.Run(command=command, path=path_map, image=pilon_configuration["image"], tag=pilon_configuration["tag"])
-        pilon.run()
+        program_configuration = config["parameters"]["pilon"]
 
     if program == 'orthofinder':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "orthofinder " + arg_string
-        orthofinder_configuration = config["parameters"]["orthofinder"]
-        orthofinder = sb_prog.Run(command=command, path=path_map, image=orthofinder_configuration["image"],
-                                  tag=orthofinder_configuration["tag"])
-        orthofinder.run()
+        program_configuration = config["parameters"]["orthofinder"]
 
     if program == 'ncbi-amrfinder-plus':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "--help"
         command = "amrfinder " + arg_string
-        ncbi_amrfinderplus_configuration = config["parameters"]["ncbi-amrfinder-plus"]
-        ncbi_amrfinderplus = sb_prog.Run(command=command, path=path_map, image=ncbi_amrfinderplus_configuration["image"], tag=ncbi_amrfinderplus_configuration["tag"])
-        ncbi_amrfinderplus.run()
+        program_configuration = config["parameters"]["ncbi-amrfinder-plus"]
 
     if program == 'nanoplot':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "NanoPlot " + arg_string
-        nanoplot_configuration = config["parameters"]["nanoplot"]
-        nanoplot = sb_prog.Run(command=command, path=path_map, image=nanoplot_configuration["image"],
-                               tag=nanoplot_configuration["tag"])
-        nanoplot.run()
+        program_configuration = config["parameters"]["nanoplot"]
 
     if program == 'multiqc':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "multiqc " + arg_string
-        multiqc_configuration = config["parameters"]["multiqc"]
-        multiqc = sb_prog.Run(command=command, path=path_map, image=multiqc_configuration["image"],
-                              tag=multiqc_configuration["tag"])
-        multiqc.run()
+        program_configuration = config["parameters"]["multiqc"]
 
     if program == 'mugsy':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "mugsy " + arg_string
-        mugsy_configuration = config["parameters"]["mugsy"]
-        mugsy = sb_prog.Run(command=command, path=path_map, image=mugsy_configuration["image"],
-                            tag=mugsy_configuration["tag"])
-        mugsy.run()
+        program_configuration = config["parameters"]["mugsy"]
 
     if program == 'mlst':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "mlst " + arg_string
-        mlst_configuration = config["parameters"]["mlst"]
-        mlst = sb_prog.Run(command=command, path=path_map, image=mlst_configuration["image"], tag=mlst_configuration["tag"])
-        mlst.run()
+        program_configuration = config["parameters"]["mlst"]
 
     if program == 'medaka':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "medaka " + arg_string
-        medaka_configuration = config["parameters"]["medaka"]
-        medaka = sb_prog.Run(command=command, path=path_map, image=medaka_configuration["image"],
-                             tag=medaka_configuration["tag"])
-        medaka.run()
+        program_configuration = config["parameters"]["medaka"]
 
     if program == 'mashtree':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "mashtree " + arg_string
-        mashtree_configuration = config["parameters"]["mashtree"]
-        mashtree = sb_prog.Run(command=command, path=path_map, image=mashtree_configuration["image"],
-                               tag=mashtree_configuration["tag"])
-        mashtree.run()
+        program_configuration = config["parameters"]["mashtree"]
 
     if program == 'legsta':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "legsta " + arg_string
-        legsta_configuration = config["parameters"]["legsta"]
-        legsta = sb_prog.Run(command=command, path=path_map, image=legsta_configuration["image"],
-                             tag=legsta_configuration["tag"])
-        legsta.run()
+        program_configuration = config["parameters"]["legsta"]
 
     if program == 'ksnp3':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = ""
         command = "kSNP3 " + arg_string
-        ksnp3_configuration = config["parameters"]["ksnp3"]
-        ksnp3 = sb_prog.Run(command=command, path=path_map, image=ksnp3_configuration["image"], tag=ksnp3_configuration["tag"])
-        ksnp3.run()
+        program_configuration = config["parameters"]["ksnp3"]
 
     if program == 'kraken2-build':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "kraken2-build " + arg_string
-        kraken2_configuration = config["parameters"]["kraken2"]
-        kraken2 = sb_prog.Run(command=command, path=path_map, image=kraken2_configuration["image"], tag=kraken2_configuration["tag"])
-        kraken2.run()
+        program_configuration = config["parameters"]["kraken2"]
 
     if program == 'kraken2':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "kraken2 " + arg_string
-        kraken2_configuration = config["parameters"]["kraken2"]
-        kraken2 = sb_prog.Run(command=command, path=path_map, image=kraken2_configuration["image"], tag=kraken2_configuration["tag"])
-        kraken2.run()
+        program_configuration = config["parameters"]["kraken2"]
 
     if program == 'kraken-build':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "kraken-build " + arg_string
-        kraken_configuration = config["parameters"]["kraken"]
-        kraken = sb_prog.Run(command=command, path=path_map, image=kraken_configuration["image"], tag=kraken_configuration["tag"])
-        kraken.run()
+        program_configuration = config["parameters"]["kraken"]
 
     if program == 'kraken':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "kraken " + arg_string
-        kraken_configuration = config["parameters"]["kraken"]
-        kraken = sb_prog.Run(command=command, path=path_map, image=kraken_configuration["image"], tag=kraken_configuration["tag"])
-        kraken.run()
+        program_configuration = config["parameters"]["kraken"]
 
     if program == 'kma':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "kma " + arg_string
-        kma_configuration = config["parameters"]["kma"]
-        kma = sb_prog.Run(command=command, path=path_map, image=kma_configuration["image"], tag=kma_configuration["tag"])
-        kma.run()
+        program_configuration = config["parameters"]["kma"]
 
     if program == 'flye':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "flye " + arg_string
-        flye_configuration = config["parameters"]["flye"]
-        flye = sb_prog.Run(command=command, path=path_map, image=flye_configuration["image"], tag=flye_configuration["tag"])
-        flye.run()
+        program_configuration = config["parameters"]["flye"]
 
     if program == 'filtlong':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "filtlong " + arg_string
-        filtlong_configuration = config["parameters"]["filtlong"]
-        filtlong = sb_prog.Run(command=command, path=path_map, image=filtlong_configuration["image"], tag=filtlong_configuration["tag"])
-        filtlong.run()
+        program_configuration = config["parameters"]["filtlong"]
 
     if program == 'fastqc':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "fastqc " + arg_string
-        fastqc_configuration = config["parameters"]["fastqc"]
-        fastqc = sb_prog.Run(command=command, path=path_map, image=fastqc_configuration["image"],
-                             tag=fastqc_configuration["tag"])
-        fastqc.run()
+        program_configuration = config["parameters"]["fastqc"]
 
     if program == 'fasttree':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "FastTree " + arg_string
-        fasttree_configuration = config["parameters"]["fasttree"]
-        fasttree = sb_prog.Run(command=command, path=path_map, image=fasttree_configuration["image"], tag=fasttree_configuration["tag"])
-        fasttree.run()
+        program_configuration = config["parameters"]["fasttree"]
 
     if program == 'fastani':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "fastANI " + arg_string
-        fastani_configuration = config["parameters"]["fastani"]
-        fastani = sb_prog.Run(command=command, path=path_map, image=fastani_configuration["image"], tag=fastani_configuration["tag"])
-        fastani.run()
+        program_configuration = config["parameters"]["fastani"]
 
     if program == 'emm-typing-tool':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "emm_typing.py " + arg_string
-        emm_typing_tool_configuration = config["parameters"]["emm-typing-tool"]
-        emm_typing_tool = sb_prog.Run(command=command, path=path_map, image=emm_typing_tool_configuration["image"], tag=emm_typing_tool_configuration["tag"])
-        emm_typing_tool.run()
+        program_configuration = config["parameters"]["emm-typing-tool"]
 
     if program == 'circlator':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "circlator " + arg_string
-        circlator_configuration = config["parameters"]["circlator"]
-        circlator = sb_prog.Run(command=command, path=path_map, image=circlator_configuration["image"], tag=circlator_configuration["tag"])
-        circlator.run()
+        program_configuration = config["parameters"]["circlator"]
 
     if program == 'cfsan-snp':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "cfsan_snp_pipeline " + arg_string
-        cfsan_snp_configuration = config["parameters"]["cfsan-snp-pipeline"]
-        cfsan_snp = sb_prog.Run(command=command, path=path_map, image=cfsan_snp_configuration["image"], tag=cfsan_snp_configuration["tag"])
-        cfsan_snp.run()
+        program_configuration = config["parameters"]["cfsan-snp-pipeline"]
 
     if program == 'canu-racon':
         if not re.search('[a-zA-Z]', arg_string):
-            arg_string = "-h"
-        command = "racon " + arg_string
-        canu_racon_configuration = config["parameters"]["canu-racon"]
-        canu_racon = sb_prog.Run(command=command, path=path_map, image=canu_racon_configuration["image"], tag=canu_racon_configuration["tag"])
-        canu_racon.run()
+            print("This is a bundled application that requires a specific commands to be used (i.e. staphb-tk canu-racon canu -h) please see the documentation for Canu, Minimap2 and Racon to use.")
+            sys.exit()
+        command = " " + arg_string
+        program_configuration = config["parameters"]["canu-racon"]
 
     if program == 'bbtools':
-        command = " " + arg_string
-        bbtools_configuration = config["parameters"]["bbtools"]
-        bbtools = sb_prog.Run(command=command, path=path_map, image=bbtools_configuration["image"], tag=bbtools_configuration["tag"])
         if not re.search('[a-zA-Z]', arg_string):
             print("BBTools shell script must be specified, e.g. staphb-tk bbtools bbmap.sh, staphb-tk bbtools bbduk.sh, etc. \n\nMore info on BBTools at https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/.")
-        else:
-            bbtools.run()
+            sys.exit()
+        command = " " + arg_string
+        program_configuration = config["parameters"]["bbtools"]
 
     if program == 'raxml':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "raxmlHPC "+arg_string
-        raxml_configuration = config["parameters"]["raxml"]
-        raxml = sb_prog.Run(command=command, path=path_map, image=raxml_configuration["image"], tag =raxml_configuration["tag"])
-        raxml.run()
+        program_configuration = config["parameters"]["raxml"]
 
     if program == 'spades':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "spades.py "+arg_string
-        spades_configuration = config["parameters"]["spades"]
-        spades = sb_prog.Run(command=command, path=path_map, image=spades_configuration["image"], tag =spades_configuration["tag"])
-        spades.run()
+        program_configuration = config["parameters"]["spades"]
 
     if program == 'mash':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "mash "+arg_string
-        mash_configuration = config["parameters"]["mash"]
-        mash = sb_prog.Run(command=command, path=path_map, image=mash_configuration["image"], tag = mash_configuration["tag"])
-        mash.run()
+        program_configuration = config["parameters"]["mash"]
 
     if program == 'seqyclean':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "seqyclean "+arg_string
-        seqyclean_configuration = config["parameters"]["seqyclean"]
-        seqyclean = sb_prog.Run(command=command, path=path_map, image=seqyclean_configuration["image"], tag = seqyclean_configuration["tag"])
-        seqyclean.run()
+        program_configuration = config["parameters"]["seqyclean"]
 
     if program == 'shovill':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "shovill " + arg_string
-        shovill_configuration = config["parameters"]["shovill"]
-        shovill = sb_prog.Run(command=command, path=path_map, image=shovill_configuration["image"], tag=shovill_configuration["tag"])
-        shovill.run()
+        program_configuration = config["parameters"]["shovill"]
 
     if program == 'prokka':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "prokka " + arg_string
-        prokka_configuration = config["parameters"]["prokka"]
-        prokka = sb_prog.Run(command=command, path=path_map, image=prokka_configuration["image"], tag=prokka_configuration["tag"])
-        prokka.run()
+        program_configuration = config["parameters"]["prokka"]
 
     if program == 'clustalo':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "clustalo " + arg_string
-        clustalo_configuration = config["parameters"]["clustalo"]
-        clustalo = sb_prog.Run(command=command, path=path_map, image=clustalo_configuration["image"], tag=clustalo_configuration["tag"])
-        clustalo.run()
+        program_configuration = config["parameters"]["clustalo"]
 
     if program == 'abricate':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "abricate " + arg_string
-        abricate_configuration = config["parameters"]["abricate"]
-        abricate = sb_prog.Run(command=command, path=path_map, image=abricate_configuration["image"], tag=abricate_configuration["tag"])
-        abricate.run()
+        program_configuration = config["parameters"]["abricate"]
 
     if program == 'augur':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "augur " + arg_string
-        augur_configuration = config["parameters"]["augur"]
-        augur = sb_prog.Run(command=command, path=path_map, image=augur_configuration["image"], tag=augur_configuration["tag"])
-        augur.run()
+        program_configuration = config["parameters"]["augur"]
 
     if program == 'iqtree':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "iqtree " + arg_string
-        iqtree_configuration = config["parameters"]["iqtree"]
-        iqtree = sb_prog.Run(command=command, path=path_map, image=iqtree_configuration["image"], tag=iqtree_configuration["tag"])
-        iqtree.run()
+        program_configuration = config["parameters"]["iqtree"]
 
     if program == 'lyveset':
-        command = "" + arg_string
-        lyveset_configuration = config["parameters"]["lyveset"]
-        lyveset = sb_prog.Run(command=command, path=path_map, image=lyveset_configuration["image"], tag=lyveset_configuration["tag"])
         if not re.search('[a-zA-Z]', arg_string):
             print("Lyev-SET perl script must be specified, e.g. staphb-tk lyveset launch_set.pl, staphb-tk lyveset set_manage.pl, staphb-tk lyveset run_assembly_readMeterics.pl. \n\nMore info on Lyve-SET usage at: github.com/lskatz/lyve-SET.")
-        else:
-            lyveset.run()
+            sys.exit()
+        command = "" + arg_string
+        program_configuration = config["parameters"]["lyveset"]
 
     if program == 'quast':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "quast.py " + arg_string
-        quast_configuration = config["parameters"]["quast"]
-        quast = sb_prog.Run(command=command, path=path_map, image=quast_configuration["image"], tag=quast_configuration["tag"])
-        quast.run()
+        program_configuration = config["parameters"]["quast"]
 
     if program == 'roary':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "roary " + arg_string
-        roary_configuration = config["parameters"]["roary"]
-        roary = sb_prog.Run(command=command, path=path_map, image=roary_configuration["image"], tag=roary_configuration["tag"])
-        roary.run()
+        program_configuration = config["parameters"]["roary"]
 
     if program == 'seqsero':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "SeqSero.py " + arg_string
-        seqsero_configuration = config["parameters"]["seqsero"]
-        seqsero = sb_prog.Run(command=command, path=path_map, image=seqsero_configuration["image"], tag=seqsero_configuration["tag"])
-        seqsero.run()
+        program_configuration = config["parameters"]["seqsero"]
 
     if program == 'samtools':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = ""
         command = "samtools " + arg_string
-        samtools_configuration = config["parameters"]["samtools"]
-        samtools = sb_prog.Run(command=command, path=path_map, image=samtools_configuration["image"], tag=samtools_configuration["tag"])
-        samtools.run()
+        program_configuration = config["parameters"]["samtools"]
 
     if program == 'serotypefinder':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "serotypefinder.pl " + arg_string
-        serotypefinder_configuration = config["parameters"]["serotypefinder"]
-        serotypefinder = sb_prog.Run(command=command, path=path_map, image=serotypefinder_configuration["image"], tag=serotypefinder_configuration["tag"])
-        serotypefinder.run()
+        program_configuration = config["parameters"]["serotypefinder"]
 
     if program == 'bwa':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = ""
         command = "bwa " + arg_string
-        bwa_configuration = config["parameters"]["bwa"]
-        bwa = sb_prog.Run(command=command, path=path_map, image=bwa_configuration["image"], tag=bwa_configuration["tag"])
-        bwa.run()
+        program_configuration = config["parameters"]["bwa"]
 
     if program == 'minimap2':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "minimap2 " + arg_string
-        minimap2_configuration = config["parameters"]["minimap2"]
-        minimap2 = sb_prog.Run(command=command, path=path_map, image=minimap2_configuration["image"], tag=minimap2_configuration["tag"])
-        minimap2.run()
+        program_configuration = config["parameters"]["minimap2"]
 
     if program == 'centroid':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "centroid.py " + arg_string
-        centroid_configuration = config["parameters"]["centroid"]
-        centroid = sb_prog.Run(command=command, path=path_map, image=centroid_configuration["image"], tag=centroid_configuration["tag"])
-        centroid.run()
+        program_configuration = config["parameters"]["centroid"]
 
     if program == 'unicycler':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "unicycler " + arg_string
-        unicycler_configuration = config["parameters"]["unicycler"]
-        unicycler = sb_prog.Run(command=command, path=path_map, image=unicycler_configuration["image"], tag=unicycler_configuration["tag"])
-        unicycler.run()
+        program_configuration = config["parameters"]["unicycler"]
+
+    if program == 'mafft':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "mafft " + arg_string
+        program_configuration = config["parameters"]["mafft"]
+
+    #Run the program
+    #-----------------------------------------
+    program_object = sb_prog.Run(command=command, path=path_map, image=program_configuration["image"], tag=program_configuration["tag"])
+    program_object.run()

@@ -123,6 +123,17 @@ def main():
     parser_hickory.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for hickory.")
     parser_hickory.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
+    #cutshaw-----------------------------------------
+    parser_cutshaw = subparsers.add_parser('cutshaw', help='WGS competency assessment and instrument validation.', add_help=False)
+    parser_cutshaw.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
+    parser_cutshaw.add_argument('--isolate_key', type=str,help="path to the location of the isolation key file",nargs='?', default=False)
+    parser_cutshaw.add_argument('--report_title', type=str,help="title of the cutshaw report (e.g. name of instrument or scientist being assessed); must enclose in quotes",default="Unnamed Assessment")
+    parser_cutshaw.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cutshaw_results\".",default="cutshaw_results")
+    parser_cutshaw.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_cutshaw.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+    parser_cutshaw.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cutshaw.")
+    parser_cutshaw.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+
     #----------------------------------------------
     args = parser.parse_args()
 
@@ -518,5 +529,52 @@ def main():
 
         #run command using nextflow in a subprocess
         print("Starting the Hickory pipeline:")
+        child = pexpect.spawn(command)
+        child.interact()
+
+    #cutshaw--------------------------------
+
+    if program == 'cutshaw':
+        #cutshaw path
+        cutshaw_path = os.path.join(workflows_path,"cutshaw/")
+
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(cutshaw_path,"configs/cutshaw_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cutshaw.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser_cutshaw.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
+
+
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile and not args.config:
+            work = f"-w {args.output}/logs/work"
+
+        #build command
+        command = nextflow_path
+        print(args.report_title)
+        command = command + f" {config} run {cutshaw_path}/cutshaw.nf {profile} {args.resume} --reads {args.reads_path} --pt_genomes {cutshaw_path}/pt_genomes/* --isolate_key {args.isolate_key} --title \"{args.report_title}\" --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Cutshaw_trace.txt -with-report {args.output}/logs/{exec_time}Cutshaw_execution_report.html {work}"
+        print(command)
+
+        #run command using nextflow in a subprocess
+        print("Starting the Cutshaw pipeline:")
         child = pexpect.spawn(command)
         child.interact()
