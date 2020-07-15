@@ -20,7 +20,7 @@ class Run:
     def __init__(self, command, path, image, tag):
         self.path=path
         #look for bash pipes, if they exist use bash to run command otherwise run via docker
-        if ">" in command or "<" in command or "|" in command:
+        if ">" in command or "<" in command or "|" in command or ";" in command or "&" in command:
             self.command = "bash -c '" + command + "'"
         else:
             self.command = command

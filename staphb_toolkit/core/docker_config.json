@@ -41,6 +41,10 @@
         "image": "staphb/canu-racon",
         "tag": "2.0"
      },
+     "centroid": {
+        "image": "staphb/centroid",
+        "tag": "1.0.0"
+     },
      "cfsan-snp-pipeline": {
         "image": "staphb/cfsan-snp-pipeline",
         "tag": "2.0.2"
@@ -106,8 +110,8 @@
         "tag": "3.1"
      },
      "legsta": {
-        "image": "staphb/legsta-cv1",
-        "tag": "0.3.7"
+        "image": "staphb/legsta",
+        "tag": "0.3.7-cv1"
      },
      "lyveset": {
         "image": "staphb/lyveset",
@@ -151,7 +155,7 @@
       },
       "ncbi-amrfinder-plus": {
          "image": "staphb/ncbi-amrfinderplus",
-         "tag": "3.1.1b"
+         "tag": "3.8.4"
       },
       "orthofinder": {
          "image": "staphb/orthofinder",
