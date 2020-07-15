@@ -127,7 +127,9 @@ if (params.snp) {
 
       readDict = {}
       for file in fwd_reads:
-        sid = os.path.basename(file).split('_')[0]
+        sid = os.path.basename(file).split('_')
+        sid = sid[0:(len(sid)-1)]
+        sid = '_'.join(sid)
         fwd_read = glob.glob(sid+"_1.clean.fastq.gz")[0]
         rev_read = glob.glob(sid+"_2.clean.fastq.gz")[0]
         readDict[sid] = [fwd_read,rev_read]
