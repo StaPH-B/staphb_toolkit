@@ -141,13 +141,13 @@ process prophage {
   set val(name), file(assembly) from assembled_genomes
 
   output:
-  file("${name}.vibrant_out") into prophage_out
+  file("${name}") into prophage_out
 
   script:
   """
   mkdir assemblies
   mv *.fasta ./assemblies
   VIBRANT_run.py -i ./assemblies/*.fasta
-  mv VIBRANT_${name} ${name}.vibrant_out
+  mv VIBRANT_${name} ${name}
   """
 }
