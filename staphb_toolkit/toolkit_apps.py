@@ -79,6 +79,7 @@ progs = {
 'tiptoft':'TipToft - Predict plasmids from uncorrected long read data',
 'trimmomatic':'Trimmoamtic - Flexible read trimming tool for Illumina NGS data',
 'unicycler':'Unicycler - an assembly pipeline for bacterial genomes.',
+'vibrant':'VIBRANT - a tool for automated recovery and annotation of bacterial and archaeal viruses',
 'wtdbg2':'WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly'
 }
 
@@ -171,6 +172,7 @@ def main():
     parser_tiptoft = subparsers.add_parser('tiptoft', add_help=False)
     parser_trimmomatic = subparsers.add_parser('trimmomatic', add_help=False)
     parser_unicycler = subparsers.add_parser('unicycler', add_help=False)
+    parser_vibrant = subparsers.add_parser('vibrant', add_help=False)
     parser_wtdbg2 = subparsers.add_parser('wtdbg2', add_help=False)
 
     #-----------------------------------------
@@ -649,6 +651,13 @@ def main():
             arg_string = "-h"
         command = "mafft " + arg_string
         program_configuration = config["parameters"]["mafft"]
+
+    if program == 'vibrant':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "VIBRANT_run.py " + arg_string
+        program_configuration = config["parameters"]["vibrant"]
+
 
     #Run the program
     #-----------------------------------------
