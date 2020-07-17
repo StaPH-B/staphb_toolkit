@@ -123,7 +123,6 @@ def main():
     parser_hickory.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for hickory.")
     parser_hickory.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
-<<<<<<< HEAD
     #cutshaw-----------------------------------------
     parser_cutshaw = subparsers.add_parser('cutshaw', help='WGS competency assessment and instrument validation.', add_help=False)
     parser_cutshaw.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
@@ -134,7 +133,7 @@ def main():
     parser_cutshaw.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_cutshaw.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cutshaw.")
     parser_cutshaw.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
-=======
+
     #cedar-----------------------------------------
     parser_cedar = subparsers.add_parser('cedar', help='prophage identification and annotation.', add_help=False)
     parser_cedar.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format",nargs='?', default=False)
@@ -143,7 +142,7 @@ def main():
     parser_cedar.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_cedar.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for Cedar.")
     parser_cedar.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
->>>>>>> cedar
+
 
     #----------------------------------------------
     args = parser.parse_args()
@@ -543,7 +542,8 @@ def main():
         child = pexpect.spawn(command)
         child.interact()
 
-<<<<<<< HEAD
+    #cutshaw--------------------------------
+
     #cutshaw--------------------------------
 
     if program == 'cutshaw':
@@ -554,28 +554,12 @@ def main():
         if args.get_config:
             config_path = os.path.join(cutshaw_path,"configs/cutshaw_config_template.config")
             dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cutshaw.config")
-=======
-   #cedar--------------------------------
-
-    if program == 'cedar':
-        #cedar` path
-        cedar_path = os.path.join(workflows_path,"cedar/")
-
-        #give config to user if requested
-        if args.get_config:
-            config_path = os.path.join(cedar_path,"configs/cedar_config_template.config")
-            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cedar.config")
->>>>>>> cedar
             copyfile(config_path,dest_path)
             sys.exit()
 
         #check for reads_path
         if not args.reads_path:
-<<<<<<< HEAD
             parser_cutshaw.print_help()
-=======
-            parser_cedar.print_help()
->>>>>>> cedar
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
@@ -598,19 +582,56 @@ def main():
 
         #build command
         command = nextflow_path
-<<<<<<< HEAD
         print(args.report_title)
         command = command + f" {config} run {cutshaw_path}/cutshaw.nf {profile} {args.resume} --reads {args.reads_path} --pt_genomes {cutshaw_path}/pt_genomes/* --isolate_key {args.isolate_key} --title \"{args.report_title}\" --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Cutshaw_trace.txt -with-report {args.output}/logs/{exec_time}Cutshaw_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
         print("Starting the Cutshaw pipeline:")
-=======
+        child = pexpect.spawn(command)
+        child.interact()
+        
+   #cedar--------------------------------
+
+    if program == 'cedar':
+        #cedar` path
+        cedar_path = os.path.join(workflows_path,"cedar/")
+
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(cedar_path,"configs/cedar_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cedar.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser_cedar.print_help()
+            print("Please specify a path to a directory containing the raw reads.")
+            sys.exit(1)
+
+        #check for config or profile
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile and not args.config:
+            work = f"-w {args.output}/logs/work"
+
+        #build command
+        command = nextflow_path
         command = command + f" {config} run {cedar_path}/cedar.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cedar_trace.txt -with-report {args.output}/logs/{exec_time}cedar_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
         print("Starting the Cedar pipeline:")
->>>>>>> cedar
         child = pexpect.spawn(command)
         child.interact()
