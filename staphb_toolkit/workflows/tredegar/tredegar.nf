@@ -479,7 +479,7 @@ for file in cg_results:
 #create output file
 with open("Tredegar_results.tsv",'w') as csvout:
     writer = csv.writer(csvout,delimiter='\t')
-    writer.writerow(["sample","rq_1", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
+    writer.writerow(["sample","r1_q", "r2_q", "est_genome_length", "est_cvg", "number_contigs", "species_prediction", "subspecies_prediction"])
     for id in results:
         result = results[id]
         writer.writerow([result.id,result.r1_q,result.r2_q,result.est_genome_length,result.est_cvg,result.number_contigs,result.species_prediction,result.subspecies_prediction])
