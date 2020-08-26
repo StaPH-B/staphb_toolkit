@@ -100,7 +100,7 @@ samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
 samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
-ivar trim -i SC2.bam -b /reference/ARTIC-${params.primers}.bed -p ivar -e
+ivar trim -i SC2.bam -b /reference/${params.primers_prefix}${params.primers}.bed -p ivar -e
 
 samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam
