@@ -22,16 +22,18 @@ process preProcess {
   set val(name), file(reads) from raw_reads
 
   output:
-  tuple name, file(reads) into read_files_fastqc, read_files_trimming
+  tuple name, file(outfiles) into read_files_fastqc, read_files_trimming
 
   script:
   if(params.name_split_on!=""){
     name = name.split(params.name_split_on)[0]
+    outfiles = ["${name}_R1.fastq.gz","${name}_R2.fastq.gz"]
     """
     mv ${reads[0]} ${name}_R1.fastq.gz
     mv ${reads[1]} ${name}_R2.fastq.gz
     """
   }else{
+    outfiles = reads
     """
     """
   }
