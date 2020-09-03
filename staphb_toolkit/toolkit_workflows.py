@@ -47,7 +47,7 @@ def main():
     ##monroe_pe_assembly----------------------------
     subparser_monroe_pe_assembly = monroe_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data generated from ARTIC amplicons', add_help=False)
     subparser_monroe_pe_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    subparser_monroe_pe_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
+    subparser_monroe_pe_assembly.add_argument('--primers', type=str, choices=["V1","V2","V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)")
     subparser_monroe_pe_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     subparser_monroe_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
@@ -272,12 +272,19 @@ def main():
             work = f"-w {args.output}/logs/work"
 
         if args.monroe_command == 'pe_assembly':
+            #check for either standard ARTIC primer version, or a custom config
+            if not args.config and not args.primers:
+                raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
+            if not args.config:
+                primer_path = f"/reference/ARTIC-{args.primers}.bed"
+                profile = profile + f"--primerPath {primer_path}"
             #build command
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --primers {args.primers} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe paired-end assembly:")
             child = pexpect.spawn(command)
             child.interact()
+
 
         if args.monroe_command == 'cluster_analysis':
             #give report template to user if requested

@@ -5,7 +5,7 @@ import subprocess as sub
 import shlex
 
 #version number
-version = "1.1.1"
+version = "1.2.0"
 
 #selfupdate check file
 selfupdate_status = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),'selfupdate')

@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="staphb_toolkit",
-    version="1.1.2",
+    version="1.2.1",
     author="Kelsey Florek, Kevin Libuit",
     author_email="kelsey.florek@slh.wisc.edu, kevin.libuit@dgs.virginia.gov",
     description="A ToolKit of commonly used Public Health Bioinformatics Tools",
@@ -16,9 +16,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     entry_points={
-            "console_scripts":[
+        "console_scripts": [
             'staphb-tk = staphb_toolkit.toolkit_apps:main',
-            'staphb-wf = staphb_toolkit.toolkit_workflows:main']},
+            'staphb-wf = staphb_toolkit.toolkit_workflows:main'
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
