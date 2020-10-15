@@ -109,6 +109,7 @@ def main():
     subparser_dryad_report.add_argument('rmd',type=str,help="path to Rmarkdown file (.Rmd)",nargs='?', default=False)
     subparser_dryad_report.add_argument('snp_matrix',type=str,help="path to snp matrix",nargs='?', default=False)
     subparser_dryad_report.add_argument('cg_tree',type=str,help="path to core genome tree",nargs='?', default=False)
+    subparser_dryad_report.add_argument('--output','-o',metavar="<output_path>",type=str,help="path to ouput directory, default \"./\"",default="./")
     subparser_dryad_report.add_argument('--ar',type=str,help="path to ar TSV file")
     subparser_dryad_report.add_argument('--profile', type=str,choices=["docker", "singularity"],help="specify nextflow profile, dryad_report will try to use docker first, then singularity")
     subparser_dryad_report.add_argument('--get_config',action="store_true",help="get a Nextflow configuration template for dryad")
