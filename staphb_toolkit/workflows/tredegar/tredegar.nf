@@ -372,10 +372,10 @@ for file in cg_results:
     with open(file,'r') as tsv_file:
         tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
         for line in tsv_reader:
-            if "_R1.fastq.gz" in line["File"]:
+            if "_R1" in line["File"]:
                 result.r1_q = line["avgQuality"]
                 result.est_cvg = float(line["coverage"])
-            if "_R2.fastq.gz" in line["File"]:
+            if "_R2" in line["File"]:
                 result.r2_q = line["avgQuality"]
                 result.est_cvg += float(line["coverage"])
 
