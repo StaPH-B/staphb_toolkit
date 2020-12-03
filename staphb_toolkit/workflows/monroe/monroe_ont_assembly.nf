@@ -137,6 +137,7 @@ if(params.polishing=="nanopolish"){
 else {
   process artic_medaka_pipeline {
     publishDir "${params.outdir}/pipeline_medaka", mode: 'copy'
+    publishDir "${params.outdir}/consensus", mode: 'copy', pattern: '*.fasta'
     errorStrategy 'ignore'
 
     input:
