@@ -15,7 +15,6 @@ def shutdown():
 
 def call(container,command,cwd='',paths={},remove=True):
     ###load container
-    container = 'docker://'+container
     Client.load(container)
 
     ###setup mount point paths

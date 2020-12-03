@@ -28,8 +28,14 @@ class Run:
         self.tag = tag
 
     def run(self):
+        #check if we got a local singularity image
+        if os.path.isfile(self.image):
+            container = self.image
+        else:
+            container = f"{self.image}:{self.tag}"
+
         try:
-            for line in container_engine.call(f"{self.image}:{self.tag}", self.command, '/data', self.path):
+            for line in container_engine.call(container, self.command, '/data', self.path):
                 print(line)
         except KeyboardInterrupt:
             container_engine.shutdown()
