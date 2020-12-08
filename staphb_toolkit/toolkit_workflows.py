@@ -268,7 +268,7 @@ def main():
                 raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
             if not args.config:
                 primer_path = f"/reference/ARTIC-{args.primers}.bed"
-                profile = profile + f"--primerPath {primer_path}"
+                profile = profile + f" --primerPath {primer_path}"
             #build command
             command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
