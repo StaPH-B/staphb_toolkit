@@ -4,9 +4,12 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+with open("./staphb_toolkit/core/VERSION",'r') as versionFile:
+    version = versionFile.readline().strip()
+
 setuptools.setup(
     name="staphb_toolkit",
-    version="1.2.2",
+    version=version,
     author="Kelsey Florek, Kevin Libuit",
     author_email="kelsey.florek@slh.wisc.edu, kevin.libuit@dgs.virginia.gov",
     description="A ToolKit of commonly used Public Health Bioinformatics Tools",
