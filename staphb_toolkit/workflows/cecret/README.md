@@ -1,4 +1,4 @@
-#CECRET
+# CECRET
 
 A workflow for getting consensus sequences out from paired-end fastq.gz or fastq reads from amplicon prepared libraries.
 
