@@ -17,4 +17,4 @@ Default parameters worth noting are where the original paired-end fastq files ar
 * params.outdir = workflow.launchDir + "/cecret"
 
 
-A full list of parameters and documentaiton can be found cecret's standalone repository : [https://github.com/UPHL-BioNGS/Cecret](https://github.com/UPHL-BioNGS/Cecret)
+A full list of parameters and documentation can be found cecret's standalone repository : [https://github.com/UPHL-BioNGS/Cecret](https://github.com/UPHL-BioNGS/Cecret)
