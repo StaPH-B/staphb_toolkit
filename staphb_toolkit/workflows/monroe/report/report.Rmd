@@ -13,6 +13,7 @@ urlcolor: purplepeopleeater
 ---
 <!-- define color and adjust lengths for header and footer-->
 \definecolor{purplepeopleeater}{RGB}{106,13,75}
+\definecolor{darkestnight}{RGB}{0,0,0}
 \addtolength{\headheight}{3.0cm}
 \addtolength{\topmargin}{-0.5in}
 \addtolength{\footskip}{-0.225in}
@@ -30,7 +31,7 @@ urlcolor: purplepeopleeater
 <!-- create red header line -->
 \renewcommand{\headrulewidth}{1pt}
 \renewcommand{\headrule}{\hbox to\headwidth{%
-    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+    \color{darkestnight}\leaders\hrule height \headrulewidth\hfill}}
 
 <!-- footer content -->
 \fancyfoot[C]{For research use only, not for clinical use.}
@@ -39,7 +40,7 @@ urlcolor: purplepeopleeater
 <!-- create red footer line -->
 \renewcommand{\footrulewidth}{1pt}
 \renewcommand{\footrule}{\hbox to\headwidth{%
-    \color{purplepeopleeater}\leaders\hrule height \headrulewidth\hfill}}
+    \color{darkestnight}\leaders\hrule height \headrulewidth\hfill}}
 
 ```{r include=FALSE}
 
@@ -157,6 +158,10 @@ gtree <- ggtree(mpt, branch.length = "none")
 ```
 
 ```{r format-matrix, echo = FALSE, message = FALSE, warning = FALSE}
+
+# replace forward slashes with underscores
+row.names(snp_mat) <- gsub("/","_",row.names(snp_mat))
+colnames(snp_mat) <- gsub("/","_",colnames(snp_mat))
 
 # order snp matrix by vertical order of tip labels
 snp_mat <- snp_mat[c(mpt.ord),c(mpt.ord)]
