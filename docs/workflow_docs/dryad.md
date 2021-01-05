@@ -24,7 +24,7 @@ In order to tweak the versions of software used or specific workflow parameters.
 ## Quick Start:
 
 ````
-$ staphb-wf dryad <input_dir> -o <output_dir> -r <reference sequence>
+$ staphb-wf dryad main <input_dir> -o <output_dir> -r <reference sequence>
 ````
 Where `<input_dir>` is the path to an input directory containing paired-end fastq read data.
 The `<output_dir>` is where the results will be written to and `<reference sequence>` is the reference sequence for SNP calling.

@@ -16,6 +16,9 @@ def shutdown():
         container.kill()
 
 def call(container,command,cwd='',paths={},remove=True):
+    ###strip docker registery if it exists
+    container = container.replace('docker://','')
+
     ###access docker environment
     client = docker.from_env()
 

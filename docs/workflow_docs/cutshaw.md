@@ -40,7 +40,7 @@ sample_id,isolate_id
 sample_001,SAP18-8729
 sample_002,SAP18-H9654
 ```
-PT isolates currently compatable  with the Cutshaw pipeline:
+PT isolates currently compatible  with the Cutshaw pipeline:
 - SAP18-0432    Salmonella enterica subsp. enterica serovar Enteritidis
 - SAP18-H9654   Salmonella enterica subsp. enterica serovar Enteritidis
 - SAP18-6199    Salmonella enterica subsp. enterica serovar Typhimurium

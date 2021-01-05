@@ -38,11 +38,11 @@ if(params.basecalling){
     script:
       if(params.basecalling_mode == "fast"){
         """
-        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} -c /opt/ont/guppy/data/dna_r9.4.1_450bps_fast.cfg -i . -s fastq -x auto -r
+        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} ${params.basecalling_params} -i . -s fastq -x auto -r
         """
       }else{
         """
-        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} -c /opt/ont/guppy/data/dna_r9.4.1_450bps_hac.cfg -i . -s fastq -x auto -r
+        guppy_basecaller --chunk_size ${params.chunk_size} --chunks_per_runner ${params.chunks_per_runner} --gpu_runners_per_device ${params.gpu_runners_per_device} ${params.basecalling_params} -i . -s fastq -x auto -r
         """
       }
   }
@@ -60,12 +60,12 @@ else {
       .ifEmpty { exit 1, "Cannot find any fast5 files in: ${params.fast5_dir} Path must not end with /" }
       .set { polish_fast5 }
 
-if(params.polishing == "nanopolish"){
-  Channel
-      .fromPath( "${params.sequencing_summary}")
-      .ifEmpty { exit 1, "Cannot find sequencing summary in: ${params.sequencing_summary}" }
-      .set { sequencing_summary }
-  }
+  if(params.polishing == "nanopolish"){
+    Channel
+        .fromPath( "${params.sequencing_summary}")
+        .ifEmpty { exit 1, "Cannot find sequencing summary in: ${params.sequencing_summary}" }
+        .set { sequencing_summary }
+    }
 }
 
 // Demultiplex fastqs
@@ -76,21 +76,19 @@ process guppy_demultiplexing {
     file(fastqs) from fastq_reads.collect()
 
   output:
-    path("output_directory/barcode*",type:'dir',maxDepth:1) into demultiplexed_reads
+    path("barcode*",type:'dir') into demultiplexed_reads
 
   script:
     """
-      guppy_barcoder --require_barcodes_both_ends -i . -s output_directory --arrangements_files "barcode_arrs_nb12.cfg barcode_arrs_nb24.cfg"
+      cpus=`grep -c ^processor /proc/cpuinfo`
+      guppy_barcoder -t \$cpus --require_barcodes_both_ends -i . -s . ${params.demultiplexing_params} -q 0 -r
     """
 }
 
 // Run artic gupplyplex
 process artic_guppyplex {
   publishDir "${params.outdir}/guppyplex", mode: 'copy'
-
-  //guppy plex likes to occasionally fail when running in the cloud, set to retry here once
-  errorStrategy { task.attempt > 2 ? 'ignore' : 'retry' }
-  maxRetries 1
+  errorStrategy 'ignore'
 
   input:
     file(reads) from demultiplexed_reads.flatten()
@@ -112,6 +110,7 @@ process artic_guppyplex {
 if(params.polishing=="nanopolish"){
   process artic_nanopolish_pipeline {
     publishDir "${params.outdir}/pipeline_nanopolish", mode: 'copy'
+    errorStrategy 'ignore'
 
     input:
       val primers from polish_primers
@@ -138,6 +137,8 @@ if(params.polishing=="nanopolish"){
 else {
   process artic_medaka_pipeline {
     publishDir "${params.outdir}/pipeline_medaka", mode: 'copy'
+    publishDir "${params.outdir}/consensus", mode: 'copy', pattern: '*.fasta'
+    errorStrategy 'ignore'
 
     input:
       val primers from polish_primers
