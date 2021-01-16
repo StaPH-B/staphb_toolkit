@@ -53,6 +53,7 @@ progs = {
 'nanoplot':'NanoPlot - Plotting scripts for long read sequencing data ',
 'ncbi-amrfinder-plus':'NCBI AMRFinderPlus - Designed to find acquired antimicrobial resistance genes and some point mutations in protein or assembled nucleotide sequences.',
 'orthofinder':'OrthoFinder - Phylogenetic orthology inference for comparative genomics',
+'pangolin':'Pangolin - Phylogenetic Assignment of Named Global Outbreak LINeages',
 'pilon':'Pilon - Automated genome assembly improvement and variant detection tool',
 'plasmidseeker':'PlasmidSeeker - A k-mer based program for the identification of known plasmids from whole-genome sequencing reads',
 'prokka':'Prokka - Rapid prokaryotic genome annotation',
@@ -145,6 +146,7 @@ def main():
     parser_nanoplot = subparsers.add_parser('nanoplot', add_help=False)
     parser_ncbiamrfinder_plus = subparsers.add_parser('ncbi-amrfinder-plus', add_help=False)
     parser_orthofinder = subparsers.add_parser('orthofinder', add_help=False)
+    parser_pangolin = subparsers.add_parser('pangolin', add_help=False)
     parser_pilon = subparsers.add_parser('pilon', add_help=False)
     parser_plasmidseeker = subparsers.add_parser('plasmidseeker', add_help=False)
     parser_prokka = subparsers.add_parser('prokka', add_help=False)
@@ -364,6 +366,12 @@ def main():
             arg_string = "-h"
         command = "plasmidseeker.pl " + arg_string
         program_configuration = config["parameters"]["plasmidseeker"]
+
+    if program == 'pangolin':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "--help"
+        command = "pangolin " + arg_string
+        program_configuration = config["parameters"]["pangolin"]
 
     if program == 'pilon':
         if not re.search('[a-zA-Z]', arg_string):

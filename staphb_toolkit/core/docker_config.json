@@ -161,6 +161,10 @@
          "image": "docker://staphb/orthofinder",
          "tag": "2.17"
       },
+      "pangolin": {
+         "image": "docker://staphb/pangolin",
+         "tag": "2.1.7"
+      },
       "pilon": {
          "image": "docker://staphb/pilon",
          "tag": "1.23.0"
