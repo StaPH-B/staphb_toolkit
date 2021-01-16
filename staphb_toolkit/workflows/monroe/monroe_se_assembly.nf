@@ -115,7 +115,7 @@ samtools index \${samplename}.sorted.bam
 samtools flagstat \${samplename}.sorted.bam
 
 samtools mpileup -f ./nCoV-2019.reference.fasta -d 1000000 -A -B -Q 0 \${samplename}.sorted.bam | ivar consensus -p ivar -m ${params.ivar_mindepth} -t ${params.ivar_minfreq} -n N
-echo '>\${samplename}' > \${samplename}_consensus.fasta
+echo \">\${samplename}\" > \${samplename}_consensus.fasta
 
 seqtk seq -U -l 50 ivar.fa | tail -n +2 >> \${samplename}_consensus.fasta
 """
