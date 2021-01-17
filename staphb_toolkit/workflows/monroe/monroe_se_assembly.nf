@@ -133,10 +133,31 @@ process samtools {
 
   shell:
   """
-  # get samplename by dropping string after first underscore
+  # get samplename by dropping extension
   filename=${alignment}
-  samplename=\$(echo \${filename} | cut -d "_" -f 1)
+  samplename=\$(echo \${filename} | cut -d "." -f 1)
   samtools coverage ${alignment} -o \${samplename}_samtoolscoverage.tsv
+  """
+}
+//Typing of SC2 assemblies
+process pangolin_typing {
+  tag "$name"
+
+  publishDir "${params.outdir}/pangolin_reports", mode: 'copy', pattern: "*_lineage_report.csv"
+
+  input:
+  file(assembly) from assembled_genomes
+
+  output:
+  file "*_lineage_report.csv" into pangolin_lineages
+
+  shell:
+  """
+  # get samplename by dropping string after first underscore
+  filename=${assembly}
+  samplename=\$(echo \${filename} | cut -d "_" -f 1)
+
+  pangolin ${assembly} --outfile \${samplename}_lineage_report.csv
   """
 }
 
@@ -148,7 +169,7 @@ process assembly_results{
 
   input:
   file(cg_pipeline_results) from alignment_qc.collect()
-  file(assemblies) from assembled_genomes.collect()
+  file(pangolin_lineage) from pangolin_lineages.collect()
 
   output:
   file "*assembly_metrics.csv"
@@ -174,12 +195,14 @@ class result_values:
         self.mean_base_q = "NA"
         self.mean_map_q = "NA"
         self.status = "NA"
+        self.pangolin_lineage = "NA"
+        self.pangolin_probability = "NA"
+        self.pangolin_notes = "NA"
 
 
 #get list of result files
 samtools_results = glob.glob("*_samtoolscoverage.tsv")
-assemblies = glob.glob("*consensus.fasta")
-
+pangolin_results = glob.glob("*_lineage_report.csv")
 results = {}
 
 # collect samtools results
@@ -206,17 +229,29 @@ for file in samtools_results:
         else:
             result.status ="WARNING: " + '; '.join(status)
 
-    results[id] = result
+    file = (id + "_lineage_report.csv")
+    with open(file,'r') as csv_file:
+        csv_reader = list(csv.DictReader(csv_file, delimiter=","))
+        for line in csv_reader:
+            if line["status"] == "fail":
+                result.pangolin_lineage = "failed pangolin qc"
+                result.pangolin_probability = "failed pangolin qc"
+                result.pangolin_notes = "failed pangolin qc"
+            else:
+                result.pangolin_lineage = line["lineage"]
+                result.pangolin_probability = line["probability"]
+                result.pangolin_notes = line["note"]
 
+    results[id] = result
 
 
 #create output file
 with open(f"{today}_assembly_metrics.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status"])
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status", "pangolin_lineage", "pangolin_probability", "pangolin_notes"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.status])
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.status,result.pangolin_lineage,result.pangolin_probability,result.pangolin_notes])
 """
 
 }
