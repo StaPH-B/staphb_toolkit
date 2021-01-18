@@ -129,18 +129,36 @@ process samtools {
   """
 }
 
+//Typing of SC2 assemblies
+process pangolin_typing {
+  tag "$name"
+
+  publishDir "${params.outdir}/pangolin_reports", mode: 'copy', pattern: "*_lineage_report.csv"
+
+  input:
+  set val(name), file(assembly) from assembled_genomes
+
+  output:
+  file "*_lineage_report.csv" into pangolin_lineages
+
+  shell:
+  """
+  pangolin ${assembly} --outfile ${name}_lineage_report.csv
+  """
+}
+
 //Collect and format report
 process assembly_results{
-  publishDir "${params.outdir}/assemblies/", mode: 'copy', pattern: "*assembly_metrics.csv"
+  publishDir "${params.outdir}/", mode: 'copy', pattern: "monroe_summary*.csv"
 
   echo true
 
   input:
   file(cg_pipeline_results) from alignment_qc.collect()
-  file(assemblies) from assembled_genomes.collect()
+  file(pangolin_lineage) from pangolin_lineages.collect()
 
   output:
-  file "*assembly_metrics.csv"
+  file "monroe_summary*.csv"
 
 
   script:
@@ -162,50 +180,62 @@ class result_values:
         self.mean_depth = "NA"
         self.mean_base_q = "NA"
         self.mean_map_q = "NA"
-        self.status = "NA"
+        self.monroe_qc = "NA"
+        self.pangolin_lineage = "NA"
+        self.pangolin_probability = "NA"
+        self.pangolin_notes = "NA"
 
 
 #get list of result files
 samtools_results = glob.glob("*_samtoolscoverage.tsv")
-assemblies = glob.glob("*consensus.fasta")
-
+pangolin_results = glob.glob("*_lineage_report.csv")
 results = {}
 
 # collect samtools results
 for file in samtools_results:
     id = file.split("_samtoolscoverage.tsv")[0]
     result = result_values(id)
-    status = []
+    monroe_qc = []
     with open(file,'r') as tsv_file:
         tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
         for line in tsv_reader:
             result.aligned_bases = line["covbases"]
             result.percent_cvg = line["coverage"]
             if float(line["coverage"]) < 98:
-                status.append("coverage <98%")
+                monroe_qc.append("coverage <98%")
             result.mean_depth = line["meandepth"]
             result.mean_base_q = line["meanbaseq"]
             if float(line["meanbaseq"]) < 30:
-                status.append("meanbaseq < 30")
+                monroe_qc.append("meanbaseq < 30")
             result.mean_map_q = line["meanmapq"]
             if float(line["meanmapq"]) < 30:
-                status.append("meanmapq < 30")
-        if len(status) == 0:
-            result.status = "PASS"
+                monroe_qc.append("meanmapq < 30")
+        if len(monroe_qc) == 0:
+            result.monroe_qc = "PASS"
         else:
-            result.status ="WARNING: " + '; '.join(status)
+            result.monroe_qc ="WARNING: " + '; '.join(monroe_qc)
+
+    file = (id + "_lineage_report.csv")
+    with open(file,'r') as csv_file:
+        csv_reader = list(csv.DictReader(csv_file, delimiter=","))
+        for line in csv_reader:
+            if line["status"] == "fail":
+                result.pangolin_lineage = "failed pangolin qc"
+            else:
+                result.pangolin_lineage = line["lineage"]
+                result.pangolin_probability = line["probability"]
+                result.pangolin_notes = line["note"]
 
     results[id] = result
 
 
-
 #create output file
-with open(f"{today}_assembly_metrics.csv",'w') as csvout:
+with open(f"monroe_summary_{today}.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "status"])
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "monroe_qc", "pangolin_lineage", "pangolin_probability", "pangolin_notes"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.status])
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.monroe_qc,result.pangolin_lineage,result.pangolin_probability,result.pangolin_notes])
 """
 
 }
