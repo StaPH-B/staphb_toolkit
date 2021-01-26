@@ -135,6 +135,15 @@ def main():
     parser_cutshaw.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cutshaw.")
     parser_cutshaw.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
+    #cecret-----------------------------------------
+    parser_cecret = subparsers.add_parser('cecret', help='Consensus fasta creation of amplicon-based SARS-CoV-2 Illumina sequencing.', add_help=False)
+    parser_cecret.add_argument('reads_path', type=str,help="path to the location of reads in a fastq format",nargs='?', default=False)
+    parser_cecret.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cecret\".",default=".")
+    parser_cecret.add_argument('--profile', type=str,choices=["singularity"],help="Nextflow profile. My apologies, but currently only works with singularity.")
+    parser_cecret.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+    parser_cecret.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cecret.")
+    parser_cecret.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+
     #----------------------------------------------
     args = parser.parse_args()
 
@@ -584,5 +593,57 @@ def main():
 
         #run command using nextflow in a subprocess
         print("Starting the Cutshaw pipeline:")
+        child = pexpect.spawn(command)
+        child.interact()
+
+    #cecret--------------------------------
+
+    if program == 'cecret':
+        #cecret path
+        cecret_path = os.path.join(workflows_path,"cecret/")
+
+        #give config to user if requested
+        if args.get_config:
+            config_path = os.path.join(cecret_path,"configs/cecret_config_template.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_cecret.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
+
+        #check for reads_path
+        if not args.reads_path:
+            parser_cecret.print_help()
+            print("Please specify a path to a directory containing paired end raw reads.")
+            print("Note: Can specify an empty directory if single reads parameter is set.")
+            sys.exit()
+
+        #check for config or profile
+        # overriding prior docker check ...
+        if which('singularity'):
+            profile = '-profile singularity'
+        else:
+            profile = ''
+
+        config = ""
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            profile = f"-profile {args.profile}"
+        elif not profile:
+            print('Singularity is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        #set work dir into local logs dir if profile not aws
+        work = ""
+        if profile and not args.config:
+            work = f"-w {args.output}/logs/work"
+
+        #build command
+        command = nextflow_path
+        command = command + f" {config} run {cecret_path}/cecret.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cecret_trace.txt -with-report {args.output}/logs/{exec_time}cecret_execution_report.html {work}"
+        print(command)
+
+        #run command using nextflow in a subprocess
+        print("Starting the cecret workflow:")
         child = pexpect.spawn(command)
         child.interact()
