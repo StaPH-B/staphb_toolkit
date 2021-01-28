@@ -138,8 +138,9 @@ def main():
     #cecret-----------------------------------------
     parser_cecret = subparsers.add_parser('cecret', help='Consensus fasta creation of amplicon-based SARS-CoV-2 Illumina sequencing.', add_help=False)
     parser_cecret.add_argument('reads_path', type=str,help="path to the location of reads in a fastq format",nargs='?', default=False)
-    parser_cecret.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cecret\".",default=".")
-    parser_cecret.add_argument('--profile', type=str,choices=["singularity"],help="Nextflow profile. My apologies, but currently only works with singularity.")
+    parser_cecret.add_argument('--reads_type',type=str,choices=["paired","single"],help="Specify either \"paired\"-end or \"single\"-end reads, default \"paired\".",default="paired")
+    parser_cecret.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cecret\".",default="cecret")
+    parser_cecret.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_cecret.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     parser_cecret.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cecret.")
     parser_cecret.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
@@ -617,12 +618,6 @@ def main():
             sys.exit()
 
         #check for config or profile
-        # overriding prior docker check ...
-        if which('singularity'):
-            profile = '-profile singularity'
-        else:
-            profile = ''
-
         config = ""
         if args.config:
             config = "-C " + os.path.abspath(args.config)
@@ -630,7 +625,16 @@ def main():
         elif args.profile:
             profile = f"-profile {args.profile}"
         elif not profile:
-            print('Singularity is not installed or not in found in PATH.')
+            print('Singularity or Docker is not installed or not in found in PATH.')
+            sys.exit(1)
+
+        reads_type = ""
+        if args.reads_type == "paired":
+            reads_type = "--reads"
+        elif args.reads_type == "single":
+            reads_type = "--single_reads"
+        elif not args.reads_type:
+            print("Type of reads not specified for some reason")
             sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
@@ -640,7 +644,7 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {cecret_path}/cecret.nf {profile} {args.resume} --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cecret_trace.txt -with-report {args.output}/logs/{exec_time}cecret_execution_report.html {work}"
+        command = command + f" {config} run {cecret_path}/cecret.nf {profile} {args.resume} {reads_type} {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cecret_trace.txt -with-report {args.output}/logs/{exec_time}cecret_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
