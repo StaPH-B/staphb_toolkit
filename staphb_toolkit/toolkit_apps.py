@@ -17,14 +17,20 @@ from datetime import date
 #program dictionary
 progs = {
 'abricate':'Abricate - Mass screening of contigs for antimicrobial and virulence genes',
-'augur': 'Pipeline components for real-time phylodynamic analysis',
+'ariba':'Ariba - Antimicrobial Resistance Identification By Assembly',
+'artic-ncov2019-medaka':'Artic conda environment for SC2 assembly with medaka',
+'artic-ncov2019-nanopolish':'Artic conda environment for SC2 assembly with nanopolish',
+'augur': 'Augur - Pipeline components for real-time phylodynamic analysis',
 'bbtools':'BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data',
+'bcftools':'BCFTools - Variant calling and manipulating files in the Variant Call Format (VCF) and its binary counterpart BCF',
 'bwa':'BWA - mapping low-divergent sequences against a large reference genome',
+'canu':'Canu = Long read assembly and polishing tools"',
 'canu-racon':'Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.',
 'centroid' : 'centroid - a tool for determining an ideal reference genome from a set of fasta files' ,
 'cfsan-snp':'CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory',
 'circlator':'Circlator - A tool to circularize genome assemblies',
 'clustalo':'ClustalO - A fast multiple sequence alignment program',
+'colorid':'Colorid - Experiments with using BIGSI data structure for metagenomic and QC applications',
 'emm-typing-tool':'Emm-typing-tool - Group A streptococci emm typing tool for NGS data',
 'fastani':'FastANI - Fast whole-genome sequence average nucleotide identity (ANI) estimation',
 'fastqc':'FastQC - A quality control tool for high throughput sequence data.',
@@ -58,6 +64,7 @@ progs = {
 'plasmidseeker':'PlasmidSeeker - A k-mer based program for the identification of known plasmids from whole-genome sequencing reads',
 'prokka':'Prokka - Rapid prokaryotic genome annotation',
 'quast':'Quast - Genome assembly evaluation tool.',
+'racon':'Racon - Long read assembly and polishing tools',
 'rasusa':'RASUA - Randomly subsample sequencing reads to a specified coverage',
 'raxml':'RAxML -Maximum likelihood tree builder.',
 'roary':'Roary - Rapid large-scale prokaryote pan genome analysis.',
@@ -65,6 +72,7 @@ progs = {
 'samtools':'Samtools - A suite of programs for interacting with high-throughput sequencing data. It consists of three separate repositories.',
 'seqsero':'SeqSero - Salmonella serotyping from genome sequencing data.',
 'seqsero2':'SeqSero2 - Salmonella serotype prediction from genome sequencing data.',
+'seqtk': 'SeqTK - Toolkit for processing sequences in FASTA/Q formats',
 'seqyclean':'SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis',
 'seroba':'Seroba - k-mer based Pipeline to identify the Serotype from Illumina NGS reads ',
 'serotypefinder':'SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.',
@@ -78,8 +86,10 @@ progs = {
 'sra-toolkit':'SRA ToolKit - Collection of tools and libraries for using data in the INSDC Sequence Read Archives.',
 'staramr':'StarAMR - Scans genome contigs against the ResFinder, PlasmidFinder, and PointFinder databases.',
 'tiptoft':'TipToft - Predict plasmids from uncorrected long read data',
-'trimmomatic':'Trimmoamtic - Flexible read trimming tool for Illumina NGS data',
+'trimmomatic':'Trimmomatic - Flexible read trimming tool for Illumina NGS data',
 'unicycler':'Unicycler - an assembly pipeline for bacterial genomes.',
+'vadr':'VADR - Software for viral annotations',
+'vibrant': 'VIBRANT - a tool for automated recovery and annotation of bacterial and archaeal viruses, determination of genome completeness, and characterization of viral community function from metagenomic assemblies',
 'wtdbg2':'WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly'
 }
 
@@ -110,14 +120,20 @@ def main():
     #parser for applications
     #-----------------------------------------
     parser_abricate = subparsers.add_parser('abricate', add_help=False)
+    parser_ariba = subparsers.add_parser('ariba', add_help=False)
+    parser_artic_ncov2019_medaka = subparsers.add_parser('artic-ncov2019-medaka', add_help=False)
+    parser_artic_ncov2019_nanopolish = subparsers.add_parser('artic-ncov2019-nanopolish', add_help=False)
     parser_augur = subparsers.add_parser('augur', add_help=False)
     parser_bbtools = subparsers.add_parser('bbtools', add_help=False)
+    parser_bcftools = subparsers.add_parser('bcftools', add_help=False)
     parser_bwa = subparsers.add_parser('bwa', add_help=False)
+    parser_canu = subparsers.add_parser('canu', add_help=False)
     parser_canuracon = subparsers.add_parser('canu-racon', add_help=False)
     parser_centroid = subparsers.add_parser('centroid', add_help=False)
     parser_cfsansnp = subparsers.add_parser('cfsan-snp', add_help=False)
     parser_circlator = subparsers.add_parser('circlator', add_help=False)
     parser_clustalo = subparsers.add_parser('clustalo', add_help=False)
+    parser_colorid = subparsers.add_parser('colorid', add_help=False)
     parser_emmtypingtool = subparsers.add_parser('emm-typing-tool', add_help=False)
     parser_fastani = subparsers.add_parser('fastani', add_help=False)
     parser_fastqc = subparsers.add_parser('fastqc', add_help=False)
@@ -151,6 +167,7 @@ def main():
     parser_plasmidseeker = subparsers.add_parser('plasmidseeker', add_help=False)
     parser_prokka = subparsers.add_parser('prokka', add_help=False)
     parser_quast = subparsers.add_parser('quast', add_help=False)
+    parser_racon = subparsers.add_parser('racon', add_help=False)
     parser_rasusa = subparsers.add_parser('rasusa', add_help=False)
     parser_raxml = subparsers.add_parser('raxml', add_help=False)
     parser_roary = subparsers.add_parser('roary', add_help=False)
@@ -158,6 +175,7 @@ def main():
     parser_samtools = subparsers.add_parser('samtools', add_help=False)
     parser_seqsero = subparsers.add_parser('seqsero', add_help=False)
     parser_seqsero2 = subparsers.add_parser('seqsero2', add_help=False)
+    parser_seqtk = subparsers.add_parser('seqtk', add_help=False)
     parser_seqyclean = subparsers.add_parser('seqyclean', add_help=False)
     parser_seroba = subparsers.add_parser('seroba', add_help=False)
     parser_serotypefinder = subparsers.add_parser('serotypefinder', add_help=False)
@@ -173,6 +191,8 @@ def main():
     parser_tiptoft = subparsers.add_parser('tiptoft', add_help=False)
     parser_trimmomatic = subparsers.add_parser('trimmomatic', add_help=False)
     parser_unicycler = subparsers.add_parser('unicycler', add_help=False)
+    parser_vadr = subparsers.add_parser('vadr', add_help=False)
+    parser_vibrant = subparsers.add_parser('vibrant', add_help=False)
     parser_wtdbg2 = subparsers.add_parser('wtdbg2', add_help=False)
 
     #-----------------------------------------
@@ -288,6 +308,19 @@ def main():
         command = "trimmomatic " + arg_string
         program_configuration = config["parameters"]["trimmomatic"]
 
+    if program == 'vibrant':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "python3 /VIBRANT/VIBRANT_run.py " + arg_string
+        program_configuration = config["parameters"]["vibrant"]
+
+    if program == 'vadr':
+        if not re.search('[a-zA-Z]', arg_string):
+            print("VADR perl script must be specified, e.g. staphb-tk vadr v-build.pl or staphb-tk vadr v-annotate.pl. \n\nMore info on VADR at https://github.com/ncbi/vadr.")
+            sys.exit()
+        command = " " + arg_string
+        program_configuration = config["parameters"]["vadr"]
+
     if program == 'tiptoft':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
@@ -348,6 +381,12 @@ def main():
             arg_string = "-h"
         command = "SeqSero2_package.py " + arg_string
         program_configuration = config["parameters"]["seqsero2"]
+
+    if program == 'seqtk':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = ""
+        command = "seqtk " + arg_string
+        program_configuration = config["parameters"]["seqtk"]
 
     if program == 'salmid':
         if not re.search('[a-zA-Z]', arg_string):
@@ -524,12 +563,24 @@ def main():
         command = " " + arg_string
         program_configuration = config["parameters"]["canu-racon"]
 
+    if program == 'canu':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "canu " + arg_string
+        program_configuration = config["parameters"]["canu"]
+
     if program == 'bbtools':
         if not re.search('[a-zA-Z]', arg_string):
             print("BBTools shell script must be specified, e.g. staphb-tk bbtools bbmap.sh, staphb-tk bbtools bbduk.sh, etc. \n\nMore info on BBTools at https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/.")
             sys.exit()
         command = " " + arg_string
         program_configuration = config["parameters"]["bbtools"]
+
+    if program == 'bcftools':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "bcftools "+arg_string
+        program_configuration = config["parameters"]["bcftools"]
 
     if program == 'raxml':
         if not re.search('[a-zA-Z]', arg_string):
@@ -573,11 +624,35 @@ def main():
         command = "clustalo " + arg_string
         program_configuration = config["parameters"]["clustalo"]
 
+    if program == 'colorid':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "colorid " + arg_string
+        program_configuration = config["parameters"]["colorid"]
+
     if program == 'abricate':
         if not re.search('[a-zA-Z]', arg_string):
             arg_string = "-h"
         command = "abricate " + arg_string
         program_configuration = config["parameters"]["abricate"]
+
+    if program == 'ariba':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "ariba " + arg_string
+        program_configuration = config["parameters"]["ariba"]
+
+    if program == 'artic-ncov2019-medaka':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "artic minion " + arg_string
+        program_configuration = config["parameters"]["artic-ncov2019-medaka"]
+
+    if program == 'artic-ncov2019-nanopolish':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "artic minion " + arg_string
+        program_configuration = config["parameters"]["artic-ncov2019-medaka"]
 
     if program == 'augur':
         if not re.search('[a-zA-Z]', arg_string):
@@ -603,6 +678,12 @@ def main():
             arg_string = "-h"
         command = "quast.py " + arg_string
         program_configuration = config["parameters"]["quast"]
+
+    if program == 'racon':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "racon " + arg_string
+        program_configuration = config["parameters"]["racon"]
 
     if program == 'roary':
         if not re.search('[a-zA-Z]', arg_string):

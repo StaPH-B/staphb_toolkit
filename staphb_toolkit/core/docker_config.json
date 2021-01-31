@@ -19,7 +19,19 @@
    "parameters": {
      "abricate": {
         "image": "docker://staphb/abricate",
-        "tag": "1.0.0"
+        "tag": "latest"
+     },
+     "ariba": {
+        "image": "docker://staphb/ariba",
+        "tag": "latest"
+     },
+     "artic-ncov2019-medaka": {
+        "image": "docker://staphb/artic-ncov2019-medaka",
+        "tag": "latest"
+     },
+     "artic-ncov2019-nanopolish": {
+        "image": "docker://staphb/artic-ncov2019-nanopolish",
+        "tag": "latest"
      },
      "augur": {
         "image": "docker://staphb/augur",
@@ -33,9 +45,17 @@
         "image": "docker://staphb/bbtools",
         "tag": "38.76"
      },
+     "bcftools": {
+        "image": "docker://staphb/bcftools",
+        "tag": "latest"
+     },
      "bwa": {
         "image": "docker://staphb/bwa",
         "tag": "0.7.17"
+     },
+     "canu": {
+        "image": "docker://staphb/canu",
+        "tag": "latest"
      },
      "canu-racon": {
         "image": "docker://staphb/canu-racon",
@@ -56,6 +76,10 @@
      "clustalo": {
         "image": "docker://staphb/clustalo",
         "tag": "1.2.4"
+     },
+     "colorid": {
+        "image": "docker://staphb/colorid",
+        "tag": "latest"
      },
      "emm-typing-tool": {
         "image": "docker://staphb/emm-typing-tool",
@@ -181,6 +205,10 @@
          "image": "docker://staphb/quast",
          "tag": "5.0.2"
       },
+      "racon": {
+         "image": "docker://staphb/racon",
+         "tag": "latest"
+      },
       "rasusa": {
          "image": "docker://staphb/rasusa",
          "tag": "0.2.0"
@@ -188,67 +216,71 @@
       "raxml":{
   	     "image": "docker://staphb/raxml",
   	      "tag": "8.2.12"
-        },
-        "roary": {
-           "image": "docker://staphb/roary",
-           "tag": "3.12.0",
-           "params": ""
-        },
-        "salmid": {
-           "image": "docker://staphb/salmid",
-           "tag": "0.1.23"
-        },
-        "samtools": {
-           "image": "docker://staphb/samtools",
-           "tag": "1.10"
-        },
-        "seqsero": {
-           "image": "docker://staphb/seqsero",
-           "tag": "1.0.1"
-        },
-        "seqsero2": {
-           "image": "docker://staphb/seqsero2",
-           "tag": "1.1.0"
-        },
-        "seqyclean": {
-           "image": "docker://staphb/seqyclean",
-           "tag": "1.10.09"
-        },
-        "seroba": {
-           "image": "docker://staphb/seroba",
-           "tag": "1.0.0"
-        },
-        "serotypefinder": {
-           "image": "docker://staphb/serotypefinder",
-           "tag": "1.1"
-        },
-        "shovill": {
-           "image": "docker://staphb/shovill",
-           "tag": "1.1.0"
-        },
-        "sistr": {
-           "image": "docker://staphb/sistr",
-           "tag": "1.0.2"
-        },
-        "skesa": {
-           "image": "docker://staphb/skesa",
-           "tag": "2.3.0"
-        },
-        "snippy": {
-           "image": "docker://staphb/snippy",
-           "tag": "4.6.0"
-        },
-        "snp-dists": {
-           "image": "docker://staphb/snp-dists",
-           "tag": "0.6.2"
-        },
-        "snp-sites": {
-           "image": "docker://staphb/snp-sites",
-           "tag": "2.3.3"
-        },
-      "spades": {
-         "image": "docker://staphb/spades",
-         "tag": "3.14.0"
+      },
+      "roary": {
+         "image": "docker://staphb/roary",
+         "tag": "3.12.0",
+         "params": ""
+      },
+      "salmid": {
+         "image": "docker://staphb/salmid",
+         "tag": "0.1.23"
+      },
+      "samtools": {
+         "image": "docker://staphb/samtools",
+         "tag": "1.10"
+      },
+      "seqsero": {
+         "image": "docker://staphb/seqsero",
+         "tag": "1.0.1"
+      },
+      "seqsero2": {
+         "image": "docker://staphb/seqsero2",
+         "tag": "1.1.0"
+      },
+      "seqtk": {
+         "image": "docker://staphb/seqtk",
+         "tag": "latest"
+      },
+      "seqyclean": {
+         "image": "docker://staphb/seqyclean",
+         "tag": "1.10.09"
+      },
+      "seroba": {
+         "image": "docker://staphb/seroba",
+         "tag": "1.0.0"
+      },
+      "serotypefinder": {
+         "image": "docker://staphb/serotypefinder",
+         "tag": "1.1"
+      },
+      "shovill": {
+         "image": "docker://staphb/shovill",
+         "tag": "1.1.0"
+      },
+      "sistr": {
+         "image": "docker://staphb/sistr",
+         "tag": "1.0.2"
+      },
+      "skesa": {
+         "image": "docker://staphb/skesa",
+         "tag": "2.3.0"
+      },
+      "snippy": {
+         "image": "docker://staphb/snippy",
+         "tag": "4.6.0"
+      },
+      "snp-dists": {
+         "image": "docker://staphb/snp-dists",
+         "tag": "0.6.2"
+      },
+      "snp-sites": {
+         "image": "docker://staphb/snp-sites",
+         "tag": "2.3.3"
+      },
+    "spades": {
+       "image": "docker://staphb/spades",
+       "tag": "3.14.0"
       },
       "sra-toolkit": {
          "image": "docker://staphb/sratoolkit",
@@ -270,6 +302,14 @@
          "image": "docker://staphb/unicycler",
          "tag": "0.4.7",
          "params": ""
+      },
+      "vadr": {
+         "image": "docker://staphb/vadr",
+         "tag": "latest"
+      },
+      "vibrant": {
+         "image": "docker://staphb/vibrant",
+         "tag": "latest"
       },
      "wtdbg2": {
         "image": "docker://staphb/wtdbg2",
