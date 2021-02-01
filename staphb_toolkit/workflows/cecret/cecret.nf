@@ -54,7 +54,7 @@ params.bamsnap = false // currently doesn't work. Don't turn it on until it can 
 
 // for optional contamination determination
 params.kraken2 = false
-params.kraken2_db = '/kraken2_db'
+params.kraken2_db = 'kraken2_db'
 
 // for optional route of tree generation and counting snps between samples
 params.relatedness = false
@@ -748,9 +748,7 @@ process samtools_flagstat {
   '''
 }
 
-Channel
-  .fromPath(params.kraken2_db, type:'dir')
-  .set { kraken2_db }
+kraken2_db = params.kraken2 ? Channel.fromPath(params.kraken2_db, type:'dir') : Channel.empty()
 
 clean_reads_classification
   .combine(kraken2_db)
