@@ -4,15 +4,15 @@ println("The cecret workflow is for amplicon-based short-read Illumina libraries
 println("Currently using the cecret workflow as part of the staphb toolkit.\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.20210129")
+println("Version: v.20210205")
 println("")
 
 params.reads = workflow.launchDir + '/Sequencing_reads/Raw'
 params.single_reads = workflow.launchDir + '/Sequencing_reads/Single'
 if ( params.reads == params.single_reads ) {
-  println("params.reads and params.single_reads can not point to the same directory!")
-  println("params.reads is set to " + params.reads)
-  println("params.single_reads is set to " + params.single_reads)
+  println("'params.reads' and 'params.single_reads' cannot point to the same directory!")
+  println("'params.reads' is set to " + params.reads)
+  println("'params.single_reads' is set to " + params.single_reads)
   exit 1
 }
 params.outdir = workflow.launchDir + '/cecret'
@@ -24,7 +24,7 @@ params.primer_bed = workflow.projectDir + "/configs/artic_V3_nCoV-2019.bed"
 
 params.trimmer = 'ivar'
 params.cleaner = 'seqyclean'
-params.aligner  = 'bwa'
+params.aligner = 'bwa'
 
 // minimap2 paramaters
 params.minimap2_K = '20M' // stolen from monroe
@@ -40,7 +40,7 @@ params.ivar_minimum_read_depth = 10
 params.mpileup_depth = 8000
 
 // to toggle off processes
-params.bcftools_variants = false
+params.bcftools_variants = false // fails to download a lot
 params.fastqc = true
 params.ivar_variants = true
 params.samtools_stats = true
@@ -63,6 +63,11 @@ params.iqtree = true
 params.max_ambiguous = '0.50'
 params.outgroup = 'MN908947.3'
 params.mode='GTR'
+
+// for optional renaming of files for GISAID and GenBank submissions
+params.sample_file = workflow.launchDir + '/covid_samples.csv'
+params.gisaid_threshold = '25000'
+params.genbank_threshold = '15000'
 
 params.maxcpus = Runtime.runtime.availableProcessors()
 maxcpus = params.maxcpus
@@ -104,12 +109,16 @@ Channel
                   "${params.reads}/*_{1,2}.fastq*"], size: 2 )
   .map{ reads -> tuple(reads[0].replaceAll(~/_S[0-9]+_L[0-9]+/,""), reads[1], "paired" ) }
   .set { paired_reads }
-//paired_reads.view()
 
 Channel
   .fromFilePairs("${params.single_reads}/*.fastq*", size: 1 )
   .map{ reads -> tuple(reads[0].replaceAll(~/_S[0-9]+_L[0-9]+/,""), reads[1], "single" ) }
   .set { single_reads }
+
+Channel
+  .fromPath(params.sample_file, type:'file')
+  .view { "Sample File : $it"}
+  .set { sample_file }
 
 paired_reads
   .concat(single_reads)
@@ -119,8 +128,7 @@ paired_reads
     println("Set 'params.single_reads' to directory with single-end reads")
     exit 1
   }
-  //.view { "Reads : $it"}
-  .into { fastq_reads_seqyclean ; fastq_reads_fastp ; fastq_reads_fastqc }
+  .into { fastq_reads_seqyclean ; fastq_reads_fastp ; fastq_reads_fastqc ; fastq_reads_rename }
 
 println("") // just for aesthetics
 
@@ -129,8 +137,6 @@ process seqyclean {
   tag "${sample}"
   echo false
   cpus 1
-
-  beforeScript 'mkdir -p seqyclean logs/seqyclean'
 
   when:
   params.cleaner == 'seqyclean'
@@ -150,6 +156,7 @@ process seqyclean {
 
   shell:
   '''
+    mkdir -p seqyclean logs/seqyclean
     log_file=logs/seqyclean/!{sample}.!{workflow.sessionId}.log
     err_file=logs/seqyclean/!{sample}.!{workflow.sessionId}.err
 
@@ -182,8 +189,6 @@ process fastp {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p fastp logs/fastp'
-
   when:
   params.cleaner == 'fastp'
 
@@ -201,6 +206,7 @@ process fastp {
 
   shell:
   '''
+    mkdir -p fastp logs/fastp
     log_file=logs/fastp/!{sample}.!{workflow.sessionId}.log
     err_file=logs/fastp/!{sample}.!{workflow.sessionId}.err
 
@@ -249,8 +255,6 @@ process bwa {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p aligned logs/bwa'
-
   when:
   params.aligner == 'bwa'
 
@@ -264,6 +268,7 @@ process bwa {
 
   shell:
   '''
+    mkdir -p aligned logs/bwa
     log_file=logs/bwa/!{sample}.!{workflow.sessionId}.log
     err_file=logs/bwa/!{sample}.!{workflow.sessionId}.err
 
@@ -286,8 +291,6 @@ process minimap2 {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p aligned logs/minimap2'
-
   when:
   params.aligner == 'minimap2'
 
@@ -301,6 +304,7 @@ process minimap2 {
 
   shell:
   '''
+    mkdir -p aligned logs/minimap2
     log_file=logs/minimap2/!{sample}.!{workflow.sessionId}.log
     err_file=logs/minimap2/!{sample}.!{workflow.sessionId}.err
 
@@ -327,8 +331,6 @@ process fastqc {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p fastqc logs/fastqc'
-
   when:
   params.fastqc
 
@@ -343,6 +345,7 @@ process fastqc {
 
   shell:
   '''
+    mkdir -p fastqc logs/fastqc
     log_file=logs/fastqc/!{sample}.!{workflow.sessionId}.log
     err_file=logs/fastqc/!{sample}.!{workflow.sessionId}.err
 
@@ -369,8 +372,6 @@ process sort {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p aligned logs/sort'
-
   input:
   set val(sample), file(sam) from sams
 
@@ -380,6 +381,7 @@ process sort {
 
   shell:
   '''
+    mkdir -p aligned logs/sort
     log_file=logs/sort/!{sample}.!{workflow.sessionId}.log
     err_file=logs/sort/!{sample}.!{workflow.sessionId}.err
 
@@ -405,8 +407,6 @@ process ivar_trim {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p ivar_trim logs/ivar_trim'
-
   when:
   params.trimmer == 'ivar'
 
@@ -420,6 +420,7 @@ process ivar_trim {
 
   shell:
   '''
+    mkdir -p ivar_trim logs/ivar_trim
     log_file=logs/ivar_trim/!{sample}.!{workflow.sessionId}.log
     err_file=logs/ivar_trim/!{sample}.!{workflow.sessionId}.err
 
@@ -442,8 +443,6 @@ process samtools_trim {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p samtools_trim logs/samtools_trim'
-
   when:
   params.trimmer == 'samtools'
 
@@ -457,6 +456,7 @@ process samtools_trim {
 
   shell:
   '''
+    mkdir -p samtools_trim logs/samtools_trim
     log_file=logs/samtools_trim/!{sample}.!{workflow.sessionId}.log
     err_file=logs/samtools_trim/!{sample}.!{workflow.sessionId}.err
 
@@ -500,8 +500,6 @@ process ivar_variants {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p ivar_variants logs/ivar_variants'
-
   when:
   params.ivar_variants
 
@@ -515,6 +513,7 @@ process ivar_variants {
 
   shell:
   '''
+    mkdir -p ivar_variants logs/ivar_variants
     log_file=logs/ivar_variants/!{sample}.!{workflow.sessionId}.log
     err_file=logs/ivar_variants/!{sample}.!{workflow.sessionId}.err
 
@@ -539,13 +538,12 @@ process ivar_consensus {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p consensus/qc_consensus/{15000,25000} logs/ivar_consensus'
-
   input:
   set val(sample), file(bam), file(reference_genome) from trimmed_bams_ivar_consensus
 
   output:
-  tuple sample, file("consensus/${sample}.consensus.fa") into consensus, consensus2
+  tuple sample, file("consensus/${sample}.consensus.fa") into consensus_pangolin, consensus_nextclade
+  tuple sample, file("consensus/${sample}.consensus.fa"), env(num_ACTG) into consensus_rename
   tuple sample, file("consensus/qc_consensus/15000/${sample}.consensus.fa") optional true into qc_consensus_15000_mafft
   file("logs/ivar_consensus/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(num_N), env(num_ACTG), env(num_degenerate), env(num_total) into consensus_results
@@ -553,6 +551,7 @@ process ivar_consensus {
 
   shell:
   '''
+    mkdir -p consensus/qc_consensus/{15000,25000} logs/ivar_consensus
     log_file=logs/ivar_consensus/!{sample}.!{workflow.sessionId}.log
     err_file=logs/ivar_consensus/!{sample}.!{workflow.sessionId}.err
 
@@ -584,8 +583,6 @@ process bamsnap {
   echo false
   cpus 1
 
-  beforeScript "mkdir -p bamsnap/${sample} logs/bamsnap"
-
   when:
   params.bamsnap
 
@@ -598,6 +595,7 @@ process bamsnap {
 
   shell:
   '''
+    mkdir -p bamsnap/${sample} logs/bamsnap
     log_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.log
     err_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.err
 
@@ -616,8 +614,6 @@ process bcftools_variants {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p bcftools_variants logs/bcftools_variants'
-
   when:
   params.bcftools_variants
 
@@ -631,6 +627,7 @@ process bcftools_variants {
 
   shell:
   '''
+    mkdir -p bcftools_variants logs/bcftools_variants
     log_file=logs/bcftools_variants/!{sample}.!{workflow.sessionId}.log
     err_file=logs/bcftools_variants/!{sample}.!{workflow.sessionId}.err
 
@@ -656,8 +653,6 @@ process samtools_stats {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p samtools_stats/aligned samtools_stats/trimmed logs/samtools_stats'
-
   when:
   params.samtools_stats
 
@@ -671,6 +666,7 @@ process samtools_stats {
 
   shell:
   '''
+    mkdir -p samtools_stats/aligned samtools_stats/trimmed logs/samtools_stats
     log_file=logs/samtools_stats/!{sample}.!{workflow.sessionId}.log
     err_file=logs/samtools_stats/!{sample}.!{workflow.sessionId}.err
 
@@ -688,8 +684,6 @@ process samtools_coverage {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p samtools_coverage/aligned samtools_coverage/trimmed logs/samtools_coverage'
-
   when:
   params.samtools_coverage
 
@@ -705,6 +699,7 @@ process samtools_coverage {
 
   shell:
   '''
+    mkdir -p samtools_coverage/aligned samtools_coverage/trimmed logs/samtools_coverage
     log_file=logs/samtools_coverage/!{sample}.!{workflow.sessionId}.log
     err_file=logs/samtools_coverage/!{sample}.!{workflow.sessionId}.err
 
@@ -729,8 +724,6 @@ process samtools_flagstat {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p samtools_flagstat/aligned samtools_flagstat/trimmed logs/samtools_flagstat'
-
   input:
   set val(sample), file(aligned), file(trimmed) from pre_post_bams3
 
@@ -743,6 +736,7 @@ process samtools_flagstat {
 
   shell:
   '''
+    mkdir -p samtools_flagstat/aligned samtools_flagstat/trimmed logs/samtools_flagstat
     log_file=logs/samtools_flagstat/!{sample}.!{workflow.sessionId}.log
     err_file=logs/samtools_flagstat/!{sample}.!{workflow.sessionId}.err
 
@@ -768,8 +762,6 @@ process kraken2 {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p kraken2 logs/kraken2'
-
   when:
   params.kraken2
 
@@ -784,6 +776,7 @@ process kraken2 {
 
   shell:
   '''
+    mkdir -p kraken2 logs/kraken2
     log_file=logs/kraken2/!{sample}.!{workflow.sessionId}.log
     err_file=logs/kraken2/!{sample}.!{workflow.sessionId}.err
 
@@ -828,8 +821,6 @@ process bedtools {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p bedtools logs/bedtools'
-
   when:
   params.bedtools
 
@@ -843,6 +834,7 @@ process bedtools {
 
   shell:
   '''
+    mkdir -p bedtools logs/bedtools
     log_file=logs/bedtools/!{sample}.!{workflow.sessionId}.log
     err_file=logs/bedtools/!{sample}.!{workflow.sessionId}.err
 
@@ -868,8 +860,6 @@ process samtools_ampliconstats {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p samtools_ampliconstats logs/samtools_ampliconstats'
-
   when:
   params.samtools_ampliconstats
 
@@ -883,6 +873,7 @@ process samtools_ampliconstats {
 
   shell:
   '''
+    mkdir -p samtools_ampliconstats logs/samtools_ampliconstats
     log_file=logs/samtools_ampliconstats/!{sample}.!{workflow.sessionId}.log
     err_file=logs/samtools_ampliconstats/!{sample}.!{workflow.sessionId}.err
 
@@ -902,13 +893,11 @@ process pangolin {
   echo false
   cpus medcpus
 
-  beforeScript 'mkdir -p pangolin logs/pangolin'
-
   when:
   params.pangolin
 
   input:
-  set val(sample), file(fasta) from consensus
+  set val(sample), file(fasta) from consensus_pangolin
 
   output:
   file("pangolin/${sample}/lineage_report.csv")
@@ -918,6 +907,7 @@ process pangolin {
 
   shell:
   '''
+    mkdir -p pangolin logs/pangolin
     log_file=logs/pangolin/!{sample}.!{workflow.sessionId}.log
     err_file=logs/pangolin/!{sample}.!{workflow.sessionId}.err
 
@@ -941,13 +931,11 @@ process nextclade {
   echo false
   cpus medcpus
 
-  beforeScript 'mkdir -p nextclade logs/nextclade'
-
   when:
   params.nextclade
 
   input:
-  set val(sample), file(fasta) from consensus2
+  set val(sample), file(fasta) from consensus_nextclade
 
   output:
   file("nextclade/${sample}_nextclade_report.csv")
@@ -956,6 +944,7 @@ process nextclade {
 
   shell:
   '''
+    mkdir -p nextclade logs/nextclade
     log_file=logs/nextclade/!{sample}.!{workflow.sessionId}.log
     err_file=logs/nextclade/!{sample}.!{workflow.sessionId}.err
 
@@ -996,8 +985,6 @@ process summary {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p summary logs/summary'
-
   input:
   set val(sample), val(num_N), val(num_ACTG), val(num_degenerate), val(num_total),
     val(raw_1),
@@ -1025,6 +1012,7 @@ process summary {
 
   shell:
   '''
+    mkdir -p summary logs/summary
     log_file=logs/summary/!{sample}.!{workflow.sessionId}.log
     err_file=logs/summary/!{sample}.!{workflow.sessionId}.err
 
@@ -1045,8 +1033,6 @@ process combined_summary {
   echo false
   cpus 1
 
-  beforeScript 'mkdir -p submission_files logs/summary'
-
   input:
   file(summary) from summary.collect()
 
@@ -1057,6 +1043,7 @@ process combined_summary {
 
   shell:
   '''
+    mkdir -p submission_files logs/summary
     log_file=logs/summary/summary.!{workflow.sessionId}.log
     err_file=logs/summary/summary.!{workflow.sessionId}.err
 
@@ -1075,8 +1062,6 @@ process mafft {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p mafft logs/mafft'
-
   input:
   file(consensus) from qc_consensus_15000_mafft.collect()
   file(reference_genome) from reference_genome_mafft
@@ -1091,6 +1076,7 @@ process mafft {
 
   shell:
   '''
+    mkdir -p mafft logs/mafft
     log_file=logs/mafft/mafft.!{workflow.sessionId}.log
     err_file=logs/mafft/mafft.!{workflow.sessionId}.err
 
@@ -1118,7 +1104,8 @@ process snpdists {
   echo false
   cpus medcpus
 
-  beforeScript 'mkdir -p snp-dists logs/snp-dists'
+  when:
+  params.snpdists
 
   input:
   file(msa) from msa_file
@@ -1129,6 +1116,7 @@ process snpdists {
 
   shell:
   '''
+    mkdir -p snp-dists logs/snp-dists
     log_file=logs/snp-dists/snp-dists.!{workflow.sessionId}.log
     err_file=logs/snp-dists/snp-dists.!{workflow.sessionId}.err
 
@@ -1145,7 +1133,8 @@ process iqtree {
   echo false
   cpus maxcpus
 
-  beforeScript 'mkdir -p iqtree logs/iqtree'
+  when:
+  params.iqtree
 
   input:
   file(msa) from msa_file2
@@ -1156,6 +1145,7 @@ process iqtree {
 
   shell:
   '''
+    mkdir -p iqtree logs/iqtree
     log_file=logs/iqtree/iqtree.!{workflow.sessionId}.log
     err_file=logs/iqtree/iqtree.!{workflow.sessionId}.err
 
@@ -1176,6 +1166,178 @@ process iqtree {
       -m !{params.mode} \
       -o !{params.outgroup} \
       >> $log_file 2>> $err_file
+  '''
+}
+
+fastq_reads_rename
+   .join(consensus_rename, by:0)
+   .combine(sample_file)
+   .set { rename }
+
+process rename {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "${sample}"
+  echo false
+  cpus 1
+
+  input:
+  set val(sample), file(reads), val(paired_single), file(consensus), val(num_ACTG), file(sample_file) from rename
+
+  output:
+  file("submission_files/*{genbank,gisaid}.fa") optional true into submission_fastas
+  file("submission_files/*.fastq.gz")
+  file("logs/rename/${sample}.${workflow.sessionId}.{err,log}")
+
+  shell:
+  '''
+    mkdir -p submission_files logs/rename
+    log_file=logs/rename/!{sample}.!{workflow.sessionId}.log
+    err_file=logs/rename/!{sample}.!{workflow.sessionId}.err
+
+    date | tee -a $log_file $err_file > /dev/null
+
+    sample_id_column=$(head -n 1 !{sample_file} | tr ',' '\\n' | grep -inw "Sample_ID" | cut -f 1 -d ':' )
+    submission_id_column=$(head -n 1 !{sample_file} | tr ',' '\\n' | grep -inw "Submission_id" | cut -f 1 -d ':' )
+    collection_date_column=$(head -n 1 !{sample_file} | tr ',' '\\n' | grep -inw "Collection_Date" | cut -f 1 -d ':'  )
+
+    if [ -z $sample_id_column ] || [ -z "$submission_id_column" ] || [ -z "$collection_date_column" ]
+    then
+      echo "!{params.sample_file} is not the correct format"
+      echo "Sorry to be overly picky, but this file needs to be a plain text file with values separated by commas (and no commas in the values)"
+      echo "Required headers are 'Sample_ID', 'Submission_ID', and 'Collection_Date'"
+      echo "Please read documentation at https://github.com/StaPH-B/staphb_toolkit/tree/master/staphb_toolkit/workflows/cecret"
+      exit 1
+    fi
+
+    all_samples=($(cut -f $sample_id_column -d "," !{sample_file}  ))
+    sample_id_check=1
+    for potential_sample in ${all_samples[@]}
+    do
+      sample_id_check=$(echo !{sample} | grep $potential_sample | head -n 1)
+      if [ -n "$sample_id_check" ]
+      then
+        sample_id=$potential_sample
+      fi
+    done
+
+    if [ -n "$sample_id" ] ; then sample_line=$(cat !{sample_file} | grep -w $sample_id | head -n 1) ; fi
+    if [ -n "$sample_line" ]
+    then
+      echo "The line from !{params.sample_file} corresponding to !{sample} is $sample_line" | tee -a $log_file
+      sample_line=$(echo $sample_line | sed 's/","/,/g')
+      submission_id=$(echo $sample_line | cut -f $submission_id_column -d ',')
+      collection_date=$(echo $sample_line | cut -f $collection_date_column -d ',')
+
+      sample_file_header_reduced=$(head -n 1 !{sample_file} | tr "," '\\n' | grep -iv "Sample_ID" | grep -iv "Collection_Date" | grep -vi "Submission_ID" | tr '\\n' ' ' )
+      genbank_fasta_header=">$submission_id "
+
+      for column in ${sample_file_header_reduced[@]}
+      do
+        column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -n "$column" | cut -f 1 -d ':')
+        column_value=$(echo $sample_line | cut -f $column_number -d ',')
+        genbank_fasta_header=$genbank_fasta_header"["$column"="$column_value"]"
+      done
+
+      if [ "$collection_date" == "missing" ]
+      then
+        year=$(date "+%Y")
+        echo "The collection date is $collection_date for !{sample}" | tee -a $log_file
+      else
+        collection_date=$(date -d "$collection_date" "+%Y-%m-%d") || echo "Invalid date format. Try something like yyyy-mm-dd and '-resume' the workflow."
+        year=$(date -d "$collection_date" "+%Y")
+        echo "The collection date is $collection_date for !{sample}" | tee -a $log_file
+        genbank_fasta_header=$genbank_fasta_header"[Collection_Date="$collection_date"]"
+      fi
+
+      country_check=$(echo $sample_file_header_reduced | grep -wi "country" | head -n 1 )
+      if [ -z "$country_check" ]
+      then
+        genbank_fasta_header=$genbank_fasta_header"[Country=USA]"
+        country="USA"
+      else
+        column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "country" | cut -f 1 -d ':')
+        country=$(echo $sample_line | cut -f $column_number -d ',')
+      fi
+
+      host_check=$(echo $sample_file_header_reduced | grep -wi "host"  | head -n 1 )
+      if [ -z "$host_check" ]
+      then
+        genbank_fasta_header=$genbank_fasta_header"[Host=Human]"
+        host="Human"
+      else
+        column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "host" | cut -f 1 -d ':')
+        host=$(echo $sample_line | cut -f $column_number -d ',')
+      fi
+
+      isolate_check=$(echo $sample_file_header_reduced | grep -wi "isolate"  | head -n 1 )
+      if [ -z "$isolate_check" ]
+      then
+        organism_check=$(head -n 1 !{sample_file} | tr ',' '\\n' | grep -i "organism" | head -n 1 )
+        if [ -z "$organism_check" ]
+        then
+          genbank_organism='SARS-CoV-2'
+          gisaid_organism='hCoV-19'
+        else
+          column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "organism" | cut -f 1 -d ':')
+          genbank_organism=$(echo $sample_line | cut -f $column_number -d ',')
+          gisaid_organism=$(echo $sample_line  | cut -f $column_number -d ',')
+        fi
+        genbank_fasta_header=$genbank_fasta_header"[Isolate="$genbank_organism"/"$host"/"$country"/"$submission_id"/"$year"]"
+      fi
+
+      gisaid_fasta_header=">$gisaid_organism/$country/$submission_id/$year"
+
+      if [ "!{num_ACTG}" -gt "!{params.gisaid_threshold}" ]
+      then
+        echo $gisaid_fasta_header > submission_files/$submission_id.gisaid.fa
+        grep -v ">" !{consensus} | fold -w 75 >> submission_files/$submission_id.genbank.fa
+      fi
+
+      if [ "!{num_ACTG}" -gt "!{params.genbank_threshold}" ]
+      then
+        echo $genbank_fasta_header > submission_files/$submission_id.genbank.fa
+        grep -v ">" !{consensus} | sed 's/^N*N//g' | fold -w 75 >> submission_files/$submission_id.genbank.fa
+      fi
+
+      if [ "!{paired_single}" == "single" ]
+      then
+        cp !{reads[0]} submission_files/$submission_id.fastq.gz
+      else
+        final_fastq_R1="submission_files/"$submission_id"_R1.fastq.gz"
+        final_fastq_R2="submission_files/"$submission_id"_R2.fastq.gz"
+        cp !{reads[0]} "$final_fastq_R1"
+        cp !{reads[1]} "$final_fastq_R2"
+      fi
+    else
+      echo "!{sample} was not found in !{sample_file}" | tee -a $log_file $err_file
+    fi
+  '''
+}
+
+process combine_fastas {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "multifasta"
+  echo false
+  cpus 1
+
+  input:
+  file(fastas) from submission_fastas.collect()
+
+  output:
+  file("submission_files/genbank_submission*.fasta") optional true
+  file("submission_files/gisaid_submission*.fasta") optional true
+  file("logs/combine_genbank/combine_genbank.${workflow.sessionId}.{log,err}")
+
+  shell:
+  '''
+    mkdir -p submission_files logs/combine_genbank
+    log_file=logs/combine_genbank/combine_genbank.!{workflow.sessionId}.log
+    err_file=logs/combine_genbank/combine_genbank.!{workflow.sessionId}.err
+
+    date | tee -a $log_file $err_file > /dev/null
+
+    cat *genbank.fa | tee submission_files/genbank_submission.fasta submission_files/genbank_submission_!{workflow.sessionId}.fasta
+    cat *gisaid.fa  | tee submission_files/gisaid_submission.fasta submission_files/gisaid_submission_!{workflow.sessionId}.fasta
   '''
 }
 
