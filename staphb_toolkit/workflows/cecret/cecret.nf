@@ -51,6 +51,7 @@ params.bedtools = true
 params.nextclade = true
 params.pangolin = true
 params.bamsnap = false // currently doesn't work. Don't turn it on until it can do non-human refrences
+params.rename = true
 
 // for optional contamination determination
 params.kraken2 = false
@@ -1181,6 +1182,9 @@ process rename {
   input:
   set val(sample), file(reads), val(paired_single), file(consensus), val(num_ACTG), file(sample_file) from rename
 
+  when:
+  params.sample_file.exists() && params.rename
+
   output:
   file("submission_files/*{genbank,gisaid}.fa") optional true into submission_fastas
   file("submission_files/*.fastq.gz")
@@ -1224,7 +1228,9 @@ process rename {
       echo "The line from !{params.sample_file} corresponding to !{sample} is $sample_line" | tee -a $log_file
       sample_line=$(echo $sample_line | sed 's/","/,/g')
       submission_id=$(echo $sample_line | cut -f $submission_id_column -d ',')
+      if [ -z "$submission_id" ] ; then submission_id=$sample_id ; fi
       collection_date=$(echo $sample_line | cut -f $collection_date_column -d ',')
+      if [ -z "$collection_date" ] ; then collection_date="missing" ; fi
 
       sample_file_header_reduced=$(head -n 1 !{sample_file} | tr "," '\\n' | grep -iv "Sample_ID" | grep -iv "Collection_Date" | grep -vi "Submission_ID" | tr '\\n' ' ' )
       genbank_fasta_header=">$submission_id "
@@ -1233,6 +1239,7 @@ process rename {
       do
         column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -n "$column" | cut -f 1 -d ':')
         column_value=$(echo $sample_line | cut -f $column_number -d ',')
+        if [ -z "$column_value" ] ; then column_value="missing" ; fi
         genbank_fasta_header=$genbank_fasta_header"["$column"="$column_value"]"
       done
 
@@ -1255,7 +1262,9 @@ process rename {
       else
         column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "country" | cut -f 1 -d ':')
         country=$(echo $sample_line | cut -f $column_number -d ',')
+        if [ -z "$country" ] ; then country="missing" ; fi
       fi
+
 
       host_check=$(echo $sample_file_header_reduced | grep -wi "host"  | head -n 1 )
       if [ -z "$host_check" ]
@@ -1265,6 +1274,7 @@ process rename {
       else
         column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "host" | cut -f 1 -d ':')
         host=$(echo $sample_line | cut -f $column_number -d ',')
+        if [ -z "$host" ] ; then host="missing" ; fi
       fi
 
       isolate_check=$(echo $sample_file_header_reduced | grep -wi "isolate"  | head -n 1 )
@@ -1279,6 +1289,8 @@ process rename {
           column_number=$(head -n 1 !{sample_file} | tr "," "\\n" | grep -in "organism" | cut -f 1 -d ':')
           genbank_organism=$(echo $sample_line | cut -f $column_number -d ',')
           gisaid_organism=$(echo $sample_line  | cut -f $column_number -d ',')
+          if [ -z "$genbank_organism" ] ; then genbank_organism="missing" ; fi
+          if [ -z "$gisaid_organism" ] ; then gisaid_organism="missing" ; fi
         fi
         genbank_fasta_header=$genbank_fasta_header"[Isolate="$genbank_organism"/"$host"/"$country"/"$submission_id"/"$year"]"
       fi
