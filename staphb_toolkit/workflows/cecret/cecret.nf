@@ -55,7 +55,7 @@ params.rename = true
 
 // for optional contamination determination
 params.kraken2 = false
-params.kraken2_db = 'kraken2_db'
+params.kraken2_db = ''
 
 // for optional route of tree generation and counting snps between samples
 params.relatedness = false
@@ -71,12 +71,11 @@ params.gisaid_threshold = '25000'
 params.genbank_threshold = '15000'
 
 params.maxcpus = Runtime.runtime.availableProcessors()
-maxcpus = params.maxcpus
-println("The maximum number of CPUS used in this workflow is ${maxcpus}")
-if ( maxcpus < 5 ) {
-  medcpus = maxcpus
+println("The maximum number of CPUS used in this workflow is ${params.maxcpus}")
+if ( params.maxcpus < 5 ) {
+  params.medcpus = params.maxcpus
 } else {
-  medcpus = 5
+  params.medcpus = 5
 }
 
 // This is where the results will be
@@ -254,7 +253,7 @@ process bwa {
   publishDir "${params.outdir}", mode: 'copy', pattern: "logs/bwa/*.{log,err}"
   tag "${sample}"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   when:
   params.aligner == 'bwa'
@@ -290,7 +289,7 @@ process minimap2 {
   publishDir "${params.outdir}", mode: 'copy', pattern: "logs/minimap2/*.{log,err}"
   tag "${sample}"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   when:
   params.aligner == 'minimap2'
@@ -371,7 +370,7 @@ process sort {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   input:
   set val(sample), file(sam) from sams
@@ -759,7 +758,7 @@ process kraken2 {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   when:
   params.kraken2
@@ -890,7 +889,7 @@ process pangolin {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
-  cpus medcpus
+  cpus params.medcpus
 
   when:
   params.pangolin
@@ -928,7 +927,7 @@ process nextclade {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
-  cpus medcpus
+  cpus params.medcpus
 
   when:
   params.nextclade
@@ -1059,7 +1058,7 @@ process mafft {
   publishDir "${params.outdir}", mode: 'copy'
   tag "Multiple Sequence Alignment"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   input:
   file(consensus) from qc_consensus_15000_mafft.collect()
@@ -1099,9 +1098,9 @@ process mafft {
 
 process snpdists {
   publishDir "${params.outdir}", mode: 'copy'
-  tag "snp-dists"
+  tag "createing snp matrix with snp-dists"
   echo false
-  cpus medcpus
+  cpus params.medcpus
 
   when:
   params.snpdists
@@ -1128,9 +1127,9 @@ process snpdists {
 
 process iqtree {
   publishDir "${params.outdir}", mode: 'copy'
-  tag "iqtree"
+  tag "Creating phylogenetic tree with iqtree"
   echo false
-  cpus maxcpus
+  cpus params.maxcpus
 
   when:
   params.iqtree
@@ -1175,7 +1174,7 @@ fastq_reads_rename
 
 process rename {
   publishDir "${params.outdir}", mode: 'copy'
-  tag "${sample}"
+  tag "Renaming files for ${sample}"
   echo false
   cpus 1
 
@@ -1206,7 +1205,7 @@ process rename {
     then
       echo "!{params.sample_file} is not the correct format"
       echo "Sorry to be overly picky, but this file needs to be a plain text file with values separated by commas (and no commas in the values)"
-      echo "Required headers are 'Sample_ID', 'Submission_ID', and 'Collection_Date'"
+      echo "Required headers are 'Sample_ID','Submission_ID','Collection_Date'"
       echo "Please read documentation at https://github.com/StaPH-B/staphb_toolkit/tree/master/staphb_toolkit/workflows/cecret"
       exit 1
     fi
@@ -1264,7 +1263,6 @@ process rename {
         country=$(echo $sample_line | cut -f $column_number -d ',')
         if [ -z "$country" ] ; then country="missing" ; fi
       fi
-
 
       host_check=$(echo $sample_file_header_reduced | grep -wi "host"  | head -n 1 )
       if [ -z "$host_check" ]
@@ -1326,7 +1324,7 @@ process rename {
 
 process combine_fastas {
   publishDir "${params.outdir}", mode: 'copy'
-  tag "multifasta"
+  tag "Combining fastas into one multifasta"
   echo false
   cpus 1
 
