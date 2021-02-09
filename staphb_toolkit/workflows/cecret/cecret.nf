@@ -4,7 +4,7 @@ println("The cecret workflow is for amplicon-based short-read Illumina libraries
 println("Currently using the cecret workflow as part of the staphb toolkit.\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.20210205")
+println("Version: v.20210209")
 println("")
 
 params.reads = workflow.launchDir + '/Sequencing_reads/Raw'
