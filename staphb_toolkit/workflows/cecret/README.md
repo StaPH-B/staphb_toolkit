@@ -1,6 +1,6 @@
 # CECRET
 
-A workflow for generating consensus sequences from single or paired-end fastq.gz or fastq reads from amplicon prepared libraries.
+A workflow for generating consensus sequences from single or paired-end fastq.gz or fastq reads from amplicon prepared Illumina libraries.
 
 # USAGE
 
@@ -59,11 +59,17 @@ This workflow is for the staphB toolkit. A full list of parameters and documenta
 
 It's not all that different. [monroe](../monroe) uses minimap2 for mapping/aligning and cleans reads with bbduk and trimmomatic. Running the aligned reads through ivar for primer trimming and consensus creation is the core for both workflows. 
 
-### Why is bcftools set to 'false' by default
+### Why is bcftools set to 'false' by default?
 
 There's nothing wrong with the bcftools process, and the vcf created by bcftools is rather handy for additional analyses. The `'staphb/bcftools:latest'` container is really popular, and has issues downloading during high traffic times. I don't want to have to handle issues of users not understanding why the container did not download. /Sorry
 
 If you want to get the output from bcftools, set `params.bcftools = true` 
+
+### Can I get images of my SNPs and indels?
+
+Yes. Set `params.bamsnap = true`. This is false by default because of how long it takes. It will work with variants called by `ivar` and `bcftools`, although it is **MUCH** faster with the vcf created by bcftools. 
+
+Warning : will not work on all variants. This is due to how bamsnap runs.
 
 ### What if I am using an amplicon based library that is not SARS-CoV-2?
 
