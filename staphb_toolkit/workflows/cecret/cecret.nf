@@ -4,7 +4,7 @@ println("The cecret workflow is for amplicon-based short-read Illumina libraries
 println("Currently using the cecret workflow as part of the staphb toolkit.\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.20210205")
+println("Version: v.20210209")
 println("")
 
 params.reads = workflow.launchDir + '/Sequencing_reads/Raw'
@@ -50,7 +50,7 @@ params.samtools_ampliconstats = true
 params.bedtools = true
 params.nextclade = true
 params.pangolin = true
-params.bamsnap = false // currently doesn't work. Don't turn it on until it can do non-human refrences
+params.bamsnap = false // can be really slow
 params.rename = true
 
 // for optional contamination determination
@@ -89,7 +89,7 @@ Channel
     exit 1
   }
   .view { "Reference Genome : $it"}
-  .into { reference_genome ; reference_genome2 ; reference_genome_mafft }
+  .into { reference_genome ; reference_genome2 ; reference_genome_mafft ; reference_genome_bamsnap }
 
 Channel
   .fromPath(params.gff_file, type:'file')
@@ -377,6 +377,7 @@ process sort {
 
   output:
   tuple sample, file("aligned/${sample}.sorted.bam") into pre_trim_bams, pre_trim_bams2
+  tuple sample, file("aligned/${sample}.sorted.bam"), file("aligned/${sample}.sorted.bam.bai") into pre_trim_bams_bamsnap
   file("logs/sort/${sample}.${workflow.sessionId}.{log,err}")
 
   shell:
@@ -495,7 +496,8 @@ ivar_bam_bai
   .set { trimmed_bam_bai }
 
 process ivar_variants {
-  publishDir "${params.outdir}", mode: 'copy'
+  publishDir "${params.outdir}", mode: 'copy',  pattern: "logs/ivar_variants/*.{log,err}"
+  publishDir "${params.outdir}", mode: 'copy',  pattern: "ivar_variants/*.tsv"
   tag "${sample}"
   echo false
   cpus 1
@@ -507,7 +509,7 @@ process ivar_variants {
   set val(sample), file(bam), file(reference_genome), file(gff_file) from trimmed_bams_ivar_variants
 
   output:
-  tuple sample, bam, file("ivar_variants/${sample}.variants.tsv") into ivar_variant_file
+  tuple sample, file("ivar_variants/${sample}.variants.tsv") into ivar_variant_file
   file("logs/ivar_variants/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(variants_num) into ivar_variants_results
 
@@ -577,37 +579,6 @@ process ivar_consensus {
   '''
 }
 
-process bamsnap {
-  publishDir "${params.outdir}", mode: 'copy'
-  tag "${sample}"
-  echo false
-  cpus 1
-
-  when:
-  params.bamsnap
-
-  input:
-  tuple val(sample), file(bam), file(variants) from ivar_variant_file
-
-  output:
-  tuple sample, file("bamsnap/*png")
-  file("logs/bamsnap/${sample}.${workflow.sessionId}.{log,err}")
-
-  shell:
-  '''
-    mkdir -p bamsnap/${sample} logs/bamsnap
-    log_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.log
-    err_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.err
-
-    date | tee -a $log_file $err_file > /dev/null
-    bamsnap --version >> $log_file
-
-    bamsnap_variants=($(grep -v REGION !{variants} | awk '{ print $1 ":" $2 }' ))
-
-    bamsnap -bam !{bam} -pos ${bamsnap_variants[@]} -out bamsnap/!{sample}/variant.png
-  '''
-}
-
 process bcftools_variants {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
@@ -621,7 +592,7 @@ process bcftools_variants {
   set val(sample), file(bam), file(reference_genome) from trimmed_bams_bcftools_variants
 
   output:
-  file("bcftools_variants/${sample}.vcf")
+  tuple sample, file("bcftools_variants/${sample}.vcf") into bcftools_variants_file
   file("logs/bcftools_variants/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(variants_num) into bcftools_variants_results
 
@@ -640,6 +611,79 @@ process bcftools_variants {
 
     variants_num=$(grep -v "#" bcftools_variants/!{sample}.vcf | wc -l)
     if [ -z "$variants_num" ] ; then variants_num="0" ; fi
+  '''
+}
+
+pre_trim_bams_bamsnap
+  .join(ivar_variant_file, remainder: true, by:0)
+  .join(bcftools_variants_file, remainder: true, by:0)
+  .combine(reference_genome_bamsnap)
+  .set { bamsnap_files }
+
+process bamsnap {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "${sample}"
+  echo false
+  cpus params.medcpus
+  errorStrategy 'ignore'
+
+  when:
+  params.bamsnap
+
+  input:
+  tuple val(sample), file(bam), file(bai), file(variant_file), file(vcf), file(reference_genome) from bamsnap_files
+
+  output:
+  file("bamsnap/${sample}/{ivar,bcftools}/*.{png,log}") optional true
+  file("bamsnap/${sample}/*.{png,log}") optional true
+  file("logs/bamsnap/${sample}.${workflow.sessionId}.{log,err}")
+
+  shell:
+  '''
+    mkdir -p logs/bamsnap
+    log_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.log
+    err_file=logs/bamsnap/!{sample}.!{workflow.sessionId}.err
+
+    date | tee -a $log_file $err_file > /dev/null
+    bamsnap --version >> $log_file
+
+
+    if [[ "!{variant_file}" != *"input"* ]]
+    then
+      reference_length=$(grep -v ">" /home/IDGenomics_NAS/testing_cecret/20210208/work/72/7d705566c975564054eadf55f3ca95/MN908947.3.fasta | wc -m)
+      if [ $reference_length -lt 1050 ] ; then echo "The reference isn't long enough for bamsnap. Set 'bamsnap.params = false' "; exit 0 ; fi
+      max_position=$(( $reference_length - 1050 ))
+      echo "Reminder: the min variant position is 501 and the maximum position is $max_position" | tee -a $log_file
+
+      mkdir -p bamsnap/!{sample}
+      bamsnap_variants=($(grep TRUE !{variant_file} | awk '{ if ( $2 < 501 ) $2=501 ; print $1 " " $2 }' | awk -v max=$max_position '{ if ( $2 > max ) $2=max ; print $1 ":" $2 }' | sort | uniq ))
+
+      for refvariant in ${bamsnap_variants[@]}
+      do
+        variant=$(echo $refvariant | cut -f 2 -d ":" )
+        bamsnap -draw coordinates bamplot coverage base \
+          -process !{task.cpus} \
+          -ref !{reference_genome} \
+          -bam !{bam} \
+          -out bamsnap/!{sample}/ivar/$variant.png \
+          -pos $refvariant \
+          -imagetype png \
+          -save_image_only 2>> $err_file | tee -a $log_file
+      done
+    fi
+
+    if [[ "!{vcf}" != *"input"* ]]
+    then
+      mkdir -p bamsnap/!{sample}
+      bamsnap -draw coordinates bamplot coverage base \
+        -process !{task.cpus} \
+        -ref !{reference_genome} \
+        -bam !{bam} \
+        -vcf !{vcf} \
+        -out bamsnap/!{sample}/bcftools \
+        -imagetype png \
+        -save_image_only 2>> $err_file >> $log_file
+    fi
   '''
 }
 
@@ -889,7 +933,7 @@ process pangolin {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
-  cpus params.medcpus
+  cpus 1
 
   when:
   params.pangolin
@@ -911,9 +955,8 @@ process pangolin {
 
     date | tee -a $log_file $err_file > /dev/null
     pangolin --version >> $log_file
-    pangolin -lv >> $log_file
 
-    pangolin --threads !{task.cpus} --outdir pangolin/!{sample} !{fasta} 2>> $err_file >> $log_file
+    pangolin --outdir pangolin/!{sample} !{fasta} 2>> $err_file >> $log_file
 
     pangolin_lineage=$(tail -n 1 pangolin/!{sample}/lineage_report.csv | cut -f 2 -d "," | grep -v "lineage" )
     pangolin_status=$(tail -n 1 pangolin/!{sample}/lineage_report.csv | cut -f 5 -d "," )
