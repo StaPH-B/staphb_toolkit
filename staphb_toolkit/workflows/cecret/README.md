@@ -41,7 +41,8 @@ cecret can actually handle both read types at the same time, as long as both typ
   - Default is `false`
   - If this is desired, set `params.relatedness = true`
 
-#### Downloading the h+v kraken2 database (`params.kraken2 = true` ; `params.kraken2_db = 'kraken2_db'`):
+#### Downloading the h+v kraken2 database :
+Set `params.kraken2 = true` and `params.kraken2_db = 'kraken2_db'`
 ```
 mkdir -p kraken2_db
 cd kraken2_db
@@ -97,7 +98,7 @@ And, yes, this means I added some bells and whistles so you could turn off the b
 
 ### How do I get `cecret` to get my files ready for [GenBank](https://submit.ncbi.nlm.nih.gov/subs/genbank/) or [GISAID](https://www.gisaid.org/) submission?
 
-Create a comma-delimited file with at least the following headers: `Sample_ID`, `Submission_id`, and `Collection_Date` and set `params.sample_file` to that file. Additional headers can be accepted and used for preparing the GenBank submission fastas such as `BioProject`,`SRA`, and `Isolate`. 
+Create a comma-delimited file with at least the following headers: `Sample_ID`, `Submission_id`, and `Collection_Date` and set `params.sample_file` to that file. Then set `params.rename = true`. Additional headers can be accepted and used for preparing the GenBank submission fastas such as `BioProject`,`SRA`, and `Isolate`. 
 
 Defaults for fasta header values are 
 ```
@@ -115,4 +116,8 @@ Sample_ID,Submission_ID,Collection_Date,Bioproject
 248074,UT-UPHL-1902032935,missing,PRJNA614995
 ```
 
-Sometimes sequencing fails, so there are parameters for how many non-ambiguous bases a fasta needs in order to get incorporated into the final file. This can be set with `params.gisaid_threshold` (Default is '25000') and `params.genbank_threshold` (Default is '15000').
+Sometimes sequencing fails, so there are parameters for how many non-ambiguous bases a fasta needs in order to get incorporated into the final file. This can be set with `params.gisaid_threshold` (Default is '`params.gisaid_threshold = 25000`') and `params.genbank_threshold` (Default is '`params.genbank_threshold = 15000`').
+
+### Where do I find the rest of the documentation?
+
+Cecret's standalone workflow repository : [https://github.com/UPHL-BioNGS/Cecret](https://github.com/UPHL-BioNGS/Cecret)
