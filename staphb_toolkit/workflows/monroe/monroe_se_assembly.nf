@@ -70,8 +70,8 @@ process cleanreads {
   filename=${read}
   samplename=\$(echo \${filename} | cut -d "_" -f 1)
 
-  bbduk.sh -Xmx ${task.memory} in1=${read} out1=\${samplename}.rmadpt_1.fastq.gz ref=/bbmap/resources/adapters.fa stats=\${samplename}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
-  bbduk.sh -Xmx ${task.memory} in1=\${samplename}.rmadpt_1.fastq.gz out1=\${samplename}_1.clean.fastq.gz outm=\${samplename}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=\${samplename}.phix.stats.txt
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${read} out1=\${samplename}.rmadpt_1.fastq.gz ref=/bbmap/resources/adapters.fa stats=\${samplename}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=\${samplename}.rmadpt_1.fastq.gz out1=\${samplename}_1.clean.fastq.gz outm=\${samplename}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=\${samplename}.phix.stats.txt
   """
 }
 
