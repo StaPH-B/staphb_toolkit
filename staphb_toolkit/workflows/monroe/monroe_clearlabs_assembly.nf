@@ -43,8 +43,7 @@ process artic_medaka_pipeline {
     # get samplename by dropping file extension
     filename=${fastq}
     samplename=\${filename%.*}
-    cpus=`grep -c ^processor /proc/cpuinfo`
-    artic minion --medaka --normalise ${params.normalise} --threads \$cpus --scheme-directory /artic-ncov2019/primer_schemes --read-file ${fastq} nCoV-2019/${primers} \$samplename
+    artic minion --medaka --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /artic-ncov2019/primer_schemes --read-file ${fastq} nCoV-2019/${primers} \$samplename
     """
 }
 
