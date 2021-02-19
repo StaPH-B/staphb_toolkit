@@ -182,11 +182,11 @@ process shovill {
   output:
   tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
 
-  shell:
-  '''
-  shovill --outdir . --R1 !{reads[0]} --R2 !{reads[1]} --force
-  mv contigs.fa !{name}.contigs.fa
-  '''
+  script:
+  """
+  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
+  mv contigs.fa ${name}.contigs.fa
+  """
 }
 
 process mash {
