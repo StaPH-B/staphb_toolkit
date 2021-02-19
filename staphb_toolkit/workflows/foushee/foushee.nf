@@ -52,8 +52,7 @@ process trim {
 
   script:
   """
-  cpus=`grep -c ^processor /proc/cpuinfo`
-  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads \$cpus ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads ${task.cpus} ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
   mv ${name}*1P.fastq.gz ${name}_trimmed_1.fastq.gz
   mv ${name}*2P.fastq.gz ${name}_trimmed_2.fastq.gz
   """
@@ -69,11 +68,9 @@ process cleanreads {
   tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads, cleaned_reads_mash, cleaned_reads_gas
   script:
   """
-  ram=`awk '/MemTotal/ { printf "%.0f \\n", \$2/1024/1024 - 1 }' /proc/meminfo`
-  ram=`echo \$ram | awk '{\$1=\$1;print}'`
   repair.sh in1=${reads[0]} in2=${reads[1]} out1=${name}.paired_1.fastq.gz out2=${name}.paired_2.fastq.gz
-  bbduk.sh -Xmx\${ram}g in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
-  bbduk.sh -Xmx\${ram}g in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
+  bbduk.sh -Xmx ${task.memory} in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh -Xmx ${task.memory} in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
   """
 }
 //Create Mash Sketches for all isolates
@@ -152,12 +149,11 @@ process shovill {
   output:
   tuple name, file("${name}_contigs.fa") into assembled_genomes_quality, assembled_genomes_ksnp
 
-  shell:
-  '''
-  ram=`awk '/MemTotal/ { printf "%.0f \\n", $2/1024/1024 - 1 }' /proc/meminfo`
-  shovill --cpus 0 --ram $ram  --outdir . --R1 !{reads[0]} --R2 !{reads[1]} --force
-  mv contigs.fa !{name}_contigs.fa
-  '''
+  script:
+  """
+  shovill --cpus ${task.cpus} --ram ${task.memory}  --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
+  mv contigs.fa ${name}_contigs.fa
+  """
 }
 
 //Assembly Quality Report

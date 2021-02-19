@@ -80,8 +80,7 @@ process guppy_demultiplexing {
 
   script:
     """
-      cpus=`grep -c ^processor /proc/cpuinfo`
-      guppy_barcoder -t \$cpus --require_barcodes_both_ends -i . -s . ${params.demultiplexing_params} -q 0 -r
+      guppy_barcoder -t ${task.cpus} --require_barcodes_both_ends -i . -s . ${params.demultiplexing_params} -q 0 -r
     """
 }
 
@@ -127,9 +126,7 @@ if(params.polishing=="nanopolish"){
       filename=${fastq}
       samplename=\${filename%.*}
 
-      cpus=`grep -c ^processor /proc/cpuinfo`
-
-      artic minion --normalise ${params.normalise} --threads \$cpus --scheme-directory /artic-ncov2019/primer_schemes --fast5-directory ${fast5path}  --sequencing-summary ${sequencing_summary} --read-file ${fastq} nCoV-2019/${primers} \$samplename
+      artic minion --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /artic-ncov2019/primer_schemes --fast5-directory ${fast5path}  --sequencing-summary ${sequencing_summary} --read-file ${fastq} nCoV-2019/${primers} \$samplename
       """
   }
 }
@@ -155,9 +152,8 @@ else {
       # get samplename by dropping file extension
       filename=${fastq}
       samplename=\${filename%.*}
-      cpus=`grep -c ^processor /proc/cpuinfo`
 
-      artic minion --medaka --normalise ${params.normalise} --threads \$cpus --scheme-directory /artic-ncov2019/primer_schemes --read-file ${fastq} nCoV-2019/${primers} \$samplename
+      artic minion --medaka --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /artic-ncov2019/primer_schemes --read-file ${fastq} nCoV-2019/${primers} \$samplename
       """
   }
 }
