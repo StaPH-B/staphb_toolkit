@@ -88,7 +88,7 @@ process spades {
 
   script:
   """
-  spades.py --memory ${task.memory} -1 ${reads[0]} -2 ${reads[1]} -o ./spades_out
+  spades.py --memory ${task.memory.toGiga()} -1 ${reads[0]} -2 ${reads[1]} -o ./spades_out
   mv ./spades_out/contigs.fasta ${name}_contigs.fasta
   """
 }
