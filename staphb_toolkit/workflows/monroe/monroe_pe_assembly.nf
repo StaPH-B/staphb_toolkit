@@ -7,7 +7,8 @@
 //starting parameters
 params.reads = ""
 params.outdir = ""
-params.primerPath =""
+params.primerSet = ""
+params.primerPath = workflow.projectDir + params.primerSet
 params.report = ""
 params.pipe = ""
 
@@ -16,6 +17,15 @@ Channel
     .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fq}.gz", size: 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
+
+Channel
+  .fromPath(params.primerPath, type:'file')
+  .ifEmpty{
+    println("A bedfile for primers is required. Set with 'params.primerPath'.")
+    exit 1
+  }
+  .view { "Primer BedFile : $it"}
+  .set { primer_bed }
 
 //Step0: Preprocess reads - change name to end at first underscore
 process preProcess {
@@ -82,6 +92,7 @@ process ivar {
 
   input:
   set val(name), file(reads) from cleaned_reads
+  file(primer_bed)
 
   output:
   tuple name, file("${name}_consensus.fasta") into assembled_genomes
@@ -97,7 +108,7 @@ samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
 samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
-ivar trim -i SC2.bam -b ${params.primerPath} -p ivar -e
+ivar trim -i SC2.bam -b !{primer_bed} -p ivar -e
 
 samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam
