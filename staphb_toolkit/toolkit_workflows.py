@@ -304,8 +304,8 @@ def main():
             if not args.config and not args.primers:
                 raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
             if not args.config:
-                primer_path = f"/reference/ARTIC-{args.primers}.bed"
-                profile = profile + f" --primerPath {primer_path}"
+                primer_set = f"/configs/artic_{args.primers}_nCoV-2019.bed"
+                profile = profile + f" --primerSet {primer_set}"
             #build command
             command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
@@ -318,10 +318,10 @@ def main():
             if not args.config and not args.primers:
                 raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
             if not args.config:
-                primer_path = f"/reference/ARTIC-{args.primers}.bed"
-                profile = profile + f" --primerPath {primer_path}"
+                primer_set = f"/configs/artic_{args.primers}_nCoV-2019.bed"
+                profile = profile + f" --primerSet {primer_set}"
             #build command
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_se_assembly.nf {profile} {args.resume} --pipe ont --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_se_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe single-end assembly:")
             child = pexpect.spawn(command)
