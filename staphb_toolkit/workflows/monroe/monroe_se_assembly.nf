@@ -85,6 +85,10 @@ process cleanreads {
   """
 }
 
+cleaned_reads
+  .combine(primer_bed)
+  .set { cleaned_reads_with_primer_bed }
+
 //Assemble cleaned reads with iVar
 process ivar {
   tag "$name"
@@ -95,8 +99,7 @@ process ivar {
 
 
   input:
-  file(read) from cleaned_reads
-  file(primer_bed)
+  set file(read), file(primer_bed) from cleaned_reads_with_primer_bed
 
   output:
   file "*_consensus.fasta" into assembled_genomes
