@@ -45,6 +45,7 @@ progs = {
 'kraken-build':'Kraken-build - Build a kraken database',
 'kraken2':'Kraken2 - The second version of the Kraken taxonomic sequence classification system',
 'kraken2-build':'Karken2-build - Build a kraken2 database',
+'kraken2-inspect': 'Kraken2-inspect - Inspect a kraken2 database',
 'ksnp3':'kSNP3 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.',
 'legsta':'Legsta - In silico Legionella pneumophila Sequence Based Typing',
 'lyveset':'LYVE-SET - a method of using hqSNPs to create a phylogeny.',
@@ -148,6 +149,7 @@ def main():
     parser_krakenbuild = subparsers.add_parser('kraken-build', add_help=False)
     parser_kraken2 = subparsers.add_parser('kraken2', add_help=False)
     parser_kraken2build = subparsers.add_parser('kraken2-build', add_help=False)
+    parser_kraken2inspect = subparsers.add_parser('kraken2-inspect', add_help=False)
     parser_ksnp3 = subparsers.add_parser('ksnp3', add_help=False)
     parser_legsta = subparsers.add_parser('legsta', add_help=False)
     parser_lyveset = subparsers.add_parser('lyveset', add_help=False)
@@ -477,6 +479,12 @@ def main():
             arg_string = ""
         command = "kSNP3 " + arg_string
         program_configuration = config["parameters"]["ksnp3"]
+
+    if program == 'kraken2-inspect':
+        if not re.search('[a-zA-Z]', arg_string):
+            arg_string = "-h"
+        command = "kraken2-inspect " + arg_string
+        program_configuration = config["parameters"]["kraken2"]
 
     if program == 'kraken2-build':
         if not re.search('[a-zA-Z]', arg_string):
