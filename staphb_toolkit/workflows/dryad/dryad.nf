@@ -189,6 +189,86 @@ process shovill {
   """
 }
 
+//Map cleaned reads
+process bwa {
+  tag "$name"
+
+  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
+
+  input:
+  set val(name), file(reads) from cleaned_reads_align
+  set val(name), file(genome) from assembled_genomes_map
+
+  output:
+  tuple name, file("${name}.sam") into sam_files
+
+  shell:
+  """
+  bwa index ${name}.contigs.fa
+  bwa mem ${name}.contigs.fa !{reads[0]} !{reads[1]} > ${name}.sam
+  """
+}
+
+//Index and sort bam file then calculate coverage
+process samtools {
+  tag "$name"
+
+  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*bam*"
+  publishDir "${params.outdir}/results/coverage", mode: 'copy', pattern:"*_depth.tsv*"
+
+  input:
+  set val(name), file(sam) from sam_files
+
+  output:
+  file("${name}_depth.tsv") into cov_files
+
+  shell:
+  """
+  samtools view -S -b ${name}.sam > ${name}.bam
+  samtools sort ${name}.bam > ${name}.sorted.bam
+  samtools index ${name}.sorted.bam
+  samtools depth -a ${name}.sorted.bam > ${name}_depth.tsv
+  """
+}
+
+//Calculate median coverage
+process coverage_stats {
+  publishDir "${params.outdir}/results/coverage", mode: 'copy'
+
+  input:
+  file(cov) from cov_files.collect()
+
+  output:
+  file('coverage_stats.txt')
+
+  script:
+  '''
+  #!/usr/bin/env python3
+  import glob
+  import os
+  from numpy import median
+  from numpy import average
+
+  results = []
+
+  files = glob.glob("*_depth.tsv*")
+  for file in files:
+    nums = []
+    sid = os.path.basename(file).split('_')[0]
+    with open(file,'r') as inFile:
+      for line in inFile:
+        nums.append(int(line.strip().split()[2]))
+      med = median(nums)
+      avg = average(nums)
+      results.append(f"{sid}\\t{med}\\t{avg}\\n")
+
+  with open('coverage_stats.txt', 'w') as outFile:
+    outFile.write("Sample\\tMedian Coverage\\tAverage Coverage\\n")
+    for result in results:
+      outFile.write(result)
+  '''
+}
+
 process mash {
   errorStrategy 'ignore'
   tag "$name"
