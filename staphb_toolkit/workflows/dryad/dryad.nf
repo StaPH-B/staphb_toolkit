@@ -430,6 +430,55 @@ process mlst {
   """
 }
 
+process mlst_formatting {
+  errorStrategy 'ignore'
+  publishDir "${params.outdir}/results",mode:'copy'
+
+  input:
+  file(mlst) from mlst_results
+
+  output:
+  file("mlst_formatted.tsv")
+
+  script:
+  """
+  #!/usr/bin/env python3
+  import csv
+
+  string_map = {}
+
+  with open('mlst.tsv','r') as csvfile:
+    dialect = csv.Sniffer().sniff(csvfile.read(1024))
+    csvfile.seek(0)
+    reader = csv.reader(csvfile,dialect)
+    for row in reader:
+      id_string = row[0]
+      sp_string = row[1]
+      st_string = row[2]
+      string_map[id_string] = [sp_string,st_string]
+
+  mlst = []
+  for key in string_map:
+    id = key
+    id = id.replace('.contigs.fa','')
+    species = string_map[key][0]
+    st = string_map[key][1]
+    if species == 'abaumannii':
+      st = 'PubMLST ST' + str(st) + ' (Oxford)'
+    if species == 'abaumannii_2':
+      st = 'PubMLST ST' + str(st) + ' (Pasteur)'
+    else:
+      st = 'PubMLST ST' + str(st)
+    mlst.append(f'{id}\\t{st}\\n')
+
+  with open('mlst_formatted.tsv','w') as outFile:
+    outFile.write('Sample\\tMLST Scheme\\t')
+    for scheme in mlst:
+      outFile.write(scheme)
+
+  """
+}
+
 if (params.report && !params.ar) {
 
   report = file(params.report)
