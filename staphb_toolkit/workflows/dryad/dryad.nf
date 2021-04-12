@@ -71,8 +71,7 @@ process trim {
 
   script:
   """
-  cpus=`grep -c ^processor /proc/cpuinfo`
-  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads \$cpus ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} 2> ${name}.trim.stats.txt
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads ${task.cpus} ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} 2> ${name}.trim.stats.txt
   mv ${name}*1P.fastq.gz ${name}_trimmed_1.fastq.gz
   mv ${name}*2P.fastq.gz ${name}_trimmed_2.fastq.gz
   """
@@ -183,11 +182,11 @@ process shovill {
   output:
   tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
 
-  shell:
-  '''
-  shovill --outdir . --R1 !{reads[0]} --R2 !{reads[1]} --force
-  mv contigs.fa !{name}.contigs.fa
-  '''
+  script:
+  """
+  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
+  mv contigs.fa ${name}.contigs.fa
+  """
 }
 
 process mash {
@@ -249,7 +248,7 @@ process prokka {
   """
   #genus=`awk 'FNR == 1 {split(\$1,a,"-\\.-|\\.fna");print a[2]}'  ${name}.mash.txt | awk '{split(\$1,a,"_");print a[1]}'`
   #species=`awk 'FNR == 1 {split(\$1,a,"-\\.-|\\.fna");print a[2]}'  ${name}.mash.txt | awk '{split(\$1,a,"_");print a[2]}'`
-  prokka --cpu 0 --force --compliant --prefix ${name} --genus "" --species ""  --mincontiglen 500 --outdir . ${assembly} > ${name}.log
+  prokka --cpu ${task.cpus} --force --compliant --prefix ${name} --genus "" --species ""  --mincontiglen 500 --outdir . ${assembly} > ${name}.log
   mv ${name}.txt ${name}.prokka.stats.txt
   """
 }
@@ -271,8 +270,7 @@ process roary {
     mafft="-n"
   }else{mafft=""}
   """
-  cpus=`grep -c ^processor /proc/cpuinfo`
-  roary -e ${mafft} -p \$cpus ${genomes}
+  roary -e ${mafft} -p ${task.cpus} ${genomes}
   mv summary_statistics.txt core_genome_statistics.txt
   """
 }

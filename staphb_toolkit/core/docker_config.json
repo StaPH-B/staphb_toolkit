@@ -19,257 +19,299 @@
    "parameters": {
      "abricate": {
         "image": "docker://staphb/abricate",
-        "tag": "1.0.0"
+        "tag": "latest"
+     },
+     "ariba": {
+        "image": "docker://staphb/ariba",
+        "tag": "latest"
+     },
+     "artic-ncov2019-medaka": {
+        "image": "docker://staphb/artic-ncov2019-medaka",
+        "tag": "latest"
+     },
+     "artic-ncov2019-nanopolish": {
+        "image": "docker://staphb/artic-ncov2019-nanopolish",
+        "tag": "latest"
      },
      "augur": {
         "image": "docker://staphb/augur",
-        "tag": "6.3.0"
+        "tag": "latest"
      },
      "auspice": {
         "image": "docker://staphb/auspice",
-        "tag": "2.12.0"
+        "tag": "latest"
      },
      "bbtools": {
         "image": "docker://staphb/bbtools",
-        "tag": "38.76"
+        "tag": "latest"
+     },
+     "bcftools": {
+        "image": "docker://staphb/bcftools",
+        "tag": "latest"
      },
      "bwa": {
         "image": "docker://staphb/bwa",
-        "tag": "0.7.17"
+        "tag": "latest"
+     },
+     "canu": {
+        "image": "docker://staphb/canu",
+        "tag": "latest"
      },
      "canu-racon": {
         "image": "docker://staphb/canu-racon",
-        "tag": "2.0"
+        "tag": "latest"
      },
      "centroid": {
         "image": "docker://staphb/centroid",
-        "tag": "1.0.0"
+        "tag": "latest"
      },
      "cfsan-snp-pipeline": {
         "image": "docker://staphb/cfsan-snp-pipeline",
-        "tag": "2.0.2"
+        "tag": "latest"
      },
      "circlator": {
          "image": "docker://staphb/circlator",
-         "tag": "1.5.6"
+         "tag": "latest"
      },
      "clustalo": {
         "image": "docker://staphb/clustalo",
-        "tag": "1.2.4"
+        "tag": "latest"
+     },
+     "colorid": {
+        "image": "docker://staphb/colorid",
+        "tag": "latest"
      },
      "emm-typing-tool": {
         "image": "docker://staphb/emm-typing-tool",
-        "tag": "0.0.1"
+        "tag": "latest"
      },
      "fastani": {
          "image": "docker://staphb/fastani",
-         "tag": "1.1"
+         "tag": "latest"
      },
      "fasttree": {
          "image": "docker://staphb/fasttree",
-         "tag": "2.1.11"
+         "tag": "latest"
      },
      "fastqc": {
          "image": "docker://staphb/fastqc",
-         "tag": "0.11.8"
+         "tag": "latest"
      },
      "filtlong": {
          "image": "docker://staphb/filtlong",
-         "tag": "0.2.0-cv1"
+         "tag": "latest"
      },
      "flye": {
         "image": "docker://staphb/flye",
-        "tag": "2.7"
+        "tag": "latest"
      },
      "iqtree": {
         "image": "docker://staphb/iqtree",
-        "tag": "1.6.7"
+        "tag": "latest"
      },
      "ivar":{
        "image": "docker://staphb/ivar",
-       "tag": "1.2.1"
+       "tag": "latest"
      },
      "ivar-SC2":{
        "image": "docker://staphb/ivar",
-       "tag": "1.2.1-SC2"
+       "tag": "latest"
      },
      "kma":{
         "image": "docker://staphb/kma",
-        "tag": "1.2.21"
+        "tag": "latest"
      },
      "kraken": {
         "image": "docker://staphb/kraken",
-        "tag": "1.1.1"
+        "tag": "latest"
      },
      "kraken2": {
         "image": "docker://staphb/kraken2",
-        "tag": "2.0.8-beta"
+        "tag": "latest"
      },
      "ksnp3": {
         "image": "docker://staphb/ksnp3",
-        "tag": "3.1"
+        "tag": "latest"
      },
      "legsta": {
         "image": "docker://staphb/legsta",
-        "tag": "0.3.7-cv1"
+        "tag": "latest"
      },
      "lyveset": {
         "image": "docker://staphb/lyveset",
-        "tag": "1.1.4f"
+        "tag": "latest"
      },
      "mafft": {
         "image": "docker://staphb/mafft",
-        "tag": "7.450"
+        "tag": "latest"
      },
       "mash": {
          "image": "docker://staphb/mash",
-         "tag": "2.2"
+         "tag": "latest"
       },
       "mashtree" : {
          "image": "docker://staphb/mashtree",
-         "tag": "1.0.4"
+         "tag": "latest"
       },
       "medaka" : {
          "image": "docker://staphb/medaka",
-         "tag": "0.8.1"
+         "tag": "latest"
       },
       "minimap2": {
          "image": "docker://staphb/minimap2",
-         "tag": "2.17"
+         "tag": "latest"
       },
       "mlst" : {
          "image": "docker://staphb/mlst",
-         "tag": "2.19.0"
+         "tag": "latest"
       },
       "mugsy": {
          "image": "docker://staphb/mugsy",
-         "tag": "1r2.3"
+         "tag": "latest"
       },
       "multiqc": {
          "image": "docker://staphb/multiqc",
-         "tag": "1.8"
+         "tag": "latest"
       },
       "nanoplot": {
          "image": "docker://staphb/nanoplot",
-         "tag": "1.29.0"
+         "tag": "latest"
       },
       "ncbi-amrfinder-plus": {
          "image": "docker://staphb/ncbi-amrfinderplus",
-         "tag": "3.8.4"
+         "tag": "latest"
       },
       "orthofinder": {
          "image": "docker://staphb/orthofinder",
-         "tag": "2.17"
+         "tag": "latest"
+      },
+      "pangolin": {
+         "image": "docker://staphb/pangolin",
+         "tag": "latest"
       },
       "pilon": {
          "image": "docker://staphb/pilon",
-         "tag": "1.23.0"
+         "tag": "latest"
       },
       "plasmidseeker": {
          "image": "docker://staphb/plasmidseeker",
-         "tag": "1.0"
+         "tag": "latest"
       },
       "prokka": {
          "image": "docker://staphb/prokka",
-         "tag": "1.14.5"
+         "tag": "latest"
       },
       "quast": {
          "image": "docker://staphb/quast",
-         "tag": "5.0.2"
+         "tag": "latest"
+      },
+      "racon": {
+         "image": "docker://staphb/racon",
+         "tag": "latest"
       },
       "rasusa": {
          "image": "docker://staphb/rasusa",
-         "tag": "0.2.0"
+         "tag": "latest"
       },
       "raxml":{
   	     "image": "docker://staphb/raxml",
-  	      "tag": "8.2.12"
-        },
-        "roary": {
-           "image": "docker://staphb/roary",
-           "tag": "3.12.0",
-           "params": ""
-        },
-        "salmid": {
-           "image": "docker://staphb/salmid",
-           "tag": "0.1.23"
-        },
-        "samtools": {
-           "image": "docker://staphb/samtools",
-           "tag": "1.10"
-        },
-        "seqsero": {
-           "image": "docker://staphb/seqsero",
-           "tag": "1.0.1"
-        },
-        "seqsero2": {
-           "image": "docker://staphb/seqsero2",
-           "tag": "1.1.0"
-        },
-        "seqyclean": {
-           "image": "docker://staphb/seqyclean",
-           "tag": "1.10.09"
-        },
-        "seroba": {
-           "image": "docker://staphb/seroba",
-           "tag": "1.0.0"
-        },
-        "serotypefinder": {
-           "image": "docker://staphb/serotypefinder",
-           "tag": "1.1"
-        },
-        "shovill": {
-           "image": "docker://staphb/shovill",
-           "tag": "1.1.0"
-        },
-        "sistr": {
-           "image": "docker://staphb/sistr",
-           "tag": "1.0.2"
-        },
-        "skesa": {
-           "image": "docker://staphb/skesa",
-           "tag": "2.3.0"
-        },
-        "snippy": {
-           "image": "docker://staphb/snippy",
-           "tag": "4.6.0"
-        },
-        "snp-dists": {
-           "image": "docker://staphb/snp-dists",
-           "tag": "0.6.2"
-        },
-        "snp-sites": {
-           "image": "docker://staphb/snp-sites",
-           "tag": "2.3.3"
-        },
-      "spades": {
-         "image": "docker://staphb/spades",
-         "tag": "3.14.0"
+  	      "tag": "latest"
+      },
+      "roary": {
+         "image": "docker://staphb/roary",
+         "tag": "latest"
+      },
+      "salmid": {
+         "image": "docker://staphb/salmid",
+         "tag": "latest"
+      },
+      "samtools": {
+         "image": "docker://staphb/samtools",
+         "tag": "latest"
+      },
+      "seqsero": {
+         "image": "docker://staphb/seqsero",
+         "tag": "latest"
+      },
+      "seqsero2": {
+         "image": "docker://staphb/seqsero2",
+         "tag": "latest"
+      },
+      "seqtk": {
+         "image": "docker://staphb/seqtk",
+         "tag": "latest"
+      },
+      "seqyclean": {
+         "image": "docker://staphb/seqyclean",
+         "tag": "latest"
+      },
+      "seroba": {
+         "image": "docker://staphb/seroba",
+         "tag": "latest"
+      },
+      "serotypefinder": {
+         "image": "docker://staphb/serotypefinder",
+         "tag": "latest"
+      },
+      "shovill": {
+         "image": "docker://staphb/shovill",
+         "tag": "latest"
+      },
+      "sistr": {
+         "image": "docker://staphb/sistr",
+         "tag": "latest"
+      },
+      "skesa": {
+         "image": "docker://staphb/skesa",
+         "tag": "latest"
+      },
+      "snippy": {
+         "image": "docker://staphb/snippy",
+         "tag": "latest"
+      },
+      "snp-dists": {
+         "image": "docker://staphb/snp-dists",
+         "tag": "latest"
+      },
+      "snp-sites": {
+         "image": "docker://staphb/snp-sites",
+         "tag": "latest"
+      },
+    "spades": {
+       "image": "docker://staphb/spades",
+       "tag": "latest"
       },
       "sra-toolkit": {
          "image": "docker://staphb/sratoolkit",
-         "tag": "2.9.2"
+         "tag": "latest"
       },
       "staramr": {
          "image": "docker://staphb/staramr",
-         "tag": "0.7.1"
+         "tag": "latest"
       },
       "tiptoft": {
          "image": "docker://staphb/tiptoft",
-         "tag": "1.0.0"
+         "tag": "latest"
       },
       "trimmomatic": {
          "image": "docker://staphb/trimmomatic",
-         "tag": "0.39"
+         "tag": "latest"
       },
       "unicycler": {
          "image": "docker://staphb/unicycler",
-         "tag": "0.4.7",
-         "params": ""
+         "tag": "latest"
+      },
+      "vadr": {
+         "image": "docker://staphb/vadr",
+         "tag": "latest"
+      },
+      "vibrant": {
+         "image": "docker://staphb/vibrant",
+         "tag": "latest"
       },
      "wtdbg2": {
         "image": "docker://staphb/wtdbg2",
-        "tag": "2.5"
+        "tag": "latest"
      }
    },
    "execution_info":{
