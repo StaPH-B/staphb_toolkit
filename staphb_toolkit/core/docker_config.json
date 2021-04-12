@@ -25,12 +25,8 @@
         "image": "docker://staphb/ariba",
         "tag": "latest"
      },
-     "artic-ncov2019-medaka": {
-        "image": "docker://staphb/artic-ncov2019-medaka",
-        "tag": "latest"
-     },
-     "artic-ncov2019-nanopolish": {
-        "image": "docker://staphb/artic-ncov2019-nanopolish",
+     "artic-ncov2019": {
+        "image": "docker://staphb/artic-ncov2019",
         "tag": "latest"
      },
      "augur": {

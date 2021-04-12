@@ -73,13 +73,12 @@ def main():
     ##monroe_ont_assembly----------------------------
     ##medaka nanopolish
     subparser_monroe_ont_assembly = monroe_subparsers.add_parser('ont_assembly',help='Assembly SARS-CoV-2 genomes from ONT read data generated from ARTIC amplicons', add_help=False)
-    subparser_monroe_ont_assembly.add_argument('fast5_path', type=str,help="path to the location of the reads in a fast5 format")
-    subparser_monroe_ont_assembly.add_argument('--fastq_path', type=str,help="path to the location of the reads in a fastq format, needed if not performing bascalling")
-    subparser_monroe_ont_assembly.add_argument('--polish_method',type=str,choices=["medaka","nanopolish"],help="polishing method, default: medaka",default="medaka")
-    subparser_monroe_ont_assembly.add_argument('--summary', type=str,help="path to the location of the sequencing summary, only needed when using nanopolish from fastq data")
+    subparser_monroe_ont_assembly.add_argument('--fast5_path', type=str,help="path to the location of the reads in a fast5 format")
+    subparser_monroe_ont_assembly.add_argument('--fastq_path', type=str,help="path to the location of the reads in a fastq format")
+    subparser_monroe_ont_assembly.add_argument('--demultiplexed', default="false",action="store_const",const="true",help="flag if fastq files have already been demultiplexed")
+    subparser_monroe_ont_assembly.add_argument('--medaka_model',default="r941_min_high_g360",help="medaka model to use for polishing, default: r941_min_fast_g303")
     subparser_monroe_ont_assembly.add_argument('--run_prefix', type=str,help="desired run prefix. Default \"artic_ncov19\"",default="artic_ncov19")
-    subparser_monroe_ont_assembly.add_argument('--ont_basecalling', default=False, action="store_true",help="perform high accuracy basecalling using GPU (only use if you have setup a GPU compatable device)")
-    subparser_monroe_ont_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",required=True)
+    subparser_monroe_ont_assembly.add_argument('--primers', type=str,choices=["V1", "V2", "V3"], help="indicate which ARTIC primers were used (V1, V2, or V3), default V3",default="V3")
     subparser_monroe_ont_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
     subparser_monroe_ont_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_ont_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
@@ -358,24 +357,16 @@ def main():
 
         if args.monroe_command == 'ont_assembly':
             #build command
-            if args.ont_basecalling:
-                read_paths = f"--basecalling --fast5_dir {args.fast5_path}"
-            elif args.fast5_path and args.fastq_path:
-                read_paths = f"--fast5_dir {args.fast5_path} --fastq_dir {args.fastq_path}"
+            if args.fast5_path:
+                read_paths = f"--fast5_dir {args.fast5_path}"
+            elif args.fastq_path:
+                read_paths = f"--fastq_dir {args.fastq_path}"
             else:
                 subparser_monroe_ont_assembly.print_help()
-                print("Please provide path to both fastq and fast5 or perform basecalling.")
+                print("Please provide path to fast5 files to perform basecalling or fastq files, note: basecalling requires GPU")
                 sys.exit(1)
 
-            if args.polish_method == "nanopolish" and args.summary:
-                seq_summary = f"--sequencing_summary {args.summary}"
-            elif args.polish_method == "nanopolish" and not args.summary and not args.ont_basecalling:
-                print("Nanopolish requires a sequencing summary file generated during basecalling.")
-                sys.exit(1)
-            else:
-                seq_summary = ""
-
-            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {read_paths} --pipe ont {seq_summary} --polishing {args.polish_method} --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_ont_assembly.nf {profile} {args.resume} {read_paths} --pipe ont --primers {args.primers} --outdir {args.output} --run_prefix {args.run_prefix} --medaka_model {args.medaka_model} --demultiplexed {args.demultiplexed} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe ONT assembly:")
             child = pexpect.spawn(command)
