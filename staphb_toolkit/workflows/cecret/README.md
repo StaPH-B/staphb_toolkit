@@ -78,9 +78,15 @@ Warning : will not work on all variants. This is due to how bamsnap runs.
 
 ### What if I am using an amplicon based library that is not SARS-CoV-2?
 
-In your config file, set your `params.reference_genome`, `params.primer_bed`, `params.amplicon_bed`, and `params.gff_file` appropriately.
-
-You'll also want to set `params.pangolin = false` and `params.nextclade = false`. You can set `params.vadr = false` or build a different vadr container.
+Change the following relevant paramters:
+* `params.reference_genome`
+* `params.primer_bed`
+* `params.amplicon_bed` or `params.bedtools_multicov = false`
+* `params.gff_file` or `params.ivar_variants = false`
+* `params.pangolin = false`
+* `params.nextclade = false`
+* `params.vadr = false` or create a new vadr container with the appropriate build and adjust the parameters of the vadr process in a [config file](./configs/cecret_config_template.config)
+* `params.kraken2_organism = "<organism name>"` or keep `params.kraken2 = false`
 
 ### This workflow has too many bells and whistles. I really only care about generating a consensus fasta. How do I get rid of all the extras?
 
