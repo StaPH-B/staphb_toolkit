@@ -37,6 +37,10 @@ staphb-wf cecret --reads_type single Sequencing_reads
 - kraken2 (recommended)
   - Default is `false`
   - Set `params.kraken2 = true` and `kraken2_db = <path to kraken2 database>`. Instructions are below for the kraken2 and human database.
+- [amplicon file](./configs/nCoV-2019.insert.bed)
+  - Default is the amplicons from artic's V3 primers.
+  - Change to user-supplied bedfile with `params.amplicon_bed`
+  - If not using, set `params.bedtools_multicov = false`  
 - Creating a multiple sequencing alignment, SNP matrix, and treefile with mafft, snp-dist, and iqtree
   - Default is `false`
   - If this is desired, set `params.relatedness = true`
