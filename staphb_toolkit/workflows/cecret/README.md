@@ -78,9 +78,9 @@ Warning : will not work on all variants. This is due to how bamsnap runs.
 
 ### What if I am using an amplicon based library that is not SARS-CoV-2?
 
-In your config file, set your `params.reference_genome`, `params.primer_bed`, and `params.gff_file` appropriately.
+In your config file, set your `params.reference_genome`, `params.primer_bed`, `params.amplicon_bed`, and `params.gff_file` appropriately.
 
-You'll also want to set `params.pangolin = false` and `params.nextclade = false`
+You'll also want to set `params.pangolin = false` and `params.nextclade = false`. You can set `params.vadr = false` or build a different vadr container.
 
 ### This workflow has too many bells and whistles. I really only care about generating a consensus fasta. How do I get rid of all the extras?
 
@@ -92,10 +92,11 @@ params.ivar_variants = false
 params.samtools_stats = false
 params.samtools_coverage = false
 params.samtools_flagstat = false
-params.bedtools = false
+params.bedtools_multicov = false
 params.samtools_ampliconstats = false
 params.pangolin = false
 params.nextclade = false
+params.vadr = false
 ```
 
 And, yes, this means I added some bells and whistles so you could turn off the bells and whistles. /irony
