@@ -19,7 +19,7 @@ staphb-wf cecret --get_config
 ```
 staphb-wf cecret --reads_type single Sequencing_reads
 ```
-cecret can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
+**Cecret** can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
 
 ## Required parameters :
 - [primer_bed](./configs/artic_V3_nCoV-2019.bed) bedfile for primer sequences 
