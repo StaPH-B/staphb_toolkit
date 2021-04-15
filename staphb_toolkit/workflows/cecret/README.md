@@ -21,6 +21,12 @@ staphb-wf cecret --reads_type single Sequencing_reads
 ```
 **Cecret** can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
 
+## Annotating a collection of fastas
+```
+staphb-wf cecret --anotation fastas
+```
+Note: set `params.relatedness = true` in order to get a multiple sequence alignment, SNP matrix, and newick file for the collection of fastas.
+
 ## Required parameters :
 - [primer_bed](./configs/artic_V3_nCoV-2019.bed) bedfile for primer sequences 
   - Default is [artic](https://github.com/artic-network/artic-ncov2019/tree/master/primer_schemes/nCoV-2019/V3)'s SARS-CoV-2 V3 primer set
