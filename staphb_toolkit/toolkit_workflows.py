@@ -139,9 +139,10 @@ def main():
     parser_cecret = subparsers.add_parser('cecret', help='Consensus fasta creation of amplicon-based SARS-CoV-2 Illumina sequencing.', add_help=False)
     parser_cecret.add_argument('reads_path', type=str,help="path to the location of reads in a fastq format",nargs='?', default=False)
     parser_cecret.add_argument('--reads_type',type=str,choices=["paired","single"],help="Specify either \"paired\"-end or \"single\"-end reads, default \"paired\".",default="paired")
+    parser_cecret.add_argument('--annotation',action="store_true",help="Annotate fastas instead of creating fastas.")
     parser_cecret.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cecret\".",default="cecret")
-    parser_cecret.add_argument('--profile', type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
-    parser_cecret.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+    parser_cecret.add_argument('--profile',type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    parser_cecret.add_argument('--config','-c',type=str,help="Nextflow custom configuration.")
     parser_cecret.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cecret.")
     parser_cecret.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
@@ -637,6 +638,12 @@ def main():
             print("Type of reads not specified for some reason")
             sys.exit(1)
 
+        if args.annotation:
+            flow = 'cecret_annotation.nf'
+            reads_type = '--fastas'
+        else:
+            flow = 'cecret.nf'
+
         #set work dir into local logs dir if profile not aws
         work = ""
         if profile and not args.config:
@@ -644,7 +651,7 @@ def main():
 
         #build command
         command = nextflow_path
-        command = command + f" {config} run {cecret_path}/cecret.nf {profile} {args.resume} {reads_type} {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cecret_trace.txt -with-report {args.output}/logs/{exec_time}cecret_execution_report.html {work}"
+        command = command + f" {config} run {cecret_path}/{flow} {profile} {args.resume} {reads_type} {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}cecret_trace.txt -with-report {args.output}/logs/{exec_time}cecret_execution_report.html {work}"
         print(command)
 
         #run command using nextflow in a subprocess
