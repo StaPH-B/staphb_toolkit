@@ -14,7 +14,7 @@ params.pipe = ""
 
 //setup channel to read in and pair the fastq files
 Channel
-    .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fq}.gz", size: 2 )
+    .fromPath( "${params.reads}/*.{fastq,fq}.*")
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
 
@@ -27,19 +27,18 @@ Channel
   .view { "Primer BedFile : $it"}
   .set { primer_bed }
 
-//Step0: Preprocess reads - change name to end at first underscore
+//Step0: Preprocess reads - change name to end at first underscore if specified
 process preProcess {
   input:
-  set val(name), file(reads) from raw_reads
+  file(read) from raw_reads
 
   output:
-  tuple name, file(reads) into raw_reads_trim
+  file(read) into raw_reads_trim
   script:
   if(params.name_split_on!=""){
     name = name.split(params.name_split_on)[0]
     """
     mv ${reads[0]} ${name}_R1.fastq.gz
-    mv ${reads[1]} ${name}_R2.fastq.gz
     """
   }else{
   """
@@ -52,16 +51,18 @@ process trim {
   tag "$name"
 
   input:
-  set val(name), file(reads) from raw_reads_trim
+  file(read) from raw_reads_trim
 
   output:
-  tuple name, file("${name}_trimmed{_1,_2}.fastq.gz") into trimmed_reads
+  file("*_trimmed.fastq.gz") into trimmed_reads
 
   script:
   """
-  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads ${task.cpus} ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
-  mv ${name}*1P.fastq.gz ${name}_trimmed_1.fastq.gz
-  mv ${name}*2P.fastq.gz ${name}_trimmed_2.fastq.gz
+  # get samplename by dropping file extension
+  filename=${read}
+  samplename=\$(echo \${filename} | cut -d "." -f 1)
+
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar SE -threads ${task.cpus} ${read} \${samplename}_trimmed.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > \${samplename}.trim.stats.txt
   """
 }
 //Step2: Remove PhiX contamination
@@ -69,15 +70,18 @@ process cleanreads {
   tag "$name"
 
   input:
-  set val(name), file(reads) from trimmed_reads
+  file(read) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads
+  file("*_1.clean.fastq.gz") into cleaned_reads
   script:
   """
-  repair.sh in1=${reads[0]} in2=${reads[1]} out1=${name}.paired_1.fastq.gz out2=${name}.paired_2.fastq.gz
-  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
-  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
+  # get samplename by dropping string after first underscore
+  filename=${read}
+  samplename=\$(echo \${filename} | cut -d "_" -f 1)
+
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${read} out1=\${samplename}.rmadpt_1.fastq.gz ref=/bbmap/resources/adapters.fa stats=\${samplename}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=\${samplename}.rmadpt_1.fastq.gz out1=\${samplename}_1.clean.fastq.gz outm=\${samplename}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=\${samplename}.phix.stats.txt
   """
 }
 
@@ -95,32 +99,36 @@ process ivar {
 
 
   input:
-  set val(name), file(reads), file(primer_bed) from cleaned_reads_with_primer_bed
+  set file(read), file(primer_bed) from cleaned_reads_with_primer_bed
 
   output:
-  tuple name, file("${name}_consensus.fasta") into assembled_genomes
-  tuple name, file("${name}.sorted.bam") into alignment_file
-  tuple name, file("${name}_SC2*.fastq.gz") into sc2_reads
+  file "*_consensus.fasta" into assembled_genomes
+  file "*.sorted.bam" into alignment_file
+  file "*_SC2*.fastq.gz" into sc2_reads
 
   shell:
 """
+# get samplename by dropping string after first underscore
+filename=${read}
+samplename=\$(echo \${filename} | cut -d "_" -f 1)
+
 ln -s /reference/nCoV-2019.reference.fasta ./nCoV-2019.reference.fasta
-minimap2 -K 20M -x sr -a ./nCoV-2019.reference.fasta !{reads[0]} !{reads[1]} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
+minimap2 -K 20M -x sr -a ./nCoV-2019.reference.fasta ${read} | samtools view -u -h -F 4 - | samtools sort > SC2.bam
 samtools index SC2.bam
 samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
-samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
+samtools fastq -f2 -F4 -1 \${samplename}_SC2_R1.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
 ivar trim -i SC2.bam -b !{primer_bed} -p ivar -e
 
-samtools sort  ivar.bam > ${name}.sorted.bam
-samtools index ${name}.sorted.bam
-samtools flagstat ${name}.sorted.bam
+samtools sort  ivar.bam > \${samplename}.sorted.bam
+samtools index \${samplename}.sorted.bam
+samtools flagstat \${samplename}.sorted.bam
 
-samtools mpileup -f ./nCoV-2019.reference.fasta -d 1000000 -A -B -Q 0 ${name}.sorted.bam | ivar consensus -p ivar -m ${params.ivar_mindepth} -t ${params.ivar_minfreq} -n N
-echo '>${name}' > ${name}_consensus.fasta
+samtools mpileup -f ./nCoV-2019.reference.fasta -d 1000000 -A -B -Q 0 \${samplename}.sorted.bam | ivar consensus -p ivar -m ${params.ivar_mindepth} -t ${params.ivar_minfreq} -n N
+echo \">\${samplename}\" > \${samplename}_consensus.fasta
 
-seqtk seq -U -l 50 ivar.fa | tail -n +2 >> ${name}_consensus.fasta
+seqtk seq -U -l 50 ivar.fa | tail -n +2 >> \${samplename}_consensus.fasta
 """
 }
 
@@ -129,17 +137,19 @@ process samtools {
   tag "$name"
 
   input:
-  set val(name), file(alignment) from alignment_file
+  file(alignment) from alignment_file
 
   output:
-  file "${name}_samtoolscoverage.tsv" into alignment_qc
+  file "*_samtoolscoverage.tsv" into alignment_qc
 
   shell:
   """
-  samtools coverage ${alignment} -o ${name}_samtoolscoverage.tsv
+  # get samplename by dropping extension
+  filename=${alignment}
+  samplename=\$(echo \${filename} | cut -d "." -f 1)
+  samtools coverage ${alignment} -o \${samplename}_samtoolscoverage.tsv
   """
 }
-
 //Typing of SC2 assemblies
 process pangolin_typing {
   tag "$name"
@@ -147,14 +157,18 @@ process pangolin_typing {
   publishDir "${params.outdir}/pangolin_reports", mode: 'copy', pattern: "*_lineage_report.csv"
 
   input:
-  set val(name), file(assembly) from assembled_genomes
+  file(assembly) from assembled_genomes
 
   output:
   file "*_lineage_report.csv" into pangolin_lineages
 
   shell:
   """
-  pangolin ${assembly} --outfile ${name}_lineage_report.csv
+  # get samplename by dropping string after first underscore
+  filename=${assembly}
+  samplename=\$(echo \${filename} | cut -d "_" -f 1)
+
+  pangolin ${assembly} --outfile \${samplename}_lineage_report.csv
   """
 }
 

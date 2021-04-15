@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-import setuptools
+import setuptools, os
+
+#grab all nextflow workflows
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
+workflow_data = package_files('staphb_toolkit/workflows')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -17,6 +27,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/StaPH-B/staphb_toolkit",
     packages=setuptools.find_packages(),
+    package_data={
+        'staphb_toolkit' : ['lib/nextflow','core/docker_config.json','core/VERSION','requirements.txt'],
+        '' : workflow_data
+    },
     include_package_data=True,
     entry_points={
         "console_scripts": [
@@ -32,6 +46,7 @@ setuptools.setup(
     install_requires=[
         "spython>=0.0.73",
         "psutil>=5.6.3",
-        "docker>=4.1.0"],
+        "docker>=4.1.0",
+        "pexpect>=4.8"],
     python_requires='>=3.6',
 )

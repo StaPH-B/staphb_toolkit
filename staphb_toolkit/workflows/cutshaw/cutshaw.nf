@@ -86,12 +86,11 @@ process spades {
   output:
   tuple name, file("${name}_contigs.fasta") into assembled_genomes_quality, assembled_genomes_fastani
 
-  shell:
-  '''
-  ram=`awk '/MemTotal/ { printf "%.0f \\n", $2/1024/1024 - 1 }' /proc/meminfo`
-  spades.py --memory $ram -1 !{reads[0]} -2 !{reads[1]} -o ./spades_out
-  mv ./spades_out/contigs.fasta !{name}_contigs.fasta
-  '''
+  script:
+  """
+  spades.py --memory ${task.memory.toGiga()} -1 ${reads[0]} -2 ${reads[1]} -o ./spades_out
+  mv ./spades_out/contigs.fasta ${name}_contigs.fasta
+  """
 }
 
 //Assembly Quality Report
