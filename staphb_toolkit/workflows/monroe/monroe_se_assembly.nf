@@ -7,7 +7,8 @@
 //starting parameters
 params.reads = ""
 params.outdir = ""
-params.primerPath =""
+params.primerSet = ""
+params.primerPath = workflow.projectDir + params.primerSet
 params.report = ""
 params.pipe = ""
 
@@ -16,6 +17,15 @@ Channel
     .fromPath( "${params.reads}/*.{fastq,fq}.*")
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
+
+Channel
+  .fromPath(params.primerPath, type:'file')
+  .ifEmpty{
+    println("A bedfile for primers is required. Set with 'params.primerPath'.")
+    exit 1
+  }
+  .view { "Primer BedFile : $it"}
+  .set { primer_bed }
 
 //Step0: Preprocess reads - change name to end at first underscore if specified
 process preProcess {
@@ -52,8 +62,7 @@ process trim {
   filename=${read}
   samplename=\$(echo \${filename} | cut -d "." -f 1)
 
-  cpus=`grep -c ^processor /proc/cpuinfo`
-  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar SE -threads \$cpus ${read} \${samplename}_trimmed.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > \${samplename}.trim.stats.txt
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar SE -threads ${task.cpus} ${read} \${samplename}_trimmed.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > \${samplename}.trim.stats.txt
   """
 }
 //Step2: Remove PhiX contamination
@@ -71,12 +80,14 @@ process cleanreads {
   filename=${read}
   samplename=\$(echo \${filename} | cut -d "_" -f 1)
 
-  ram=`awk '/MemTotal/ { printf "%.0f \\n", \$2/1024/1024 - 1 }' /proc/meminfo`
-  ram=`echo \$ram | awk '{\$1=\$1;print}'`
-  bbduk.sh -Xmx\${ram}g in1=${read} out1=\${samplename}.rmadpt_1.fastq.gz ref=/bbmap/resources/adapters.fa stats=\${samplename}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
-  bbduk.sh -Xmx\${ram}g in1=\${samplename}.rmadpt_1.fastq.gz out1=\${samplename}_1.clean.fastq.gz outm=\${samplename}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=\${samplename}.phix.stats.txt
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${read} out1=\${samplename}.rmadpt_1.fastq.gz ref=/bbmap/resources/adapters.fa stats=\${samplename}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=\${samplename}.rmadpt_1.fastq.gz out1=\${samplename}_1.clean.fastq.gz outm=\${samplename}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=\${samplename}.phix.stats.txt
   """
 }
+
+cleaned_reads
+  .combine(primer_bed)
+  .set { cleaned_reads_with_primer_bed }
 
 //Assemble cleaned reads with iVar
 process ivar {
@@ -88,7 +99,7 @@ process ivar {
 
 
   input:
-  file(read) from cleaned_reads
+  set file(read), file(primer_bed) from cleaned_reads_with_primer_bed
 
   output:
   file "*_consensus.fasta" into assembled_genomes
@@ -108,7 +119,7 @@ samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
 samtools fastq -f2 -F4 -1 \${samplename}_SC2_R1.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
-ivar trim -i SC2.bam -b ${params.primerPath} -p ivar -e
+ivar trim -i SC2.bam -b !{primer_bed} -p ivar -e
 
 samtools sort  ivar.bam > \${samplename}.sorted.bam
 samtools index \${samplename}.sorted.bam

@@ -7,7 +7,8 @@
 //starting parameters
 params.reads = ""
 params.outdir = ""
-params.primerPath =""
+params.primerSet = ""
+params.primerPath = workflow.projectDir + params.primerSet
 params.report = ""
 params.pipe = ""
 
@@ -16,6 +17,15 @@ Channel
     .fromFilePairs(  "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fq}.gz", size: 2 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .set { raw_reads }
+
+Channel
+  .fromPath(params.primerPath, type:'file')
+  .ifEmpty{
+    println("A bedfile for primers is required. Set with 'params.primerPath'.")
+    exit 1
+  }
+  .view { "Primer BedFile : $it"}
+  .set { primer_bed }
 
 //Step0: Preprocess reads - change name to end at first underscore
 process preProcess {
@@ -49,8 +59,7 @@ process trim {
 
   script:
   """
-  cpus=`grep -c ^processor /proc/cpuinfo`
-  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads \$cpus ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
+  java -jar /Trimmomatic-0.39/trimmomatic-0.39.jar PE -threads ${task.cpus} ${reads} -baseout ${name}.fastq.gz SLIDINGWINDOW:${params.windowsize}:${params.qualitytrimscore} MINLEN:${params.minlength} > ${name}.trim.stats.txt
   mv ${name}*1P.fastq.gz ${name}_trimmed_1.fastq.gz
   mv ${name}*2P.fastq.gz ${name}_trimmed_2.fastq.gz
   """
@@ -66,13 +75,15 @@ process cleanreads {
   tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads
   script:
   """
-  ram=`awk '/MemTotal/ { printf "%.0f \\n", \$2/1024/1024 - 1 }' /proc/meminfo`
-  ram=`echo \$ram | awk '{\$1=\$1;print}'`
   repair.sh in1=${reads[0]} in2=${reads[1]} out1=${name}.paired_1.fastq.gz out2=${name}.paired_2.fastq.gz
-  bbduk.sh -Xmx\${ram}g in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
-  bbduk.sh -Xmx\${ram}g in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${name}.paired_1.fastq.gz in2=${name}.paired_2.fastq.gz out1=${name}.rmadpt_1.fastq.gz out2=${name}.rmadpt_2.fastq.gz ref=/bbmap/resources/adapters.fa stats=${name}.adapters.stats.txt ktrim=r k=23 mink=11 hdist=1 tpe tbo
+  bbduk.sh -Xmx"${task.memory.toGiga()}g" in1=${name}.rmadpt_1.fastq.gz in2=${name}.rmadpt_2.fastq.gz out1=${name}_1.clean.fastq.gz out2=${name}_2.clean.fastq.gz outm=${name}.matched_phix.fq ref=/bbmap/resources/phix174_ill.ref.fa.gz k=31 hdist=1 stats=${name}.phix.stats.txt
   """
 }
+
+cleaned_reads
+  .combine(primer_bed)
+  .set { cleaned_reads_with_primer_bed }
 
 //Assemble cleaned reads with iVar
 process ivar {
@@ -84,7 +95,7 @@ process ivar {
 
 
   input:
-  set val(name), file(reads) from cleaned_reads
+  set val(name), file(reads), file(primer_bed) from cleaned_reads_with_primer_bed
 
   output:
   tuple name, file("${name}_consensus.fasta") into assembled_genomes
@@ -100,7 +111,7 @@ samtools flagstat SC2.bam
 samtools sort -n SC2.bam > SC2_sorted.bam
 samtools fastq -f2 -F4 -1 ${name}_SC2_R1.fastq.gz -2 ${name}_SC2_R2.fastq.gz SC2_sorted.bam -s singletons.fastq.gz
 
-ivar trim -i SC2.bam -b ${params.primerPath} -p ivar -e
+ivar trim -i SC2.bam -b !{primer_bed} -p ivar -e
 
 samtools sort  ivar.bam > ${name}.sorted.bam
 samtools index ${name}.sorted.bam

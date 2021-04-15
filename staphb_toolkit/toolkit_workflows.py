@@ -42,7 +42,7 @@ def main():
     #monroe-----------------------------------------
     parser_monroe = subparsers.add_parser('monroe', help='Consensus assembly for SARS-CoV-2 from ARTIC + Illumina protocols.', add_help=False)
     monroe_subparsers = parser_monroe.add_subparsers(title='monroe_commands',metavar='',dest='monroe_command')
-    parser_monroe.add_argument('--get_config',type=str,choices=["pe_assembly", "se_assembly", "ont_assembly", "cluster_analysis"],help="Get a Nextflow configuration template for the chosen workflow.")
+    parser_monroe.add_argument('--get_config',type=str,choices=["pe_assembly", "se_assembly", "clearlabs_assembly", "ont_assembly", "cluster_analysis"],help="Get a Nextflow configuration template for the chosen workflow.")
 
     ##monroe_pe_assembly----------------------------
     subparser_monroe_pe_assembly = monroe_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data generated from ARTIC amplicons', add_help=False)
@@ -61,6 +61,14 @@ def main():
     subparser_monroe_se_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
     subparser_monroe_se_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
     subparser_monroe_se_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
+
+    ##monroe_clearlabs_assembly----------------------------
+    subparser_monroe_clearlabs_assembly = monroe_subparsers.add_parser('clearlabs_assembly',help='Assembly SARS-CoV-2 genomes from Clear Labs ont read data', add_help=False)
+    subparser_monroe_clearlabs_assembly.add_argument('reads_path', type=str,help="path to the location of the clearlabs reads in a fastq format")
+    subparser_monroe_clearlabs_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
+    subparser_monroe_clearlabs_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"monroe_results\".",default="monroe_results")
+    subparser_monroe_clearlabs_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_monroe_clearlabs_assembly.add_argument('--config','-c', type=str,help="Nextflow custom configuration.")
 
     ##monroe_ont_assembly----------------------------
     ##medaka nanopolish
@@ -255,6 +263,11 @@ def main():
             dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_se_assembly.config")
             copyfile(config_path,dest_path)
             sys.exit()
+        elif args.get_config == "clearlabs_assembly":
+            config_path = os.path.join(monroe_path,"configs/clearlabs_user_config.config")
+            dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_clearlabs_assembly.config")
+            copyfile(config_path,dest_path)
+            sys.exit()
         elif args.get_config == "ont_assembly":
             config_path = os.path.join(monroe_path,"configs/ont_user_config.config")
             dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_ont_assembly.config")
@@ -291,8 +304,8 @@ def main():
             if not args.config and not args.primers:
                 raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
             if not args.config:
-                primer_path = f"/reference/ARTIC-{args.primers}.bed"
-                profile = profile + f" --primerPath {primer_path}"
+                primer_set = f"/configs/artic_{args.primers}_nCoV-2019.bed"
+                profile = profile + f" --primerSet {primer_set}"
             #build command
             command = nextflow_path + f" {config} run {monroe_path}/monroe_pe_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
@@ -305,12 +318,20 @@ def main():
             if not args.config and not args.primers:
                 raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
             if not args.config:
-                primer_path = f"/reference/ARTIC-{args.primers}.bed"
-                profile = profile + f" --primerPath {primer_path}"
+                primer_set = f"/configs/artic_{args.primers}_nCoV-2019.bed"
+                profile = profile + f" --primerSet {primer_set}"
             #build command
             command = nextflow_path + f" {config} run {monroe_path}/monroe_se_assembly.nf {profile} {args.resume} --pipe pe --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
             #run command using nextflow in a subprocess
             print("Starting the Monroe single-end assembly:")
+            child = pexpect.spawn(command)
+            child.interact()
+
+        if args.monroe_command == 'clearlabs_assembly':
+            #build command
+            command = nextflow_path + f" {config} run {monroe_path}/monroe_clearlabs_assembly.nf {profile} {args.resume} --pipe clearlabs --reads {args.reads_path} --outdir {args.output} -with-trace {args.output}/logs/{exec_time}Monroe_trace.txt -with-report {args.output}/logs/{exec_time}Monroe_execution_report.html {work}"
+            #run command using nextflow in a subprocess
+            print("Starting the Monroe Clear Labs assembly:")
             child = pexpect.spawn(command)
             child.interact()
 
