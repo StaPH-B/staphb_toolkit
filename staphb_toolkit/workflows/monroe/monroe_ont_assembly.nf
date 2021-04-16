@@ -8,20 +8,15 @@
 //starting parameters
 params.fast5_dir = ""
 params.fastq_dir = ""
-params.sequencing_summary = ""
 params.outdir = ""
-params.primers = ""
+params.primers = "V3"
 params.run_prefix = "artic_ncov19"
 params.pipe = ""
-
-// Input channels
-Channel
-    .value( "${params.primers}")
-    .ifEmpty { exit 1, "Primers used must be included." }
-    .set { polish_primers }
+params.demultiplexed = false
+params.medaka_model = "r941_min_high_g360"
 
 // If we have fast5 files then start with basecalling
-if(params.basecalling){
+if(params.fast5_dir){
   Channel
       .fromPath( "${params.fast5_dir}")
       .ifEmpty { exit 1, "Cannot find any fast5 files in: ${params.fast5_dir} Path must not end with /" }
@@ -50,38 +45,36 @@ if(params.basecalling){
 
 // If we have already basecalled get fastqs and fast5s for polishing
 else {
-  Channel
-      .fromPath( "${params.fastq_dir}/*.fastq*")
-      .ifEmpty { exit 1, "Cannot find any fastq files in: ${params.fastq_dir} Path must not end with /" }
-      .set { fastq_reads }
-
-  Channel
-      .fromPath( "${params.fast5_dir}")
-      .ifEmpty { exit 1, "Cannot find any fast5 files in: ${params.fast5_dir} Path must not end with /" }
-      .set { polish_fast5 }
-
-  if(params.polishing == "nanopolish"){
+  if(params.demultiplexed){
     Channel
-        .fromPath( "${params.sequencing_summary}")
-        .ifEmpty { exit 1, "Cannot find sequencing summary in: ${params.sequencing_summary}" }
-        .set { sequencing_summary }
-    }
+        .fromPath( "${params.fastq_dir}/barcode*",type:'dir')
+        .ifEmpty { exit 1, "Cannot find any fastq files in: ${params.fastq_dir} Path must not end with /" }
+        .set { demultiplexed_reads }
+  }
+  else{
+    Channel
+        .fromPath( "${params.fastq_dir}/*.fastq*")
+        .ifEmpty { exit 1, "Cannot find any fastq files in: ${params.fastq_dir} Path must not end with /" }
+        .set { fastq_reads }
+  }
 }
 
-// Demultiplex fastqs
-process guppy_demultiplexing {
-  publishDir "${params.outdir}/demultiplexing", mode: 'copy'
+if(! params.demultiplexed){
+  // Demultiplex fastqs
+  process guppy_demultiplexing {
+    publishDir "${params.outdir}/demultiplexing", mode: 'copy'
 
-  input:
-    file(fastqs) from fastq_reads.collect()
+    input:
+      file(fastqs) from fastq_reads.collect()
 
-  output:
-    path("barcode*",type:'dir') into demultiplexed_reads
+    output:
+      path("barcode*",type:'dir') into demultiplexed_reads
 
-  script:
-    """
-      guppy_barcoder -t ${task.cpus} --require_barcodes_both_ends -i . -s . ${params.demultiplexing_params} -q 0 -r
-    """
+    script:
+      """
+        guppy_barcoder -t ${task.cpus} --require_barcodes_both_ends -i . -s . ${params.demultiplexing_params} -q 0 -r
+      """
+  }
 }
 
 // Run artic gupplyplex
@@ -105,58 +98,30 @@ process artic_guppyplex {
     """
 }
 
-// Run artic pipeline using nanopolish
-if(params.polishing=="nanopolish"){
-  process artic_nanopolish_pipeline {
-    publishDir "${params.outdir}/pipeline_nanopolish", mode: 'copy'
-    errorStrategy 'ignore'
-
-    input:
-      val primers from polish_primers
-      tuple file(fastq), path(fast5path), file(sequencing_summary) from polish_files .combine(polish_fast5) .combine(sequencing_summary)
-
-    output:
-      file *.primrtrimmed.bam into alignment_file
-      file "*{.primertrimmed.bam,.vcf,.variants.tab}"
-      file "*.consensus.fasta" into consensus_fasta
-
-    script:
-      """
-      # get samplename by dropping file extension
-      filename=${fastq}
-      samplename=\${filename%.*}
-
-      artic minion --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /artic-ncov2019/primer_schemes --fast5-directory ${fast5path}  --sequencing-summary ${sequencing_summary} --read-file ${fastq} nCoV-2019/${primers} \$samplename
-      """
-  }
-}
-
 // Run artic pipeline using medaka
-else {
-  process artic_medaka_pipeline {
-    publishDir "${params.outdir}/pipeline_medaka", mode: 'copy'
-    publishDir "${params.outdir}/assemblies", mode: 'copy', pattern: '*.fasta'
-    errorStrategy 'ignore'
+process artic_medaka_pipeline {
+  publishDir "${params.outdir}/pipeline_medaka", mode: 'copy'
+  publishDir "${params.outdir}/assemblies", mode: 'copy', pattern: '*.fasta'
+  errorStrategy 'ignore'
 
-    input:
-      val primers from polish_primers
-      file(fastq) from polish_files
+  input:
+    file(fastq) from polish_files
 
-    output:
-      file "*.primertrimmed.rg.sorted.bam" into alignment_file
-      file "*{.primertrimmed.rg,.primers.vcf,.vcf.gz,.trimmed.rg,.fail.vcf}*"
-      file "*.consensus.fasta" into consensus_fasta
+  output:
+    file "*.primertrimmed.rg.sorted.bam" into alignment_file
+    file "*{.primertrimmed.rg,.primers.vcf,.vcf.gz,.trimmed.rg,.fail.vcf}*"
+    file "*.consensus.fasta" into consensus_fasta
 
-    script:
-      """
-      # get samplename by dropping file extension
-      filename=${fastq}
-      samplename=\${filename%.*}
+  script:
+    """
+    # get samplename by dropping file extension
+    filename=${fastq}
+    samplename=\${filename%.*}
 
-      artic minion --medaka --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /artic-ncov2019/primer_schemes --read-file ${fastq} nCoV-2019/${primers} \$samplename
-      """
-  }
+    artic minion --medaka --medaka-model ${params.medaka_model} --normalise ${params.normalise} --threads ${task.cpus} --scheme-directory /fieldbioinformatics/test-data/primer-schemes --read-file ${fastq} nCoV-2019/${params.primers} \$samplename
+    """
 }
+
 //QC of read data
 process samtools {
   tag "$name"
