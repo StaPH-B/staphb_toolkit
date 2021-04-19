@@ -196,7 +196,7 @@ process bwa {
   publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
 
   input:
-  set val(name), file(reads) from cleaned_reads_align
+  set val(name), file(reads) from cleaned_reads_map
   set val(name), file(genome) from assembled_genomes_map
 
   output:
@@ -502,7 +502,7 @@ process mlst {
   file(assemblies) from assembled_genomes_mlst.collect()
 
   output:
-  file("mlst.tsv")
+  file("mlst.tsv") into mlst_results
 
   script:
   """
@@ -530,7 +530,7 @@ process mlst_formatting {
   with open('mlst.tsv','r') as csvfile:
     dialect = csv.Sniffer().sniff(csvfile.read(1024))
     csvfile.seek(0)
-    reader = csv.reader(csvfile,dialect)
+    reader = csv.reader(csvfile,dialect,delimiter='\t')
     for row in reader:
       id_string = row[0]
       sp_string = row[1]
@@ -544,11 +544,13 @@ process mlst_formatting {
     species = string_map[key][0]
     st = string_map[key][1]
     if species == 'abaumannii':
-      st = 'PubMLST ST' + str(st) + ' (Oxford)'
+        st = 'PubMLST ST' + str(st) + ' (Oxford)'
     if species == 'abaumannii_2':
-      st = 'PubMLST ST' + str(st) + ' (Pasteur)'
+        st = 'PubMLST ST' + str(st) + ' (Pasteur)'
     else:
-      st = 'PubMLST ST' + str(st)
+        st = 'PubMLST ST' + str(st)
+    if '-' in st:
+        st = 'NA'
     mlst.append(f'{id}\\t{st}\\n')
 
   with open('mlst_formatted.tsv','w') as outFile:
