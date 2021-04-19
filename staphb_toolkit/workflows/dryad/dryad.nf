@@ -180,7 +180,7 @@ process shovill {
   set val(name), file(reads) from cleaned_reads_cg
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
+  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst, assembled_genomes_map
 
   script:
   """
