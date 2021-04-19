@@ -19,7 +19,13 @@ staphb-wf cecret --get_config
 ```
 staphb-wf cecret --reads_type single Sequencing_reads
 ```
-cecret can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
+**Cecret** can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
+
+## Annotating a collection of fastas
+```
+staphb-wf cecret --anotation fastas
+```
+Note: set `params.relatedness = true` in order to get a multiple sequence alignment, SNP matrix, and newick file for the collection of fastas.
 
 ## Required parameters :
 - [primer_bed](./configs/artic_V3_nCoV-2019.bed) bedfile for primer sequences 
@@ -37,6 +43,10 @@ cecret can actually handle both read types at the same time, as long as both typ
 - kraken2 (recommended)
   - Default is `false`
   - Set `params.kraken2 = true` and `kraken2_db = <path to kraken2 database>`. Instructions are below for the kraken2 and human database.
+- [amplicon file](./configs/nCoV-2019.insert.bed)
+  - Default is the amplicons from artic's V3 primers.
+  - Change to user-supplied bedfile with `params.amplicon_bed`
+  - If not using, set `params.bedtools_multicov = false`  
 - Creating a multiple sequencing alignment, SNP matrix, and treefile with mafft, snp-dist, and iqtree
   - Default is `false`
   - If this is desired, set `params.relatedness = true`
@@ -74,9 +84,15 @@ Warning : will not work on all variants. This is due to how bamsnap runs.
 
 ### What if I am using an amplicon based library that is not SARS-CoV-2?
 
-In your config file, set your `params.reference_genome`, `params.primer_bed`, and `params.gff_file` appropriately.
-
-You'll also want to set `params.pangolin = false` and `params.nextclade = false`
+Change the following relevant paramters:
+* `params.reference_genome`
+* `params.primer_bed`
+* `params.amplicon_bed` or `params.bedtools_multicov = false`
+* `params.gff_file` or `params.ivar_variants = false`
+* `params.pangolin = false`
+* `params.nextclade = false`
+* `params.vadr = false` or create a new vadr container with the appropriate build and adjust the parameters of the vadr process in a [config file](./configs/cecret_config_template.config)
+* `params.kraken2_organism = "<organism name>"` or keep `params.kraken2 = false`
 
 ### This workflow has too many bells and whistles. I really only care about generating a consensus fasta. How do I get rid of all the extras?
 
@@ -88,10 +104,11 @@ params.ivar_variants = false
 params.samtools_stats = false
 params.samtools_coverage = false
 params.samtools_flagstat = false
-params.bedtools = false
+params.bedtools_multicov = false
 params.samtools_ampliconstats = false
 params.pangolin = false
 params.nextclade = false
+params.vadr = false
 ```
 
 And, yes, this means I added some bells and whistles so you could turn off the bells and whistles. /irony
