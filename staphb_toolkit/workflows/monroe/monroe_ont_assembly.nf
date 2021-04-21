@@ -47,7 +47,7 @@ if(params.fast5_dir){
 else {
   if(params.demultiplexed){
     Channel
-        .fromPath( "${params.fastq_dir}/barcode*",type:'dir')
+        .fromPath( "${params.fastq_dir}/*",type:'dir')
         .ifEmpty { exit 1, "Cannot find any fastq files in: ${params.fastq_dir} Path must not end with /" }
         .set { demultiplexed_reads }
   }
@@ -86,14 +86,14 @@ process artic_guppyplex {
     file(reads) from demultiplexed_reads.flatten()
 
   output:
-    file "${params.run_prefix}_barcode*.fastq" into polish_files
+    file "${params.run_prefix}_*.fastq" into polish_files
 
   script:
     """
     artic guppyplex \
     --min-length ${params.min_length} \
     --max-length ${params.max_length} \
-    --directory barcode* \
+    --directory ./* \
     --prefix ${params.run_prefix}
     """
 }
