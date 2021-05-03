@@ -47,6 +47,7 @@ setuptools.setup(
         "spython>=0.0.73",
         "psutil>=5.6.3",
         "docker>=4.1.0",
+        "miniwdl>=1.1.4",
         "pexpect>=4.8"],
     python_requires='>=3.6',
 )

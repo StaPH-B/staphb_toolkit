@@ -50,7 +50,3 @@ def create_input_json(reads_path,bedfile_path,pe = True):
 
     input_json = {"cli_wrapper.inputSamples":sample_dict}
     return(json.dumps(input_json,sort_keys=True, indent=4))
-
-if __name__ == '__main__' :
-    with open("titan_input.json",'w') as outfile:
-        outfile.write(create_input_json(sys.argv[1],"/test/path/bed.bed"))

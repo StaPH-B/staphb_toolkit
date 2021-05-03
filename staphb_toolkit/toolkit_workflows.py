@@ -6,6 +6,7 @@
 
 import sys,os,re
 import argparse
+from pathlib import Path
 from shutil import which, copyfile
 from datetime import date, datetime
 import pexpect
@@ -161,6 +162,20 @@ def main():
     parser_cecret.add_argument('--get_config',action="store_true",help="Get a Nextflow configuration template for cecret.")
     parser_cecret.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
 
+    #titan-----------------------------------------
+    parser_titan = subparsers.add_parser('titan', help='Consensus assembly for SARS-CoV-2', add_help=False)
+    titan_subparsers = parser_titan.add_subparsers(title='titan_commands',metavar='',dest='titan_command')
+    parser_titan.add_argument('--get_config',type=str,choices=["pe_assembly"],help="Get a configuration template for the chosen workflow.")
+
+    #titan-illumina-pe-----------------------------
+    subparser_titan_pe_assembly = titan_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data', add_help=False)
+    subparser_titan_pe_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
+    subparser_titan_pe_assembly.add_argument('--primers', type=str, choices=["V1","V2","V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",default="V3")
+    subparser_titan_pe_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Default will try docker first, then singularity if the docker executable cannot be found")
+    subparser_titan_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"titan_pe_results\".",default="titan_pe_results")
+    subparser_titan_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
+    subparser_titan_pe_assembly.add_argument('--config','-c', type=str,help="custom configuration")
+
     #----------------------------------------------
     args = parser.parse_args()
 
@@ -197,17 +212,31 @@ def main():
 
     #check for config or profile
     config = ""
-    if args.config:
-        config = "-C " + os.path.abspath(args.config)
-        profile = ""
-    elif args.profile:
-        if which(args.profile):
-            profile = '-profile ' + args.profile
+    try:
+        if args.config:
+            config = "-C " + os.path.abspath(args.config)
+            profile = ""
+        elif args.profile:
+            if which(args.profile):
+                profile = '-profile ' + args.profile
+            else:
+                print(f"{args.profile} is not installed or found in PATH.")
+        elif not profile:
+            print('Singularity or Docker is not installed or not found in PATH.')
+            sys.exit(1)
+    except:
+        if args.subparser_name == "dryad":
+            parser_dryad.print_help()
+            sys.exit(1)
+        elif args.subparser_name == "monroe":
+            parser_monroe.print_help()
+            sys.exit(1)
+        elif args.subparser_name == "titan":
+            parser_titan.print_help()
+            sys.exit(1)
         else:
-            print(f"{args.profile} is not installed or found in PATH.")
-    elif not profile:
-        print('Singularity or Docker is not installed or not found in PATH.')
-        sys.exit(1)
+            parser.print_help()
+            sys.exit(1)
 
     #################################
     #Program specific execution code#
@@ -606,3 +635,41 @@ def main():
         print("Starting the cecret workflow:")
         child = pexpect.spawn(command)
         child.interact()
+
+    #titan----------------------------------
+
+    if program == 'titan':
+        import staphb_toolkit.workflows.titan.titan_wrapper as tw
+        #titan path
+        titan_path = os.path.join(workflows_path,"titan/")
+
+        #give config to user if requested
+        if args.get_config == "pe_assembly":
+            #config_path = os.path.join(monroe_path,"configs/pe_user_config.config")
+            #dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_pe_assembly.config")
+            #copyfile(config_path,dest_path)
+            sys.exit()
+
+        if args.titan_command == 'pe_assembly':
+            #check for either standard ARTIC primer version, or a custom config
+            if not args.config and not args.primers:
+                raise Exception(f"argument --primers: no primer set selected, choose from ('V1', 'V2', 'V3') or use a custom configuration.")
+            if not args.config:
+                primer = os.path.abspath(os.path.join(titan_path,f"primers/artic_{args.primers}_nCoV-2019.bed"))
+
+            #create output dir
+            output_path = os.path.abspath(args.output)
+            Path(output_path).mkdir(parents=True,exist_ok=True)
+
+            #build input json
+            input_json = tw.create_input_json(args.reads_path,primer)
+            input_json_path = os.path.join(output_path,"input.json")
+            with open(input_json_path,'w') as outfile:
+                outfile.write(input_json)
+
+            #build command
+            command = f"miniwdl run -i {input_json_path} {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl -d {args.output}"
+            #run command using nextflow in a subprocess
+            print("Starting the Titan paired-end assembly:")
+            child = pexpect.spawn(command)
+            child.interact()
