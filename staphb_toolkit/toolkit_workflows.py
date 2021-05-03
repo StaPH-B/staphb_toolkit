@@ -195,6 +195,20 @@ def main():
     #current time for log files
     exec_time = datetime.now().strftime("%y_%m_%d_%H_%M_%S_")
 
+    #check for config or profile
+    config = ""
+    if args.config:
+        config = "-C " + os.path.abspath(args.config)
+        profile = ""
+    elif args.profile:
+        if which(args.profile):
+            profile = '-profile ' + args.profile
+        else:
+            print(f"{args.profile} is not installed or found in PATH.")
+    elif not profile:
+        print('Singularity or Docker is not installed or not found in PATH.')
+        sys.exit(1)
+
     #################################
     #Program specific execution code#
     #################################
@@ -216,18 +230,6 @@ def main():
         if not args.reads_path:
             parser_tredegar.print_help()
             print("Please specify a path to a directory containing the raw reads.")
-            sys.exit(1)
-
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
             sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
@@ -280,17 +282,6 @@ def main():
 
         if args.monroe_command == None:
             parser_monroe.print_help()
-            sys.exit(1)
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
             sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
@@ -391,18 +382,6 @@ def main():
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
-            sys.exit(1)
-
         #set work dir into local logs dir if profile not aws
         work = ""
         if profile and not args.config:
@@ -442,20 +421,6 @@ def main():
                 subparser_dryad_report.print_help()
                 sys.exit(1)
 
-            #check for config or profile
-            config = ""
-            if args.config:
-                config = "-C " + os.path.abspath(args.config)
-                profile = ""
-            elif args.profile:
-                if which(args.profile):
-                    profile = '-profile ' + args.profile
-                else:
-                    print(f"{args.profile} is not installed or found in PATH.")
-            elif not profile:
-                print('Singularity or Docker is not installed or not found in PATH.')
-                sys.exit(1)
-
             #set work dir into local logs dir if profile not aws
             work = ""
             output_path = os.path.join(os.getcwd(),'rebuild_results')
@@ -493,20 +458,6 @@ def main():
             if args.snp and args.r == None:
                 subparser_dryad_main.print_help()
                 print("Please specify a reference sequence for the SNP pipeline.")
-                sys.exit(1)
-
-            #check for config or profile
-            config = ""
-            if args.config:
-                config = "-C " + os.path.abspath(args.config)
-                profile = ""
-            elif args.profile:
-                if which(args.profile):
-                    profile = '-profile ' + args.profile
-                else:
-                    print(f"{args.profile} is not installed or found in PATH.")
-            elif not profile:
-                print('Singularity or Docker is not installed or not found in PATH.')
                 sys.exit(1)
 
             #set work dir into local logs dir if profile not aws
@@ -562,18 +513,6 @@ def main():
             print("Please specify a path to a directory containing the raw reads.")
             sys.exit(1)
 
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
-            sys.exit(1)
-
         #set work dir into local logs dir if profile not aws
         work = ""
         if profile and not args.config:
@@ -606,18 +545,6 @@ def main():
         if not args.reads_path:
             parser_cutshaw.print_help()
             print("Please specify a path to a directory containing the raw reads.")
-            sys.exit(1)
-
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
             sys.exit(1)
 
         #set work dir into local logs dir if profile not aws
@@ -655,17 +582,6 @@ def main():
             print("Please specify a path to a directory containing paired end raw reads.")
             print("Note: Can specify an empty directory if single reads parameter is set.")
             sys.exit()
-
-        #check for config or profile
-        config = ""
-        if args.config:
-            config = "-C " + os.path.abspath(args.config)
-            profile = ""
-        elif args.profile:
-            profile = f"-profile {args.profile}"
-        elif not profile:
-            print('Singularity or Docker is not installed or not in found in PATH.')
-            sys.exit(1)
 
         reads_type = ""
         if args.reads_type == "paired":
