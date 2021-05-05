@@ -4,3 +4,4 @@ _site
 packaging/build/*
 packaging/dist/*
 *.egg-info
+staphb_toolkit/lib/cromwell*
