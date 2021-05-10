@@ -671,6 +671,10 @@ def main():
             #sys.exit()
 
         if args.titan_command == 'pe_assembly':
+            #create output dir
+            output_path = os.path.abspath(args.output)
+            Path(output_path).mkdir(parents=True,exist_ok=True)
+
             #check for either standard ARTIC primer version, or a custom config
             if args.config:
                 configuration = f"-Dconfig.file={os.path.abspath(args.config)}"
@@ -678,16 +682,12 @@ def main():
             else:
                 primer = os.path.abspath(os.path.join(titan_path,f"primers/artic_{args.primers}_nCoV-2019.bed"))
                 if args.profile == "singularity":
-                    configuration = f"-Dconfig.file={titan_path}/config/singularity.conf"
+                    configuration = f"-Dconfig.file={titan_path}/configs/singularity.conf"
                 else:
                     configuration = ""
 
             if args.primer_bedfile:
                 primer = os.path.abspath(args.primer_bedfile)
-
-            #create output dir
-            output_path = os.path.abspath(args.output)
-            Path(output_path).mkdir(parents=True,exist_ok=True)
 
             #build input json
             input_json = tw.create_input_json(args.reads_path,primer)
@@ -696,14 +696,17 @@ def main():
                 outfile.write(input_json)
 
             #build command
-            output_options = f'{{"final_workflow_outputs_dir":"{output_path}","final_workflow_log_dir":"{output_path}/logs","final_call_logs_dir":"{output_path}/call_logs"}}'
-            output_options_path = os.path.join(output_path,"output_options.json")
-            with open(output_options_path,'w') as outfile:
-                outfile.write(output_options)
-            command = f"java -jar {configuration} {cromwell_path} run -i {input_json_path} --options {output_options_path} {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl"
+            options = f'{{\
+            "final_workflow_outputs_dir":"{output_path}"\
+            }}'
+            options_path = os.path.join(output_path,"options.json")
+            with open(options_path,'w') as outfile:
+                outfile.write(options)
+            command = f"java -jar {configuration} {cromwell_path} run -i {input_json_path} --options {options_path} -m {output_path}/metadata.json {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl"
 
             #run command using nextflow in a subprocess
             print("Starting the Titan paired-end assembly:")
-            print(command)
             child = pexpect.spawn(command)
             child.interact()
+            if not args.config:
+                tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)
