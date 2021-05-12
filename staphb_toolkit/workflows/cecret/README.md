@@ -23,7 +23,7 @@ staphb-wf cecret --reads_type single Sequencing_reads
 
 ## Annotating a collection of fastas
 ```
-staphb-wf cecret --anotation fastas
+staphb-wf cecret --annotation fastas
 ```
 Note: set `params.relatedness = true` in order to get a multiple sequence alignment, SNP matrix, and newick file for the collection of fastas.
 
