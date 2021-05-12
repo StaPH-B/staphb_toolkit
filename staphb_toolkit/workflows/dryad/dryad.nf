@@ -538,7 +538,7 @@ process mlst_formatting {
     mlst.append(f'{id}\\t{st}\\n')
 
   with open('mlst_formatted.tsv','w') as outFile:
-    outFile.write('Sample\\tMLST Scheme\\t')
+    outFile.write('Sample\\tMLST Scheme\\n')
     for scheme in mlst:
       outFile.write(scheme)
 
