@@ -85,7 +85,7 @@ process cleanreads {
   set val(name), file(reads) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg, cleaned_reads_map
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg
   file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_snp
   file("${name}.phix.stats.txt") into phix_cleanning_stats
   file("${name}.adapters.stats.txt") into adapter_cleanning_stats
