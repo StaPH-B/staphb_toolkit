@@ -85,7 +85,7 @@ process cleanreads {
   set val(name), file(reads) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg, cleaned_reads_map
   file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_snp
   file("${name}.phix.stats.txt") into phix_cleanning_stats
   file("${name}.adapters.stats.txt") into adapter_cleanning_stats
@@ -180,13 +180,93 @@ process shovill {
   set val(name), file(reads) from cleaned_reads_cg
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
+  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst, assembled_genomes_map
 
   script:
   """
   shovill --cpus ${task.cpus} --ram ${task.memory} --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
   mv contigs.fa ${name}.contigs.fa
   """
+}
+
+//Map cleaned reads
+process bwa {
+  tag "$name"
+
+  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
+
+  input:
+  set val(name), file(reads) from cleaned_reads_map
+  set val(name), file(genome) from assembled_genomes_map
+
+  output:
+  tuple name, file("${name}.sam") into sam_files
+
+  shell:
+  """
+  bwa index ${name}.contigs.fa
+  bwa mem ${name}.contigs.fa !{reads[0]} !{reads[1]} > ${name}.sam
+  """
+}
+
+//Index and sort bam file then calculate coverage
+process samtools {
+  tag "$name"
+
+  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*bam*"
+  publishDir "${params.outdir}/results/coverage", mode: 'copy', pattern:"*_depth.tsv*"
+
+  input:
+  set val(name), file(sam) from sam_files
+
+  output:
+  file("${name}_depth.tsv") into cov_files
+
+  shell:
+  """
+  samtools view -S -b ${name}.sam > ${name}.bam
+  samtools sort ${name}.bam > ${name}.sorted.bam
+  samtools index ${name}.sorted.bam
+  samtools depth -a ${name}.sorted.bam > ${name}_depth.tsv
+  """
+}
+
+//Calculate median coverage
+process coverage_stats {
+  publishDir "${params.outdir}/results/coverage", mode: 'copy'
+
+  input:
+  file(cov) from cov_files.collect()
+
+  output:
+  file('coverage_stats.txt')
+
+  script:
+  '''
+  #!/usr/bin/env python3
+  import glob
+  import os
+  from numpy import median
+  from numpy import average
+
+  results = []
+
+  files = glob.glob("*_depth.tsv*")
+  for file in files:
+    nums = []
+    sid = os.path.basename(file).split('_')[0]
+    with open(file,'r') as inFile:
+      for line in inFile:
+        nums.append(int(line.strip().split()[2]))
+      med = median(nums)
+      avg = average(nums)
+      results.append(f"{sid}\\t{med}\\t{avg}\\n")
+
+  with open('coverage_stats.txt', 'w') as outFile:
+    outFile.write("Sample\\tMedian Coverage\\tAverage Coverage\\n")
+    for result in results:
+      outFile.write(result)
+  '''
 }
 
 process mash {
@@ -422,11 +502,62 @@ process mlst {
   file(assemblies) from assembled_genomes_mlst.collect()
 
   output:
-  file("mlst.tsv")
+  file("mlst.tsv") into mlst_results
 
   script:
   """
   mlst --nopath *.fa > mlst.tsv
+  """
+}
+
+process mlst_formatting {
+  errorStrategy 'ignore'
+  publishDir "${params.outdir}/results",mode:'copy'
+
+  input:
+  file(mlst) from mlst_results
+
+  output:
+  file("mlst_formatted.tsv")
+
+  script:
+  """
+  #!/usr/bin/env python3
+  import csv
+
+  string_map = {}
+
+  with open('mlst.tsv','r') as csvfile:
+    dialect = csv.Sniffer().sniff(csvfile.read(1024))
+    csvfile.seek(0)
+    reader = csv.reader(csvfile,dialect,delimiter='\t')
+    for row in reader:
+      id_string = row[0]
+      sp_string = row[1]
+      st_string = row[2]
+      string_map[id_string] = [sp_string,st_string]
+
+  mlst = []
+  for key in string_map:
+    id = key
+    id = id.replace('.contigs.fa','')
+    species = string_map[key][0]
+    st = string_map[key][1]
+    if species == 'abaumannii':
+        st = 'PubMLST ST' + str(st) + ' (Oxford)'
+    if species == 'abaumannii_2':
+        st = 'PubMLST ST' + str(st) + ' (Pasteur)'
+    else:
+        st = 'PubMLST ST' + str(st)
+    if '-' in st:
+        st = 'NA'
+    mlst.append(f'{id}\\t{st}\\n')
+
+  with open('mlst_formatted.tsv','w') as outFile:
+    outFile.write('Sample\\tMLST Scheme\\t')
+    for scheme in mlst:
+      outFile.write(scheme)
+
   """
 }
 
