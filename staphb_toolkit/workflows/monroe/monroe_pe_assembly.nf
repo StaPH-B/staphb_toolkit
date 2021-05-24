@@ -193,7 +193,8 @@ class result_values:
         self.mean_map_q = "NA"
         self.monroe_qc = "NA"
         self.pangolin_lineage = "NA"
-        self.pangolin_probability = "NA"
+        self.pangolin_conflict= "NA"
+        self.pangolin_version = "NA"
         self.pangolin_notes = "NA"
 
 
@@ -234,8 +235,9 @@ for file in samtools_results:
                 result.pangolin_lineage = "failed pangolin qc"
             else:
                 result.pangolin_lineage = line["lineage"]
-                result.pangolin_probability = line["probability"]
+                result.pangolin_conflict = line["conflict"]
                 result.pangolin_notes = line["note"]
+                result.pangolin_version = line["pangoLEARN_version"]
 
     results[id] = result
 
@@ -243,10 +245,10 @@ for file in samtools_results:
 #create output file
 with open(f"monroe_summary_{today}.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
-    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "monroe_qc", "pangolin_lineage", "pangolin_probability", "pangolin_notes"])
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q", "monroe_qc", "pangolin_lineage", "pangolin_conflict", "pangolin_notes","pangoLEARN_version"])
     for id in results:
         result = results[id]
-        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.monroe_qc,result.pangolin_lineage,result.pangolin_probability,result.pangolin_notes])
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q,result.monroe_qc,result.pangolin_lineage,result.pangolin_conflict,result.pangolin_notes,result.pangolin_version])
 """
 
 }
