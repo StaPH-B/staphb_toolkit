@@ -85,7 +85,7 @@ process cleanreads {
   set val(name), file(reads) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg, cleaned_reads_map
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg
   file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_snp
   file("${name}.phix.stats.txt") into phix_cleanning_stats
   file("${name}.adapters.stats.txt") into adapter_cleanning_stats
@@ -170,42 +170,26 @@ if (params.snp) {
     }
 }
 
-//CG Step1: Assemble trimmed reads with Shovill
+//CG Step1: Assemble trimmed reads with Shovill and map reads back to assembly
 process shovill {
   errorStrategy 'ignore'
   tag "$name"
-  publishDir "${params.outdir}/results/assembled", mode: 'copy'
+  publishDir "${params.outdir}/results/assembled", mode: 'copy',pattern:"*.fa"
+  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
 
   input:
   set val(name), file(reads) from cleaned_reads_cg
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst, assembled_genomes_map
+  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
+  tuple name, file("${name}.sam") into sam_files
 
   script:
   """
-  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
-  mv contigs.fa ${name}.contigs.fa
-  """
-}
-
-//Map cleaned reads
-process bwa {
-  tag "$name"
-
-  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
-
-  input:
-  set val(name), file(reads) from cleaned_reads_map
-  set val(name), file(genome) from assembled_genomes_map
-
-  output:
-  tuple name, file("${name}.sam") into sam_files
-
-  shell:
-  """
+  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir ./output --R1 ${reads[0]} --R2 ${reads[1]} --force
+  mv ./output/contigs.fa ${name}.contigs.fa
   bwa index ${name}.contigs.fa
-  bwa mem ${name}.contigs.fa !{reads[0]} !{reads[1]} > ${name}.sam
+  bwa mem ${name}.contigs.fa ${reads[0]} ${reads[1]} > ${name}.sam
   """
 }
 
@@ -213,7 +197,7 @@ process bwa {
 process samtools {
   tag "$name"
 
-  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*bam*"
+  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*.bam"
   publishDir "${params.outdir}/results/coverage", mode: 'copy', pattern:"*_depth.tsv*"
 
   input:
@@ -554,7 +538,7 @@ process mlst_formatting {
     mlst.append(f'{id}\\t{st}\\n')
 
   with open('mlst_formatted.tsv','w') as outFile:
-    outFile.write('Sample\\tMLST Scheme\\t')
+    outFile.write('Sample\\tMLST Scheme\\n')
     for scheme in mlst:
       outFile.write(scheme)
 
