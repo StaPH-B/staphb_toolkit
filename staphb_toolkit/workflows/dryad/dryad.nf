@@ -389,7 +389,6 @@ process amrfinder_summary {
   file(predictions) from ar_predictions.collect()
 
   output:
-  file("ar_predictions_binary.tsv") into ar_matrix
   file("ar_predictions.tsv") into ar_tsv
 
   when:
@@ -398,47 +397,25 @@ process amrfinder_summary {
   script:
   """
   #!/usr/bin/env python3
-
   import os
   import glob
   import pandas as pd
-  import csv
 
   files = glob.glob("*.tsv")
-  hits = []
-
+  dfs = []
   for file in files:
-    sample = os.path.basename(file).split(".")[0]
-    print(sample)
-    with open(file,"r") as inFile:
-        csvreader = csv.reader(inFile,delimiter="\t",)
-        next(csvreader)
-        for row in csvreader:
-            gene = row[5]
-            identity = row[15]
-            coverage = row[16]
-            hits.append([sample,gene,identity,coverage])
+      sample_id = os.path.basename(file).split(".")[0]
+      print(sample_id)
+      df = pd.read_csv(file, header=0, delimiter="\\t")
+      df.columns=df.columns.str.replace(' ', '_')
+      print(df)
+      df = df.assign(Sample=sample_id)
+      df = df[['Sample','Gene_symbol','%_Coverage_of_reference_sequence','%_Identity_to_reference_sequence']]
+      df = df.rename(columns={'sample':'Sample','%_Coverage_of_reference_sequence':'Coverage','%_Identity_to_reference_sequence':'Identity','Gene_symbol':'Gene'})
+      dfs.append(df)
 
-    vals = []
-    binary = []
-
-    for hit in hits:
-      sample = hit[0]
-      gene = hit[1]
-      identity = hit[2]
-      coverage = hit[3]
-      vals.append([sample,gene,identity,coverage])
-      if float(identity) >= 90 and float(coverage) >= 90:
-          binary.append([sample, gene, 1])
-      if float(identity) < 90 or float(coverage) < 90:
-          binary.append([sample, gene, 0])
-
-    df = pd.DataFrame(vals, columns = ["Sample", "Gene", "Identity", "Coverage"])
-    df.to_csv("ar_predictions.tsv", sep='\t', encoding='utf-8', index = False)
-
-    binary_df = pd.DataFrame(binary, columns = ["Sample", "Gene", "Value"])
-    binary_df = binary_df.pivot_table(index = "Sample", columns = "Gene", values = "Value", fill_value = 0)
-    binary_df.to_csv("ar_predictions_binary.tsv", sep='\t', encoding='utf-8')
+  concat = pd.concat(dfs)
+  concat.to_csv('ar_predictions.tsv',sep='\\t', index=False, header=True, na_rep='NaN')
   """
 }
 
