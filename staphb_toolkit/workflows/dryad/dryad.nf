@@ -411,7 +411,7 @@ process amrfinder_summary {
       print(df)
       df = df.assign(Sample=sample_id)
       df = df[['Sample','Gene_symbol','%_Coverage_of_reference_sequence','%_Identity_to_reference_sequence']]
-      df = df.rename(columns={'sample':'Sample','%_Coverage_of_reference_sequence':'Coverage','%_Identity_to_reference_sequence':'Identity','Gene_symbol':'Gene'})
+      df = df.rename(columns={'%_Coverage_of_reference_sequence':'Coverage','%_Identity_to_reference_sequence':'Identity','Gene_symbol':'Gene'})
       dfs.append(df)
 
   concat = pd.concat(dfs)
