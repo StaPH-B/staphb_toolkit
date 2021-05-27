@@ -11,6 +11,7 @@ from shutil import which, copyfile
 from datetime import date, datetime
 import pexpect
 import glob
+import json
 import staphb_toolkit.core.update_app as autoupdate
 import staphb_toolkit.core.cromwell as cw
 
@@ -689,8 +690,16 @@ def main():
             if args.primer_bedfile:
                 primer = os.path.abspath(args.primer_bedfile)
 
-            #build input json
-            input_json = tw.create_input_json(args.reads_path,primer)
+            #collect input json data
+            input_data = tw.collect_input_data(args.reads_path,primer)
+
+            #merge with optional inputs
+            optionals_json_path = os.path.abspath(f"{titan_path}/configs/illumina_pe_optional_params.json")
+            with open(optionals_json_path,'r') as jsonfile:
+                optionals_data = json.load(jsonfile)
+
+            #create input json file
+            input_json = tw.mergeOptionalInputs(input_data,optionals_data)
             input_json_path = os.path.join(output_path,"input.json")
             with open(input_json_path,'w') as outfile:
                 outfile.write(input_json)
