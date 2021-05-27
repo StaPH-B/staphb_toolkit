@@ -27,7 +27,7 @@ def pe_search(path,bedfile_path):
         fastq_dict.append({"samplename":samplename,"read1_raw":readA,"read2_raw":readB,"primer_bed":bedfile_path})
     return(fastq_dict)
 
-#search a directory and return a dictonary of fastq files named by fastq name
+#search a directory and return a dictonary of fastq files (single end) named by fastq name
 def se_search(path,bedfile_path):
     if not os.path.isdir(path):
         raise ValueError(path + " " + "not found.")
@@ -44,15 +44,18 @@ def se_search(path,bedfile_path):
         fastq_dict[samplename] = {"read":read,"primer_bed":bedfile_path}
     return(fastq_dict)
 
-def create_input_json(reads_path,bedfile_path,pe = True):
+#search a path and jsonify the reads as input for wdl
+def collect_input_data(reads_path,bedfile_path,pe = True):
     if pe == True:
         sample_dict = pe_search(reads_path,bedfile_path)
     else:
         sample_dict = se_search(reads_path,bedfile_path)
 
-    input_json = {"cli_wrapper.inputSamples":sample_dict}
-    return(json.dumps(input_json,sort_keys=True, indent=4))
+    input_data = {"cli_wrapper.inputSamples":sample_dict}
+    return(input_data)
 
+#grab and move data based on the WDL generated metadata.json file, this allows us to collect the output and organize it for the user
+#NOTE: this will need to be updated if any additional steps are added to the workflow
 def parseOutputMetadata(metaJSON,outPath):
     #prep output path
     Path(outPath).mkdir(parents=True,exist_ok=True)
@@ -118,3 +121,8 @@ def parseOutputMetadata(metaJSON,outPath):
         copy(f,p)
     for f in data['outputs']['cli_wrapper.trim_sorted_bai']:
         copy(f,p)
+
+#merge optional inputs with inputs and output json string
+def mergeOptionalInputs(inputDATA,optionsDATA):
+    merged_data = {**inputDATA, **optionsDATA}
+    return(json.dumps(merged_data,sort_keys=True, indent=4))
