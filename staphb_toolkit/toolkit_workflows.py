@@ -187,7 +187,6 @@ def main():
     subparser_titan_pe_assembly.add_argument('--nextclade_image','-ni',metavar="<docker_image>",type=str,help="Docker image for nextclade, default: neherlab/nextclade:0.14.3",default="neherlab/nextclade:0.14.2")
     #----------------------------------------------
     args = parser.parse_args()
-    print(args)
     #check if we are using docker or singularity
     if which('docker'):
         profile = '-profile docker'
@@ -223,7 +222,6 @@ def main():
         parser.print_help()
         sys.exit(1)
     program = args.subparser_name
-
     #current time for log files
     exec_time = datetime.now().strftime("%y_%m_%d_%H_%M_%S_")
 
@@ -249,8 +247,10 @@ def main():
             parser_monroe.print_help()
             sys.exit(1)
         elif args.subparser_name == "titan":
-            parser_titan.print_help()
-            sys.exit(1)
+            if not profile:
+                print('Singularity or Docker is not installed or not found in PATH.')
+                sys.exit(1)
+            pass
         else:
             parser.print_help()
             sys.exit(1)
@@ -656,7 +656,6 @@ def main():
     #titan----------------------------------
 
     if program == 'titan':
-        print('hit titan')
         import staphb_toolkit.workflows.titan.titan_wrapper as tw
         #titan path
         titan_path = os.path.join(workflows_path,"titan/")
@@ -693,11 +692,13 @@ def main():
                 primer = os.path.abspath(os.path.join(titan_path,f"primers/artic_{args.primers}_nCoV-2019.bed"))
 
             #collect input json data
-            input_data = tw.collect_input_data(args.reads_path,primer)
+            input_data = tw.collect_input_data(args.reads_path)
 
             #merge with optional inputs
-            optionals_data["pangolin_docker"] = args.pangolin_docker
-            optionals_data["nextclade_docker"] = args.nextclade_docker
+            optionals_data = {}
+            optionals_data["cli_wrapper.pangolin_docker"] = args.pangolin_image
+            optionals_data["cli_wrapper.nextclade_docker"] = args.nextclade_image
+            optionals_data["cli_wrapper.primer_bed"] = primer
             #optionals_json_path = os.path.abspath(f"{titan_path}/configs/illumina_pe_optional_params.json")
             #with open(optionals_json_path,'r') as jsonfile:
             #    optionals_data = json.load(jsonfile)
@@ -707,7 +708,7 @@ def main():
             input_json_path = os.path.join(output_path,"input.json")
             with open(input_json_path,'w') as outfile:
                 outfile.write(input_json)
-            sys.exit()
+
             #build command
             options = f'{{\
             "final_workflow_outputs_dir":"{output_path}"\
@@ -721,5 +722,4 @@ def main():
             print("Starting the Titan paired-end assembly:")
             child = pexpect.spawn(command)
             child.interact()
-            if not args.config:
-                tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)
+            tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)

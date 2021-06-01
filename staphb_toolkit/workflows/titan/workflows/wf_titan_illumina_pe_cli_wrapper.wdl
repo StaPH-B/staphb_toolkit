@@ -13,8 +13,8 @@ workflow cli_wrapper {
   input {
     Array[InputJSON]  inputSamples
     File              primer_bed
-    String?           pangolin_docker = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
-    String?           nextclade_docker = "neherlab/nextclade:0.14.2"
+    String            pangolin_docker = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
+    String            nextclade_docker = "neherlab/nextclade:0.14.2"
   }
 
   scatter (sample in inputSamples){
@@ -24,9 +24,9 @@ workflow cli_wrapper {
         seq_method = "Illumina paired-end",
         read1_raw = sample.read1_raw,
         read2_raw = sample.read2_raw,
-        primer_bed = sample.primer_bed
-        pangolin_docker = sample.pangolin_docker
-        nextclade_docker = sample.nextclade_docker
+        primer_bed = primer_bed,
+        pangolin_docker = pangolin_docker,
+        nextclade_docker = nextclade_docker
     }
 
     call summary.sample_metrics {
