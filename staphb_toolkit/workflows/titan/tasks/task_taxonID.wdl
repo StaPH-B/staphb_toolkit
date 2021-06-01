@@ -7,6 +7,8 @@ task kraken2 {
 	  String      samplename
 	  String?     kraken2_db = "/kraken2-db"
     Int?        cpus=4
+    String?     memory = "8 GB"
+    String      docker="staphb/kraken2:2.0.8-beta_hv"
   }
 
   command{
@@ -44,9 +46,9 @@ task kraken2 {
   }
 
   runtime {
-    docker:       "staphb/kraken2:2.0.8-beta_hv"
-    memory:       "8 GB"
-    cpu:          4
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
     preemptible:  0
   }
@@ -56,7 +58,9 @@ task pangolin {
   input {
     File        fasta
     String      samplename
-
+    String      docker="staphb/pangolin:1.1.14"
+    Int?        cpus = 4
+    String?     memory = "8 GB"
   }
 
   command{
@@ -86,9 +90,9 @@ task pangolin {
   }
 
   runtime {
-    docker:       "staphb/pangolin:1.1.14"
-    memory:       "8 GB"
-    cpu:          40
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
     preemptible:  0
   }
@@ -98,9 +102,9 @@ task pangolin2 {
   input {
     File        fasta
     String      samplename
-    String      docker
-
-
+    String      docker = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
+    Int?        cpus = 4
+    String?     memory = "8 GB"
   }
 
   command{
@@ -132,9 +136,9 @@ task pangolin2 {
   }
 
   runtime {
-    docker:     "~{docker}"
-    memory:       "8 GB"
-    cpu:          40
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
     preemptible:  0
   }
@@ -145,12 +149,15 @@ task nextclade_one_sample {
         description: "Nextclade classification of one sample. Leaving optional inputs unspecified will use SARS-CoV-2 defaults."
     }
     input {
-        File   genome_fasta
-        File?  root_sequence
-        File?  auspice_reference_tree_json
-        File?  qc_config_json
-        File?  gene_annotations_json
-        File?  pcr_primers_csv
+        File    genome_fasta
+        File?   root_sequence
+        File?   auspice_reference_tree_json
+        File?   qc_config_json
+        File?   gene_annotations_json
+        File?   pcr_primers_csv
+        String  docker="neherlab/nextclade:0.14.2"
+        Int?    cpus = 2
+        String? memory = "3 GB"
     }
     String basename = basename(genome_fasta, ".fasta")
     command {
@@ -179,9 +186,9 @@ task nextclade_one_sample {
         grep ^aaDeletions transposed.tsv | cut -f 2 | grep -v aaDeletions | sed 's/,/|/g' > NEXTCLADE_AADELS
     }
     runtime {
-        docker: "neherlab/nextclade:latest"
-        memory: "3 GB"
-        cpu:    2
+        docker: "~{docker}"
+        memory: "~{memory}"
+        cpu:    cpus
         disks: "local-disk 50 HDD"
         dx_instance_type: "mem1_ssd1_v2_x2"
     }

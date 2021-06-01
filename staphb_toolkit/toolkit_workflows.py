@@ -179,16 +179,15 @@ def main():
     #titan-illumina-pe-----------------------------
     subparser_titan_pe_assembly = titan_subparsers.add_parser('pe_assembly',help='Assembly SARS-CoV-2 genomes from paired-end read data', add_help=False)
     subparser_titan_pe_assembly.add_argument('reads_path', type=str,help="path to the location of the reads in a fastq format")
-    subparser_titan_pe_assembly.add_argument('--primers', type=str, choices=["V1","V2","V3"], help="indicate which ARTIC primers were used (V1, V2, or V3)",default="V3")
-    subparser_titan_pe_assembly.add_argument('--primer_bedfile', type=str, help="bedfile for which custom primers were used")
+    subparser_titan_pe_assembly.add_argument('--primers', type=str, choices=["V1","V2","V3"], help="indicate which ARTIC primers were used (V1, V2, or V3), default: V3",default="V3")
+    subparser_titan_pe_assembly.add_argument('--primer_bedfile', type=str, help="bedfile for which custom primers were used, overides --primers")
     subparser_titan_pe_assembly.add_argument('--profile', type=str,choices=["docker", "singularity"],help="Default will try docker first, then singularity if the docker executable cannot be found")
-    subparser_titan_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"titan_pe_results\".",default="titan_pe_results")
-    subparser_titan_pe_assembly.add_argument('--resume', default="", action="store_const",const="-resume",help="resume a previous run")
-    subparser_titan_pe_assembly.add_argument('--config','-c', type=str,help="custom wdl configuration")
-
+    subparser_titan_pe_assembly.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default: \"titan_pe_results\".",default="titan_pe_results")
+    subparser_titan_pe_assembly.add_argument('--pangolin_image','-pi',metavar="<docker_image>",type=str,help="Docker image for pangolin, default: staphb/pangolin:2.4.2-pangolearn-2021-05-19",default="staphb/pangolin:2.4.2-pangolearn-2021-05-19")
+    subparser_titan_pe_assembly.add_argument('--nextclade_image','-ni',metavar="<docker_image>",type=str,help="Docker image for nextclade, default: neherlab/nextclade:0.14.3",default="neherlab/nextclade:0.14.2")
     #----------------------------------------------
     args = parser.parse_args()
-
+    print(args)
     #check if we are using docker or singularity
     if which('docker'):
         profile = '-profile docker'
@@ -657,6 +656,7 @@ def main():
     #titan----------------------------------
 
     if program == 'titan':
+        print('hit titan')
         import staphb_toolkit.workflows.titan.titan_wrapper as tw
         #titan path
         titan_path = os.path.join(workflows_path,"titan/")
@@ -677,33 +677,37 @@ def main():
             Path(output_path).mkdir(parents=True,exist_ok=True)
 
             #check for either standard ARTIC primer version, or a custom config
-            if args.config:
-                configuration = f"-Dconfig.file={os.path.abspath(args.config)}"
+            #if args.config:
+            #    configuration = f"-Dconfig.file={os.path.abspath(args.config)}"
 
+            #else:
+
+            if args.profile == "singularity":
+                configuration = f"-Dconfig.file={titan_path}/configs/singularity.conf"
             else:
-                primer = os.path.abspath(os.path.join(titan_path,f"primers/artic_{args.primers}_nCoV-2019.bed"))
-                if args.profile == "singularity":
-                    configuration = f"-Dconfig.file={titan_path}/configs/singularity.conf"
-                else:
-                    configuration = ""
+                configuration = ""
 
             if args.primer_bedfile:
                 primer = os.path.abspath(args.primer_bedfile)
+            else:
+                primer = os.path.abspath(os.path.join(titan_path,f"primers/artic_{args.primers}_nCoV-2019.bed"))
 
             #collect input json data
             input_data = tw.collect_input_data(args.reads_path,primer)
 
             #merge with optional inputs
-            optionals_json_path = os.path.abspath(f"{titan_path}/configs/illumina_pe_optional_params.json")
-            with open(optionals_json_path,'r') as jsonfile:
-                optionals_data = json.load(jsonfile)
+            optionals_data["pangolin_docker"] = args.pangolin_docker
+            optionals_data["nextclade_docker"] = args.nextclade_docker
+            #optionals_json_path = os.path.abspath(f"{titan_path}/configs/illumina_pe_optional_params.json")
+            #with open(optionals_json_path,'r') as jsonfile:
+            #    optionals_data = json.load(jsonfile)
 
             #create input json file
             input_json = tw.mergeOptionalInputs(input_data,optionals_data)
             input_json_path = os.path.join(output_path,"input.json")
             with open(input_json_path,'w') as outfile:
                 outfile.write(input_json)
-
+            sys.exit()
             #build command
             options = f'{{\
             "final_workflow_outputs_dir":"{output_path}"\

@@ -1,10 +1,13 @@
-version 1.0 
+version 1.0
 
 task stats_n_coverage {
 
   input {
     File        bamfile
     String      samplename
+    String      docker="staphb/samtools:1.10"
+    Int?        cpus = 2
+    String?     memory = "8 GB"
   }
 
   command{
@@ -28,14 +31,14 @@ task stats_n_coverage {
     if [ -z "$meanmapq" ] ; then meanmapq="0" ; fi
 
     echo $coverage | tee COVERAGE
-    echo $depth | tee DEPTH 
-    echo $meanbaseq | tee MEANBASEQ 
-    echo $meanmapq | tee MEANMAPQ 
+    echo $depth | tee DEPTH
+    echo $meanbaseq | tee MEANBASEQ
+    echo $meanmapq | tee MEANMAPQ
   }
 
   output {
     String     date = read_string("DATE")
-    String     samtools_version = read_string("VERSION") 
+    String     samtools_version = read_string("VERSION")
     File       stats = "${samplename}.stats.txt"
     File       cov_hist = "${samplename}.cov.hist"
     File       cov_stats = "${samplename}.cov.txt"
@@ -47,10 +50,10 @@ task stats_n_coverage {
   }
 
   runtime {
-    docker:       "staphb/samtools:1.10"
-    memory:       "8 GB"
-    cpu:          2
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
-    preemptible:  0      
+    preemptible:  0
   }
 }

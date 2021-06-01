@@ -1,15 +1,17 @@
-version 1.0 
+version 1.0
 
 task fastqc {
-  
+
   input {
     File        read1
     File        read2
     String      read1_name = basename(basename(basename(read1, ".gz"), ".fastq"), ".fq")
     String      read2_name = basename(basename(basename(read2, ".gz"), ".fastq"), ".fq")
     Int?        cpus = 2
+    String      docker = "staphb/fastqc:0.11.8"
+    String?     memory = "4 GB"
   }
-  
+
   command {
     # capture date and version
     date | tee DATE
@@ -39,15 +41,15 @@ task fastqc {
     Int        read1_seq = read_string("READ1_SEQS")
     Int        read2_seq = read_string("READ2_SEQS")
     Int        read_pairs = read_string("READ_PAIRS")
-    String     version = read_string("VERSION") 
+    String     version = read_string("VERSION")
     String     pipeline_date = read_string("DATE")
   }
 
   runtime {
-    docker:       "staphb/fastqc:0.11.8"
-    memory:       "4 GB"
-    cpu:          2
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
-    preemptible:  0      
+    preemptible:  0
   }
 }

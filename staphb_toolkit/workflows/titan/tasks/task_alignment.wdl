@@ -1,4 +1,4 @@
-version 1.0 
+version 1.0
 
 task bwa {
 
@@ -7,7 +7,9 @@ task bwa {
     File        read2
     String      samplename
     String?     reference_genome="/artic-ncov2019/primer_schemes/nCoV-2019/V3/nCoV-2019.reference.fasta"
-    Int?        cpus=6
+    Int?        cpus = 2
+    String?     memory = "8 GB"
+    String      docker="staphb/ivar:1.2.2_artic20200528"
   }
 
   command {
@@ -21,7 +23,7 @@ task bwa {
     -t ${cpus} \
     ${reference_genome} \
     ${read1} ${read2} |\
-      samtools sort | samtools view -F 4 -o ${samplename}.sorted.bam 
+      samtools sort | samtools view -F 4 -o ${samplename}.sorted.bam
 
     # index BAMs
     samtools index ${samplename}.sorted.bam
@@ -35,21 +37,23 @@ task bwa {
   }
 
   runtime {
-    docker:       "staphb/ivar:1.2.2_artic20200528"
-    memory:       "8 GB"
-    cpu:          2
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
-    preemptible:  0      
+    preemptible:  0
   }
 }
 
 task mafft {
-  
+
   input {
     Array[File]   genomes
-    String?       cpus = 16
+    Int?          cpus = 16
+    String?       memory = "32 GB"
+    String        docker="staphb/mafft:7.450"
   }
-  
+
   command{
     # date and version control
     date | tee DATE
@@ -67,11 +71,10 @@ task mafft {
   }
 
   runtime {
-    docker:       "staphb/mafft:7.450"
-    memory:       "32 GB"
-    cpu:          16
+    docker:       "~{docker}"
+    memory:       "~{memory}"
+    cpu:          cpus
     disks:        "local-disk 100 SSD"
-    preemptible:  0      
+    preemptible:  0
   }
 }
-

@@ -7,12 +7,14 @@ struct InputJSON {
   File read1_raw
   File read2_raw
   String samplename
-  File primer_bed
 }
 
 workflow cli_wrapper {
   input {
-    Array[InputJSON] inputSamples
+    Array[InputJSON]  inputSamples
+    File              primer_bed
+    String?           pangolin_docker = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
+    String?           nextclade_docker = "neherlab/nextclade:0.14.2"
   }
 
   scatter (sample in inputSamples){
@@ -22,21 +24,21 @@ workflow cli_wrapper {
         seq_method = "Illumina paired-end",
         read1_raw = sample.read1_raw,
         read2_raw = sample.read2_raw,
-        primer_bed = sample.primer_bed,
-        pangolin_docker_image = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
+        primer_bed = sample.primer_bed
+        pangolin_docker = sample.pangolin_docker
+        nextclade_docker = sample.nextclade_docker
     }
 
     call summary.sample_metrics {
       input:
         samplename        = sample.samplename,
         pangolin_lineage  = titan_illumina_pe.pangolin_lineage,
-        pangolin_aLRT     = titan_illumina_pe.pangolin_aLRT,
+        pangolin_version  = titan_illumina_pe.pangolin_version,
         nextclade_clade   = titan_illumina_pe.nextclade_clade,
+        nextclade_version = titan_illumina_pe.nextclade_version,
         nextclade_aa_subs = titan_illumina_pe.nextclade_aa_subs,
         nextclade_aa_dels = titan_illumina_pe.nextclade_aa_dels,
         fastqc_raw_pairs  = titan_illumina_pe.fastqc_raw_pairs,
-        seqy_pairs        = titan_illumina_pe.seqy_pairs,
-        seqy_percent      = titan_illumina_pe.seqy_percent,
         kraken_human      = titan_illumina_pe.kraken_human,
         kraken_sc2        = titan_illumina_pe.kraken_sc2,
         number_N          = titan_illumina_pe.number_N,

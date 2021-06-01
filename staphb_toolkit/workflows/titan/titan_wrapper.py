@@ -7,7 +7,7 @@ from pathlib import Path
 from shutil import copy
 
 #search a directory and return a dictonary of paired fastq files named by fastq name
-def pe_search(path,bedfile_path):
+def pe_search(path):
     if not os.path.isdir(path):
         raise ValueError(path + " " + "not found.")
     path = os.path.abspath(path)
@@ -24,11 +24,11 @@ def pe_search(path,bedfile_path):
 
     for readA, readB in zip(fastqs[0::2], fastqs[1::2]):
         samplename = re.split("(_R1)|(_1)",os.path.basename(readA))[0]
-        fastq_dict.append({"samplename":samplename,"read1_raw":readA,"read2_raw":readB,"primer_bed":bedfile_path})
+        fastq_dict.append({"samplename":samplename,"read1_raw":readA,"read2_raw":readB})
     return(fastq_dict)
 
 #search a directory and return a dictonary of fastq files (single end) named by fastq name
-def se_search(path,bedfile_path):
+def se_search(path):
     if not os.path.isdir(path):
         raise ValueError(path + " " + "not found.")
     path = os.path.abspath(path)
@@ -41,15 +41,15 @@ def se_search(path,bedfile_path):
     fastqs.sort()
     for read in fastqs:
         samplename = re.split("(.fastq)|(.fq)",os.path.basename(read))[0]
-        fastq_dict[samplename] = {"read":read,"primer_bed":bedfile_path}
+        fastq_dict[samplename] = {"read":read}
     return(fastq_dict)
 
 #search a path and jsonify the reads as input for wdl
-def collect_input_data(reads_path,bedfile_path,pe = True):
+def collect_input_data(reads_path,pe = True):
     if pe == True:
-        sample_dict = pe_search(reads_path,bedfile_path)
+        sample_dict = pe_search(reads_path)
     else:
-        sample_dict = se_search(reads_path,bedfile_path)
+        sample_dict = se_search(reads_path)
 
     input_data = {"cli_wrapper.inputSamples":sample_dict}
     return(input_data)

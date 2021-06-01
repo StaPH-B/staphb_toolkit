@@ -6,7 +6,7 @@ import "../tasks/task_consensus_call.wdl" as consensus_call
 import "../tasks/task_assembly_metrics.wdl" as assembly_metrics
 import "../tasks/task_taxonID.wdl" as taxon_ID
 import "../tasks/task_amplicon_metrics.wdl" as amplicon_metrics
-import "../tasks/task_ncbi.wdl" as ncbi
+import "../tasks/task_ncbi_vadr.wdl" as ncbi
 
 
 workflow titan_illumina_pe {
@@ -16,12 +16,12 @@ workflow titan_illumina_pe {
 
   input {
     String  samplename
-    String  seq_method="Illumina paired-end"
+    String  seq_method = "Illumina paired-end"
     File    read1_raw
     File    read2_raw
     File    primer_bed
-    String  pangolin_docker_image = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
-
+    String  pangolin_docker  = "staphb/pangolin:2.3.2-pangolearn-2021-02-21"
+    String  nextclade_docker = "neherlab/nextclade:0.14.2"
   }
 
   call read_qc.read_QC_trim {
@@ -66,11 +66,12 @@ workflow titan_illumina_pe {
     input:
       samplename = samplename,
       fasta = consensus.consensus_seq,
-      docker = pangolin_docker_image
+      docker = pangolin_docker
   }
   call taxon_ID.nextclade_one_sample {
     input:
-      genome_fasta = consensus.consensus_seq
+      genome_fasta = consensus.consensus_seq,
+      docker = nextclade_docker
   }
   call amplicon_metrics.bedtools_cov {
     input:
@@ -86,6 +87,8 @@ workflow titan_illumina_pe {
 
     String  seq_platform = seq_method
 
+    File    read1_dehosted     = read_QC_trim.read1_dehosted
+    File    read2_dehosted     = read_QC_trim.read2_dehosted
     File    read1_clean        = read_QC_trim.read1_clean
     File    read2_clean        = read_QC_trim.read2_clean
     Int     fastqc_raw1        = read_QC_trim.fastqc_raw1
@@ -93,23 +96,25 @@ workflow titan_illumina_pe {
     Int     fastqc_raw_pairs   = read_QC_trim.fastqc_raw_pairs
     String  fastqc_version     = read_QC_trim.fastqc_version
 
-    Int     seqy_pairs         = read_QC_trim.seqy_pairs
-    Float   seqy_percent       = read_QC_trim.seqy_percent
     Int     fastqc_clean1      = read_QC_trim.fastqc_clean1
     Int     fastqc_clean2      = read_QC_trim.fastqc_clean2
     Int     fastqc_clean_pairs = read_QC_trim.fastqc_clean_pairs
-    String  seqyclean_version  = read_QC_trim.seqyclean_version
+    String  trimmomatic_version  = read_QC_trim.trimmomatic_version
+    String  bbduk_docker         = read_QC_trim.bbduk_docker
 
     Float   kraken_human       = read_QC_trim.kraken_human
     Float   kraken_sc2         = read_QC_trim.kraken_sc2
     String  kraken_version     = read_QC_trim.kraken_version
     String  kraken_report      = read_QC_trim.kraken_report
+    Float kraken_human_dehosted = read_QC_trim.kraken_human_dehosted
+    Float kraken_sc2_dehosted = read_QC_trim.kraken_sc2_dehosted
+    String kraken_report_dehosted = read_QC_trim.kraken_report_dehosted
 
     File    sorted_bam         = bwa.sorted_bam
     File    sorted_bai         = bwa.sorted_bai
     String  bwa_version        = bwa.bwa_version
     String  sam_version        = bwa.sam_version
-    String assembly_method     = "~{bwa.bwa_version}; ~{primer_trim.ivar_version}"
+    String  assembly_method     = "~{bwa.bwa_version}; ~{primer_trim.ivar_version}"
 
     File    trim_sorted_bam            = primer_trim.trim_sorted_bam
     File    trim_sorted_bai            = primer_trim.trim_sorted_bai
@@ -140,7 +145,7 @@ workflow titan_illumina_pe {
     Float   pangolin_aLRT          = pangolin2.pangolin_aLRT
     File    pango_lineage_report   = pangolin2.pango_lineage_report
     String  pangolin_version       = pangolin2.version
-    String  pangolin_docker       = pangolin2.pangolin_docker
+    String  pangolin_docker_used   = pangolin2.pangolin_docker
 
 
     File    nextclade_json         = nextclade_one_sample.nextclade_json
@@ -155,7 +160,8 @@ workflow titan_illumina_pe {
     File    amp_coverage           = bedtools_cov.amp_coverage
     String  bedtools_version       = bedtools_cov.version
 
-    File vadr_alterts_list = vadr.alerts_list
-    Int vadr_num_alerts = vadr.num_alerts
+    File    vadr_alterts_list      = vadr.alerts_list
+    Int     vadr_num_alerts        = vadr.num_alerts
+    String  vadr_docker            = vadr.vadr_docker
   }
 }
