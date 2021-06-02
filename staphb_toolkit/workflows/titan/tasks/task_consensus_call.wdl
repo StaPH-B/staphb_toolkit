@@ -7,7 +7,7 @@ task primer_trim {
     String      samplename
     File        primer_bed
     Boolean?    keep_noprimer_reads=true
-    String      docker="staphb/ivar:1.3.1"
+    String      docker="staphb/ivar:1.3.1-titan"
     Int?        cpus = 2
     String?     memory = "8 GB"
   }
@@ -57,7 +57,7 @@ task variant_call {
     File        bamfile
     String      samplename
     String?     ref_genome = "/artic-ncov2019/primer_schemes/nCoV-2019/V3/nCoV-2019.reference.fasta"
-    String?     ref_gff = "/reference/GCF_009858895.2_ASM985889v3_genomic.gff"
+    String?     ref_gff = "/reference/GCF_009858895.2_ASM985889v3_genomic.gff.gz"
     Boolean?    count_orphans = true
     Int?        max_depth = "600000"
     Boolean?    disable_baq = true
@@ -65,7 +65,7 @@ task variant_call {
     Int?        min_qual = "20"
     Float?      min_freq = "0.6"
     Int?        min_depth = "10"
-    String      docker="staphb/ivar:1.2.2_artic20200528"
+    String      docker="staphb/ivar:1.3.1-titan"
     Int?        cpus = 2
     String?     memory = "8 GB"
   }
@@ -120,7 +120,7 @@ task consensus {
     File        bamfile
     String      samplename
     String?     ref_genome = "/artic-ncov2019/primer_schemes/nCoV-2019/V3/nCoV-2019.reference.fasta"
-    String?     ref_gff = "/reference/GCF_009858895.2_ASM985889v3_genomic.gff"
+    String?     ref_gff = "/reference/GCF_009858895.2_ASM985889v3_genomic.gff.gz"
     Boolean?    count_orphans = true
     Int?        max_depth = "600000"
     Boolean?    disable_baq = true
@@ -129,7 +129,7 @@ task consensus {
     Float?      min_freq = "0.6"
     Int?        min_depth = "10"
     String?     char_unknown = "N"
-    String      docker="staphb/ivar:1.2.2_artic20200528"
+    String      docker="staphb/ivar:1.3.1-titan"
     Int?        cpus = 2
     String?     memory = "8 GB"
   }
