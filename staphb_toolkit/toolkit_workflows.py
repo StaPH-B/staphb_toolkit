@@ -678,17 +678,13 @@ def main():
             output_path = os.path.abspath(args.output)
             Path(output_path).mkdir(parents=True,exist_ok=True)
 
-            #check for either standard ARTIC primer version, or a custom config
-            #if args.config:
-            #    configuration = f"-Dconfig.file={os.path.abspath(args.config)}"
-
-            #else:
-
+            #check if docker/signularity
             if args.profile == "singularity":
                 configuration = f"-Dconfig.file={titan_path}/configs/singularity.conf"
             else:
                 configuration = f"-Dconfig.file={titan_path}/configs/docker.conf"
 
+            #determine proper primer version
             if args.primer_bedfile:
                 primer = os.path.abspath(args.primer_bedfile)
             else:
@@ -702,9 +698,6 @@ def main():
             optionals_data["cli_wrapper.pangolin_docker"] = args.pangolin_image
             optionals_data["cli_wrapper.nextclade_docker"] = args.nextclade_image
             optionals_data["cli_wrapper.primer_bed"] = primer
-            #optionals_json_path = os.path.abspath(f"{titan_path}/configs/illumina_pe_optional_params.json")
-            #with open(optionals_json_path,'r') as jsonfile:
-            #    optionals_data = json.load(jsonfile)
 
             #create input json file
             input_json = tw.mergeOptionalInputs(input_data,optionals_data)
@@ -713,12 +706,6 @@ def main():
                 outfile.write(input_json)
 
             #build command
-            #options = f'{{\
-            #"final_workflow_outputs_dir":"{output_path}"\
-            #}}'
-            #options_path = os.path.join(output_path,"options.json")
-            #with open(options_path,'w') as outfile:
-            #    outfile.write(options)
             command = f"java -jar {configuration} {cromwell_path} run -i {input_json_path} -m {output_path}/metadata.json {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl"
 
             #run command using nextflow in a subprocess
