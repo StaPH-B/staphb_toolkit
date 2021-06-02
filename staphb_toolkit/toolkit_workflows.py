@@ -7,7 +7,7 @@
 import sys,os,re
 import argparse
 from pathlib import Path
-from shutil import which, copyfile
+from shutil import which, copyfile, rmtree
 from datetime import date, datetime
 import pexpect
 import glob
@@ -656,6 +656,9 @@ def main():
     #titan----------------------------------
 
     if program == 'titan':
+        if not args.titan_command:
+            parser_titan.print_help()
+            sys.exit(1)
         import staphb_toolkit.workflows.titan.titan_wrapper as tw
         #titan path
         titan_path = os.path.join(workflows_path,"titan/")
@@ -684,7 +687,7 @@ def main():
             if args.profile == "singularity":
                 configuration = f"-Dconfig.file={titan_path}/configs/singularity.conf"
             else:
-                configuration = ""
+                configuration = f"-Dconfig.file={titan_path}/configs/docker.conf"
 
             if args.primer_bedfile:
                 primer = os.path.abspath(args.primer_bedfile)
@@ -710,16 +713,20 @@ def main():
                 outfile.write(input_json)
 
             #build command
-            options = f'{{\
-            "final_workflow_outputs_dir":"{output_path}"\
-            }}'
-            options_path = os.path.join(output_path,"options.json")
-            with open(options_path,'w') as outfile:
-                outfile.write(options)
-            command = f"java -jar {configuration} {cromwell_path} run -i {input_json_path} --options {options_path} -m {output_path}/metadata.json {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl"
+            #options = f'{{\
+            #"final_workflow_outputs_dir":"{output_path}"\
+            #}}'
+            #options_path = os.path.join(output_path,"options.json")
+            #with open(options_path,'w') as outfile:
+            #    outfile.write(options)
+            command = f"java -jar {configuration} {cromwell_path} run -i {input_json_path} -m {output_path}/metadata.json {titan_path}workflows/wf_titan_illumina_pe_cli_wrapper.wdl"
 
             #run command using nextflow in a subprocess
             print("Starting the Titan paired-end assembly:")
             child = pexpect.spawn(command)
             child.interact()
             tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)
+
+            #remove output files
+            rmtree(os.path.abspath('./cromwell-executions/'))
+            rmtree(os.path.abspath('./cromwell-workflow-logs/'))

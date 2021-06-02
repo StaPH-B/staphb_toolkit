@@ -85,6 +85,14 @@ def parseOutputMetadata(metaJSON,outPath):
     for f in data['outputs']['cli_wrapper.read2_clean']:
         copy(f,p)
 
+    #dehosted reads
+    p = os.path.join(outPath,"dehosted_reads/")
+    Path(p).mkdir(parents=True,exist_ok=True)
+    for f in data['outputs']['cli_wrapper.read1_dehosted']:
+        copy(f,p)
+    for f in data['outputs']['cli_wrapper.read2_dehosted']:
+        copy(f,p)
+
     #stats
     c = 0
     while c < len(sids):

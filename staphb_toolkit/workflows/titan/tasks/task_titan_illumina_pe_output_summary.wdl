@@ -10,9 +10,11 @@ task sample_metrics {
     String    nextclade_version
     String    nextclade_aa_subs
     String    nextclade_aa_dels
-    Int?       fastqc_raw_pairs
-    Float?     kraken_human
-    Float?     kraken_sc2
+    Int?      fastqc_raw_pairs
+    Float?    kraken_human
+    Float     kraken_human_dehosted
+    Float?    kraken_sc2
+    Float     kraken_sc2_dehosted
     Int       number_N
     Int       number_ATCG
     Int       number_Degenerate
@@ -54,7 +56,9 @@ task sample_metrics {
   ~{coverage},\
   ~{coverage_trim},\
   ~{kraken_human},\
+  ~{kraken_human_dehosted},\
   ~{kraken_sc2},\
+  ~{kraken_sc2_dehosted},\
   ~{amp_fail},\
   ~{number_N},\
   ~{pangolin_lineage},\
@@ -66,8 +70,9 @@ task sample_metrics {
   ~{number_Total},\
   ~{meanbaseq_trim},\
   ~{meanmapq_trim},\
+  %s,\
   ~{nextclade_aa_subs},\
-  ~{nextclade_aa_dels}" + assembly_status
+  ~{nextclade_aa_dels}"%(assembly_status)
 
   print(outstring)
 
@@ -105,7 +110,9 @@ task merge_metrics {
     coverage_before_trimming,\
     coverage_after_trimming,\
     %_human_reads,\
+    %_human_reads_after_human_read_removal,\
     %_SARS-COV-2_reads,\
+    %_SARS-COV-2_reads_after_human_read_removal,\
     num_failed_amplicons,\
     num_N,\
     pangolin_lineage,\

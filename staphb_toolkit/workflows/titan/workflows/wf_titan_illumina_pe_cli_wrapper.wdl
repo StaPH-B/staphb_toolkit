@@ -51,7 +51,9 @@ workflow cli_wrapper {
         meanmapq_trim     = titan_illumina_pe.meanmapq_trim,
         coverage_trim     = titan_illumina_pe.coverage_trim,
         depth_trim        = titan_illumina_pe.depth_trim,
-        amp_fail          = titan_illumina_pe.amp_fail
+        amp_fail          = titan_illumina_pe.amp_fail,
+        kraken_sc2_dehosted = titan_illumina_pe.kraken_sc2_dehosted,
+        kraken_human_dehosted = titan_illumina_pe.kraken_human_dehosted,
     }
   }
 
@@ -63,6 +65,8 @@ workflow cli_wrapper {
   output {
     Array[File]    read1_clean          = titan_illumina_pe.read1_clean
     Array[File]    read2_clean          = titan_illumina_pe.read2_clean
+    Array[File]    read1_dehosted       = titan_illumina_pe.read1_dehosted
+    Array[File]    read2_dehosted       = titan_illumina_pe.read2_dehosted
     Array[File]    kraken_report        = titan_illumina_pe.kraken_report
     Array[File]    sorted_bam           = titan_illumina_pe.sorted_bam
     Array[File]    sorted_bai           = titan_illumina_pe.sorted_bai
