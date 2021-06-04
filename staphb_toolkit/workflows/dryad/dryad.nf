@@ -85,7 +85,7 @@ process cleanreads {
   set val(name), file(reads) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg, cleaned_reads_map
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_cg
   file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads_snp
   file("${name}.phix.stats.txt") into phix_cleanning_stats
   file("${name}.adapters.stats.txt") into adapter_cleanning_stats
@@ -170,42 +170,26 @@ if (params.snp) {
     }
 }
 
-//CG Step1: Assemble trimmed reads with Shovill
+//CG Step1: Assemble trimmed reads with Shovill and map reads back to assembly
 process shovill {
   errorStrategy 'ignore'
   tag "$name"
-  publishDir "${params.outdir}/results/assembled", mode: 'copy'
+  publishDir "${params.outdir}/results/assembled", mode: 'copy',pattern:"*.fa"
+  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
 
   input:
   set val(name), file(reads) from cleaned_reads_cg
 
   output:
-  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst, assembled_genomes_map
+  tuple name, file("${name}.contigs.fa") into assembled_genomes_quality, assembled_genomes_annotation, assembled_genomes_ar, assembled_genomes_mash, assembled_genomes_mlst
+  tuple name, file("${name}.sam") into sam_files
 
   script:
   """
-  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir . --R1 ${reads[0]} --R2 ${reads[1]} --force
-  mv contigs.fa ${name}.contigs.fa
-  """
-}
-
-//Map cleaned reads
-process bwa {
-  tag "$name"
-
-  publishDir "${params.outdir}/results/alignments", mode: 'copy',pattern:"*.sam"
-
-  input:
-  set val(name), file(reads) from cleaned_reads_map
-  set val(name), file(genome) from assembled_genomes_map
-
-  output:
-  tuple name, file("${name}.sam") into sam_files
-
-  shell:
-  """
+  shovill --cpus ${task.cpus} --ram ${task.memory} --outdir ./output --R1 ${reads[0]} --R2 ${reads[1]} --force
+  mv ./output/contigs.fa ${name}.contigs.fa
   bwa index ${name}.contigs.fa
-  bwa mem ${name}.contigs.fa !{reads[0]} !{reads[1]} > ${name}.sam
+  bwa mem ${name}.contigs.fa ${reads[0]} ${reads[1]} > ${name}.sam
   """
 }
 
@@ -213,7 +197,7 @@ process bwa {
 process samtools {
   tag "$name"
 
-  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*bam*"
+  publishDir "${params.outdir}/results/alignments", mode: 'copy', pattern:"*.bam"
   publishDir "${params.outdir}/results/coverage", mode: 'copy', pattern:"*_depth.tsv*"
 
   input:
@@ -405,7 +389,6 @@ process amrfinder_summary {
   file(predictions) from ar_predictions.collect()
 
   output:
-  file("ar_predictions_binary.tsv") into ar_matrix
   file("ar_predictions.tsv") into ar_tsv
 
   when:
@@ -414,47 +397,25 @@ process amrfinder_summary {
   script:
   """
   #!/usr/bin/env python3
-
   import os
   import glob
   import pandas as pd
-  import csv
 
   files = glob.glob("*.tsv")
-  hits = []
-
+  dfs = []
   for file in files:
-    sample = os.path.basename(file).split(".")[0]
-    print(sample)
-    with open(file,"r") as inFile:
-        csvreader = csv.reader(inFile,delimiter="\t",)
-        next(csvreader)
-        for row in csvreader:
-            gene = row[5]
-            identity = row[15]
-            coverage = row[16]
-            hits.append([sample,gene,identity,coverage])
+      sample_id = os.path.basename(file).split(".")[0]
+      print(sample_id)
+      df = pd.read_csv(file, header=0, delimiter="\\t")
+      df.columns=df.columns.str.replace(' ', '_')
+      print(df)
+      df = df.assign(Sample=sample_id)
+      df = df[['Sample','Gene_symbol','%_Coverage_of_reference_sequence','%_Identity_to_reference_sequence']]
+      df = df.rename(columns={'%_Coverage_of_reference_sequence':'Coverage','%_Identity_to_reference_sequence':'Identity','Gene_symbol':'Gene'})
+      dfs.append(df)
 
-    vals = []
-    binary = []
-
-    for hit in hits:
-      sample = hit[0]
-      gene = hit[1]
-      identity = hit[2]
-      coverage = hit[3]
-      vals.append([sample,gene,identity,coverage])
-      if float(identity) >= 90 and float(coverage) >= 90:
-          binary.append([sample, gene, 1])
-      if float(identity) < 90 or float(coverage) < 90:
-          binary.append([sample, gene, 0])
-
-    df = pd.DataFrame(vals, columns = ["Sample", "Gene", "Identity", "Coverage"])
-    df.to_csv("ar_predictions.tsv", sep='\t', encoding='utf-8', index = False)
-
-    binary_df = pd.DataFrame(binary, columns = ["Sample", "Gene", "Value"])
-    binary_df = binary_df.pivot_table(index = "Sample", columns = "Gene", values = "Value", fill_value = 0)
-    binary_df.to_csv("ar_predictions_binary.tsv", sep='\t', encoding='utf-8')
+  concat = pd.concat(dfs)
+  concat.to_csv('ar_predictions.tsv',sep='\\t', index=False, header=True, na_rep='NaN')
   """
 }
 
@@ -554,7 +515,7 @@ process mlst_formatting {
     mlst.append(f'{id}\\t{st}\\n')
 
   with open('mlst_formatted.tsv','w') as outFile:
-    outFile.write('Sample\\tMLST Scheme\\t')
+    outFile.write('Sample\\tMLST Scheme\\n')
     for scheme in mlst:
       outFile.write(scheme)
 
