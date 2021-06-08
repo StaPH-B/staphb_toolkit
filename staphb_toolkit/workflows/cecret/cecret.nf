@@ -5,7 +5,7 @@ println("User is currently using the cecret workflow as part of the staphb toolk
 println("Currently using the Cecret workflow for use with amplicon-based Illumina hybrid library prep on MiSeq\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.20210416")
+println("Version: v.20210604")
 println("")
 
 params.reads = workflow.launchDir + '/reads'
@@ -34,9 +34,10 @@ params.fastqc = true
 params.ivar_variants = true
 params.samtools_stats = true
 params.samtools_coverage = true
+params.samtools_depth = true
 params.samtools_flagstat = true
 params.samtools_ampliconstats = true
-params.samtools_plot_ampliconstats = false
+params.samtools_plot_ampliconstats = true
 params.bedtools_multicov = true
 params.nextclade = true
 params.pangolin = true
@@ -73,7 +74,7 @@ if ( params.maxcpus < 5 ) {
 
 // This is where the results will be
 println("The files and directory for results is " + params.outdir)
-println("A table summarizing results will be created: ${params.outdir}/summary.txt and ${workflow.launchDir}/run_results.txt\n")
+println("A table summarizing results will be created: ${params.outdir}/summary.txt and ${workflow.launchDir}/cecret_run_results.txt\n")
 
 Channel
   .fromPath(params.reference_genome, type:'file')
@@ -138,7 +139,6 @@ process seqyclean {
   echo false
   cpus 1
   container 'staphb/seqyclean:latest'
-  stageInMode = 'symlink'
 
   when:
   params.cleaner == 'seqyclean'
@@ -151,7 +151,8 @@ process seqyclean {
   tuple sample, file("${task.process}/${sample}_cln_SE.fastq.gz") optional true into seqyclean_single_file
   tuple sample, file("${task.process}/${sample}_clean_PE{1,2}.fastq.gz"), val(paired_single) optional true into seqyclean_paired_files_classification
   tuple sample, file("${task.process}/${sample}_cln_SE.fastq.gz"), val(paired_single) optional true into seqyclean_single_file_classification
-  file("${task.process}/${sample}_cl*n_SummaryStatistics.{txt,tsv}")
+  file("${task.process}/${sample}_cl*n_SummaryStatistics.tsv") into seqyclean_files
+  file("${task.process}/${sample}_cl*n_SummaryStatistics.txt")
   file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(perc_kept) into seqyclean_perc_kept_results
   tuple sample, env(kept) into seqyclean_pairskept_results
@@ -187,13 +188,18 @@ process seqyclean {
   '''
 }
 
+seqyclean_files
+  .collectFile(name: "Combined_SummaryStatistics.tsv",
+    keepHeader: true,
+    sort: true,
+    storeDir: "${params.outdir}/seqyclean")
+
 process fastp {
   publishDir "${params.outdir}", mode: 'copy'
   tag "${sample}"
   echo false
   cpus 1
   container 'bromberglab/fastp:latest'
-  stageInMode = 'symlink'
 
   when:
   params.cleaner == 'fastp'
@@ -261,7 +267,6 @@ process bwa {
   echo false
   cpus params.maxcpus
   container 'staphb/bwa:latest'
-  stageInMode = 'symlink'
 
   when:
   params.aligner == 'bwa'
@@ -302,7 +307,6 @@ process minimap2 {
   echo false
   cpus params.maxcpus
   container 'staphb/minimap2:latest'
-  stageInMode = 'symlink'
 
   when:
   params.aligner == 'minimap2'
@@ -349,7 +353,6 @@ process fastqc {
   echo false
   cpus 1
   container 'staphb/fastqc:latest'
-  stageInMode = 'symlink'
 
   when:
   params.fastqc
@@ -396,7 +399,6 @@ process sort {
   echo false
   cpus params.maxcpus
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   input:
   set val(sample), file(sam) from sams
@@ -431,7 +433,6 @@ process filter {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.filter
@@ -478,7 +479,6 @@ process ivar_trim {
   echo false
   cpus 1
   container 'staphb/ivar:latest'
-  stageInMode = 'symlink'
 
   when:
   params.trimmer == 'ivar'
@@ -517,7 +517,6 @@ process samtools_ampliconclip {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.trimmer == 'samtools'
@@ -579,7 +578,6 @@ process ivar_variants {
   memory {2.GB * task.attempt}
   errorStrategy {'retry'}
   maxRetries 2
-  stageInMode = 'symlink'
 
   when:
   params.ivar_variants
@@ -641,15 +639,13 @@ process ivar_consensus {
   memory {2.GB * task.attempt}
   errorStrategy {'retry'}
   maxRetries 2
-  stageInMode = 'symlink'
 
   input:
   set val(sample), file(bam), file(reference_genome) from trimmed_bams_ivar_consensus
 
   output:
-  tuple sample, file("consensus/${sample}.consensus.fa") into consensus_nextclade, consensus_rename
-  file("consensus/${sample}.consensus.fa") into consensus_pangolin, consensus_vadr
-  tuple sample, file("consensus/qc_consensus/15000/${sample}.consensus.fa") optional true into qc_consensus_15000_mafft
+  tuple sample, file("consensus/${sample}.consensus.fa") into consensus_nextclade, consensus_rename, consensus_pangolin, consensus_vadr
+  file("consensus/${sample}.consensus.fa") into consensus_mafft
   file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(num_N), env(num_ACTG), env(num_degenerate), env(num_total) into consensus_results
   tuple sample, env(ivar_version) into ivar_version
@@ -673,7 +669,6 @@ process ivar_consensus {
 
     num_ACTG=$(grep -v ">" consensus/!{sample}.consensus.fa | grep -o -E "C|A|T|G" | wc -l )
     if [ -z "$num_ACTG" ] ; then num_ACTG="0" ; fi
-    if [ "$num_ACTG" -gt 15000 ] ; then cp consensus/!{sample}.consensus.fa consensus/qc_consensus/15000/!{sample}.consensus.fa ; fi
 
     num_degenerate=$(grep -v ">" consensus/!{sample}.consensus.fa | grep -o -E "B|D|E|F|H|I|J|K|L|M|O|P|Q|R|S|U|V|W|X|Y|Z" | wc -l )
     if [ -z "$num_degenerate" ] ; then num_degenerate="0" ; fi
@@ -688,7 +683,6 @@ process bcftools_variants {
   echo false
   cpus 1
   container 'staphb/bcftools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.bcftools_variants
@@ -733,7 +727,6 @@ process bamsnap {
   cpus params.medcpus
   errorStrategy 'ignore'
   container 'danielmsk/bamsnap:latest'
-  stageInMode = 'symlink'
   time '1h'
 
   when:
@@ -790,7 +783,7 @@ process bamsnap {
 
 pre_trim_bams2
    .combine(trimmed_bams4, by: 0)
-   .into { pre_post_bams ; pre_post_bams2 ; pre_post_bams3 }
+   .into { pre_post_bams ; pre_post_bams2 ; pre_post_bams3 ; pre_post_bams4 }
 
 params.samtools_stats_options = ''
 process samtools_stats {
@@ -799,7 +792,6 @@ process samtools_stats {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.samtools_stats
@@ -838,7 +830,6 @@ process samtools_coverage {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.samtools_coverage
@@ -850,7 +841,7 @@ process samtools_coverage {
   file("${task.process}/{aligned,trimmed}/${sample}.cov.{txt,hist}")
   file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
   tuple sample, env(coverage) into samtools_coverage_results
-  tuple sample, env(depth) into samtools_depth_results
+  tuple sample, env(depth) into samtools_covdepth_results
 
   shell:
   '''
@@ -880,7 +871,6 @@ process samtools_flagstat {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   input:
   set val(sample), file(aligned), file(trimmed) from pre_post_bams3
@@ -911,6 +901,47 @@ process samtools_flagstat {
   '''
 }
 
+params.samtools_depth_options = ''
+process samtools_depth {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "${sample}"
+  echo true
+  cpus 1
+  container 'staphb/samtools:latest'
+
+  input:
+  set val(sample), file(aligned), file(trimmed) from pre_post_bams4
+
+  when:
+  params.samtools_depth
+
+  output:
+  file("${task.process}/{aligned,trimmed}/${sample}.depth.txt")
+  tuple sample, env(depth) into samtools_depth_results
+  file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
+
+  shell:
+  '''
+    mkdir -p !{task.process}/aligned !{task.process}/trimmed logs/!{task.process}
+    log_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.log
+    err_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.err
+
+    date | tee -a $log_file $err_file > /dev/null
+    samtools --version >> $log_file
+
+    samtools depth !{params.samtools_depth_options} \
+      !{aligned} \
+      2>> $err_file > !{task.process}/aligned/!{sample}.depth.txt
+
+    samtools depth !{params.samtools_depth_options} \
+      !{trimmed} \
+      2>> $err_file > !{task.process}/trimmed/!{sample}.depth.txt
+
+    depth=$(awk '{ if ($3 > 10) print $0 }' !{task.process}/trimmed/!{sample}.depth.txt | wc -l )
+    if [ -z "$depth" ] ; then depth="0" ; fi
+  '''
+}
+
 clean_reads_classification
   .combine(kraken2_db)
   .set{ clean_reads_kraken2 }
@@ -922,7 +953,6 @@ process kraken2 {
   echo false
   cpus params.maxcpus
   container 'staphb/kraken2:latest'
-  stageInMode = 'symlink'
 
   when:
   params.kraken2
@@ -985,7 +1015,6 @@ process bedtools_multicov {
   echo false
   cpus 1
   container 'staphb/bedtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.bedtools_multicov
@@ -1025,7 +1054,6 @@ process samtools_ampliconstats {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.samtools_ampliconstats
@@ -1064,7 +1092,6 @@ process samtools_plot_ampliconstats {
   echo false
   cpus 1
   container 'staphb/samtools:latest'
-  stageInMode = 'symlink'
 
   when:
   params.samtools_plot_ampliconstats
@@ -1092,46 +1119,56 @@ process samtools_plot_ampliconstats {
 }
 
 params.pangolin_options = ''
-if (params.pangolin) {
-  process pangolin {
-    publishDir "${params.outdir}", mode: 'copy'
-    tag "pangolin"
-    echo false
-    cpus params.maxcpus
-    container 'staphb/pangolin:latest'
-    stageInMode = 'symlink'
+process pangolin {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "${sample}"
+  echo false
+  cpus params.medcpus
+  container 'staphb/pangolin:latest'
 
-    when:
-    params.pangolin
+  when:
+  params.pangolin
 
-    input:
-    file(fasta) from consensus_pangolin.collect()
+  input:
+  set val(sample), file(fasta) from consensus_pangolin
 
-    output:
-    file("${task.process}/lineage_report.csv") into pangolin_file
-    file("logs/${task.process}/${task.process}.${workflow.sessionId}.{log,err}")
+  output:
+  file("${task.process}/${sample}/lineage_report.csv") into pangolin_files
+  tuple sample, env(pangolin_lineage) into pangolin_lineage
+  tuple sample, env(pangolin_status) into pangolin_status
+  file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
 
-    shell:
-    '''
-      mkdir -p !{task.process} logs/!{task.process}
-      log_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.log
-      err_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.err
+  shell:
+  '''
+    mkdir -p !{task.process} logs/!{task.process}
+    log_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.log
+    err_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.err
 
-      date | tee -a $log_file $err_file > /dev/null
-      pangolin --version >> $log_file
-      pangolin --pangoLEARN-version >> $log_file
+    date | tee -a $log_file $err_file > /dev/null
+    pangolin --version >> $log_file
+    pangolin --pangoLEARN-version >> $log_file
 
-      cat !{fasta} > ultimate_consensus.fasta
+    pangolin !{params.pangolin_options} \
+      --outdir !{task.process}/!{sample}   \
+      !{fasta} \
+      2>> $err_file >> $log_file
 
-      pangolin !{params.pangolin_options} \
-        --outdir !{task.process} \
-        ultimate_consensus.fasta \
-        2>> $err_file >> $log_file
-    '''
-  }
-} else {
-  pangolin_file = Channel.fromPath(workflow.projectDir + "/Cecret.nf", type:'file')
+    lineage_column=$(head -n 1 !{task.process}/!{sample}/lineage_report.csv | tr ',' '\\n' | grep -n "lineage" | cut -f 1 -d ":" )
+    status_column=$(head -n 1 !{task.process}/!{sample}/lineage_report.csv | tr ',' '\\n' | grep -n "status" | cut -f 1 -d ":" )
+
+    pangolin_lineage=$(grep "Consensus_!{sample}.consensus_threshold" !{task.process}/!{sample}/lineage_report.csv | cut -f $lineage_column -d ",")
+    pangolin_status=$(grep "Consensus_!{sample}.consensus_threshold" !{task.process}/!{sample}/lineage_report.csv | cut -f $status_column -d ",")
+
+    if [ -z "$pangolin_lineage" ] ; then pangolin_lineage=NA ; fi
+    if [ -z "$pangolin_status" ] ; then pangolin_status=NA ; fi
+  '''
 }
+
+pangolin_files
+  .collectFile(name: "combined_lineage_report.csv",
+    keepHeader: true,
+    sort: true,
+    storeDir: "${params.outdir}/pangolin")
 
 params.nextclade_options = ''
 process nextclade {
@@ -1140,7 +1177,6 @@ process nextclade {
   echo false
   cpus params.medcpus
   container 'neherlab/nextclade:latest'
-  stageInMode = 'symlink'
 
   when:
   params.nextclade
@@ -1149,7 +1185,7 @@ process nextclade {
   set val(sample), file(fasta) from consensus_nextclade
 
   output:
-  file("${task.process}/${sample}_nextclade_report.csv")
+  file("${task.process}/${sample}_nextclade_report.csv") into nextclade_files
   tuple sample, env(nextclade_clade) into nextclade_clade_results
   file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
 
@@ -1173,64 +1209,103 @@ process nextclade {
   '''
 }
 
-if (params.vadr) {
-  params.maxmem = Math.round(Runtime.runtime.totalMemory() / 10241024)
-  if ( params.maxmem / 2 > params.medcpus ) {
-    vadrmemory = params.medcpus + params.medcpus
-    vadrcpus = params.medcpus
-  } else {
-    vadrmemory = 2
-    vadrcpus = 1
-  }
+nextclade_files
+  .collectFile(name: "combined_nextclade_report.csv",
+    keepHeader: true,
+    sort: true,
+    storeDir: "${params.outdir}/nextclade")
 
-  params.vadr_options = '--split --glsearch -s  -r --nomisc --lowsim5term 2 --lowsim3term 2 --alt_fail lowscore,fstukcnf,insertnn,deletinn'
-  params.vadr_reference = 'sarscov2'
-  params.vadr_mdir = '/opt/vadr/vadr-models'
-  process vadr {
-    publishDir "${params.outdir}", mode: 'copy'
-    tag "vadr"
-    echo false
-    cpus vadrcpus
-    memory vadrmemory.GB
-    container 'staphb/vadr:latest'
-    stageInMode = 'symlink'
-
-    when:
-    params.vadr
-
-    input:
-    file(fasta) from consensus_vadr.collect()
-
-    output:
-    file("${task.process}/*")
-    file("${task.process}/vadr.vadr.sqa") into vadr_file
-    file("logs/${task.process}/${task.process}.${workflow.sessionId}.{log,err}")
-
-    shell:
-    '''
-      mkdir -p logs/!{task.process}
-      log_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.log
-      err_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.err
-
-      date | tee -a $log_file $err_file > /dev/null
-      echo "no version" >> $log_file
-      v-annotate.pl -h >> $log_file
-
-      cat !{fasta} > ultimate.fasta
-
-      v-annotate.pl !{params.vadr_options} \
-        --noseqnamemax \
-        --mkey !{params.vadr_reference} \
-        --mdir !{params.vadr_mdir} \
-        --cpu !{task.cpus} \
-        ultimate.fasta \
-        !{task.process} \
-        2>> $err_file >> $log_file
-    '''
-  }
+params.maxmem = Math.round(Runtime.runtime.totalMemory() / 10241024)
+if ( params.maxmem / 2 > params.medcpus && params.vadr ) {
+  vadrmemory = params.medcpus + params.medcpus
+  vadrcpus = params.medcpus
 } else {
-  vadr_file = Channel.fromPath(workflow.projectDir + "/Cecret.nf", type:'file')
+  vadrmemory = 2
+  vadrcpus = 1
 }
+
+params.vadr_options = '--split --glsearch -s  -r --nomisc --lowsim5term 2 --lowsim3term 2 --alt_fail lowscore,fstukcnf,insertnn,deletinn'
+params.vadr_reference = 'sarscov2'
+params.vadr_mdir = '/opt/vadr/vadr-models'
+process vadr {
+  publishDir "${params.outdir}", mode: 'copy'
+  tag "${sample}"
+  echo false
+  cpus vadrcpus
+  memory vadrmemory.GB
+  container 'staphb/vadr:latest'
+
+  when:
+  params.vadr
+
+  input:
+  set val(sample), file(fasta) from consensus_vadr
+
+  output:
+  file("${task.process}/${sample}/*")
+  file("${task.process}/${sample}/${sample}.vadr.fail.fa") into vadr_files_fail_fasta
+  file("${task.process}/${sample}/${sample}.vadr.fail.list") into vadr_files_fail_list
+  file("${task.process}/${sample}/${sample}.vadr.pass.fa") into vadr_files_pass_fasta
+  file("${task.process}/${sample}/${sample}.vadr.pass.list") into vadr_files_pass_list
+  file("${task.process}/${sample}/${sample}.vadr.sqc") into vadr_files_sqc
+  tuple sample, env(pass_fail) into vadr_results
+  file("logs/${task.process}/${sample}.${workflow.sessionId}.{log,err}")
+
+  shell:
+  '''
+    mkdir -p logs/!{task.process} !{task.process}
+    log_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.log
+    err_file=logs/!{task.process}/!{sample}.!{workflow.sessionId}.err
+
+    date | tee -a $log_file $err_file > /dev/null
+    echo "no version" >> $log_file
+    v-annotate.pl -h >> $log_file
+
+    v-annotate.pl !{params.vadr_options} \
+      --noseqnamemax \
+      --mkey !{params.vadr_reference} \
+      --mdir !{params.vadr_mdir} \
+      --cpu !{task.cpus} \
+      !{fasta} \
+      !{task.process}/!{sample} \
+      2>> $err_file >> $log_file
+
+    pass_fail=$(grep "Consensus_!{sample}.consensus_threshold" !{task.process}/!{sample}/!{sample}.vadr.sqc | awk '{print $4}')
+    if [ -z "$pass_fail" ] ; then pass_fail="NA" ; fi
+
+  '''
+}
+
+vadr_files_fail_fasta
+  .collectFile(name: "combined_vadr.fail.fasta",
+    keepHeader: false,
+    sort: false,
+    storeDir: "${params.outdir}/vadr")
+
+vadr_files_fail_list
+  .collectFile(name: "combined_vadr.fail.list",
+    keepHeader: false,
+    sort: true,
+    storeDir: "${params.outdir}/vadr")
+
+vadr_files_pass_fasta
+  .collectFile(name: "combined_vadr.pass.fasta",
+    keepHeader: false,
+    sort: false,
+    storeDir: "${params.outdir}/vadr")
+
+vadr_files_pass_list
+  .collectFile(name: "combined_vadr.pass.list",
+    keepHeader: false,
+    sort: true,
+    storeDir: "${params.outdir}/vadr")
+
+vadr_files_sqc
+  .collectFile(name: "combined_vadr.sqc",
+    keepHeader: true,
+    sort: true,
+    skip: 3,
+    storeDir: "${params.outdir}/vadr")
 
 consensus_results
 //tuple sample, env(num_N), env(num_ACTG), env(num_degenerate), env(num_total) into consensus_results
@@ -1242,6 +1317,7 @@ consensus_results
   .join(ivar_variants_results, remainder: true, by: 0)
   .join(bcftools_variants_results, remainder: true, by:0)
   .join(samtools_coverage_results, remainder: true, by: 0)
+  .join(samtools_covdepth_results, remainder: true, by: 0)
   .join(samtools_depth_results, remainder: true, by: 0)
   .join(samtools_stats_before_size_results, remainder: true, by: 0)
   .join(samtools_stats_after_size_results, remainder: true, by: 0)
@@ -1252,8 +1328,9 @@ consensus_results
   .join(samtools_ampliconstats_results, remainder: true, by: 0)
   .join(aligner_version, remainder: true, by:0)
   .join(ivar_version, remainder: true, by: 0)
-  .combine(pangolin_file)
-  .combine(vadr_file)
+  .join(pangolin_lineage, remainder: true, by: 0)
+  .join(pangolin_status, remainder: true, by: 0)
+  .join(vadr_results, remainder: true, by: 0)
   .set { results }
 
 process summary {
@@ -1262,7 +1339,6 @@ process summary {
   echo false
   cpus 1
   container 'staphb/parallel-perl:latest'
-  stageInMode = 'symlink'
 
   input:
   set val(sample), val(num_N), val(num_ACTG), val(num_degenerate), val(num_total),
@@ -1274,6 +1350,7 @@ process summary {
     val(ivar_variants),
     val(bcftools_variants),
     val(coverage),
+    val(covdepth),
     val(depth),
     val(samtools_stats_before_size_results),
     val(samtools_stats_after_size_results),
@@ -1284,8 +1361,9 @@ process summary {
     val(samtools_num_failed_amplicons),
     val(bwa_version),
     val(ivar_version),
-    file(pangolin_file),
-    file(vadr_file) from results
+    val(pangolin_lineage),
+    val(pangolin_status),
+    val(vadr_results) from results
 
   output:
   file("${task.process}/${sample}.summary.csv") into summary
@@ -1304,18 +1382,8 @@ process summary {
     header="sample_id,sample,aligner_version,ivar_version"
     result="${sample_id},!{sample},!{bwa_version},!{ivar_version}"
 
-    if [ -f !{pangolin_file} ]
-    then
-      pangolin_lineage=$(grep "Consensus_!{sample}.consensus_threshold" !{pangolin_file} | cut -f 2 -d ",")
-      pangolin_status=$(grep "Consensus_!{sample}.consensus_threshold" !{pangolin_file} | cut -f 5 -d ",")
-    else
-      pangolin_lineage="NA"
-      pangolin_status="NA"
-    fi
-    if [ -z "$pangolin_lineage" ] ; then pangolin_lineage=NA ; fi
-    if [ -z "$pangolin_status" ] ; then pangolin_status=NA ; fi
     header="$header,pangolin_lineage,pangolin_status"
-    result="$result,$pangolin_lineage,$pangolin_status"
+    result="$result,!{pangolin_lineage},!{pangolin_status}"
 
     header="$header,nextclade_clade"
     result="$result,!{nextclade_clade}"
@@ -1329,8 +1397,11 @@ process summary {
     header="$header,fastp_reads_passed"
     result="$result,!{reads_passed}"
 
-    header="$header,depth_after_trimming,coverage_after_trimming"
-    result="$result,!{depth},!{coverage}"
+    header="$header,depth_after_trimming,1X_coverage_after_trimming"
+    result="$result,!{covdepth},!{coverage}"
+
+    header="$header,num_pos_10X"
+    result="$result,!{depth}"
 
     header="$header,insert_size_before_trimming,insert_size_after_trimming"
     result="$result,!{samtools_stats_before_size_results},!{samtools_stats_after_size_results}"
@@ -1345,10 +1416,8 @@ process summary {
     header="$header,bedtools_num_failed_amplicons,samtools_num_failed_amplicons"
     result="$result,!{bedtools_num_failed_amplicons},!{samtools_num_failed_amplicons}"
 
-    pass_fail=$(grep "Consensus_!{sample}.consensus_threshold" !{vadr_file} | awk '{print $4}')
-    if [ -z "$pass_fail" ] ; then pass_fail="NA" ; fi
     header="$header,vadr_conclusion"
-    result="$result,$pass_fail"
+    result="$result,!{vadr_results}"
 
     header="$header,num_N,num_degenerage,num_non-ambiguous,num_total"
     result="$result,!{num_N},!{num_degenerate},!{num_ACTG},!{num_total}"
@@ -1366,7 +1435,6 @@ process combined_summary {
   echo false
   cpus 1
   container 'staphb/parallel-perl:latest'
-  stageInMode = 'symlink'
 
   input:
   file(summary) from summary.collect()
@@ -1401,10 +1469,9 @@ if (params.relatedness) {
     container 'staphb/mafft:latest'
     errorStrategy 'retry'
     maxRetries 2
-    stageInMode = 'symlink'
 
     input:
-    file(consensus) from qc_consensus_15000_mafft.collect()
+    file(consensus) from consensus_mafft.collectFile(name:"ultimate.fasta")
     file(reference_genome) from reference_genome_mafft
 
     output:
@@ -1428,12 +1495,11 @@ if (params.relatedness) {
       echo ">!{params.outgroup}" > reference.fasta
       grep -v ">" !{reference_genome} >> reference.fasta
 
-      cat *fa > ultimate_consensus.fasta
       mafft --auto \
         !{params.mafft_options} \
         --thread !{task.cpus} \
         --maxambiguous !{params.max_ambiguous} \
-        --addfragments ultimate_consensus.fasta \
+        --addfragments !{consensus} \
         reference.fasta \
         > !{task.process}/mafft_aligned.fasta \
         2>> $err_file
@@ -1447,7 +1513,6 @@ if (params.relatedness) {
     echo false
     cpus 1
     container 'staphb/snp-dists:latest'
-    stageInMode = 'symlink'
 
     when:
     params.snpdists
@@ -1479,7 +1544,6 @@ if (params.relatedness) {
     echo false
     cpus params.maxcpus
     container 'staphb/iqtree:latest'
-    stageInMode = 'symlink'
 
     when:
     params.iqtree
@@ -1579,3 +1643,4 @@ workflow.onComplete {
     println("A summary of results can be found in a tab-delimited file: ${workflow.launchDir}/run_results.txt")
     println("Execution status: ${ workflow.success ? 'OK' : 'failed' }")
 }
+
