@@ -12,18 +12,19 @@ task fastqc {
     String?     memory = "4 GB"
   }
 
-  command {
+  command
+  <<<
     # capture date and version
     date | tee DATE
     fastqc --version | grep FastQC | tee VERSION
 
-    fastqc --outdir $PWD --threads ${cpus} ${read1} ${read2}
+    fastqc --outdir $PWD --threads ~{cpus} ~{read1} ~{read2}
 
-    unzip -p ${read1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
-    unzip -p ${read2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
+    unzip -p ~{read1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ1_SEQS
+    unzip -p ~{read2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 | tee READ2_SEQS
 
-    READ1_SEQS=$(unzip -p ${read1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
-    READ2_SEQS=$(unzip -p ${read2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+    READ1_SEQS=$(unzip -p ~{read1_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
+    READ2_SEQS=$(unzip -p ~{read2_name}_fastqc.zip */fastqc_data.txt | grep "Total Sequences" | cut -f 2 )
 
     if [ $READ1_SEQS == $READ2_SEQS ]; then
       read_pairs=$READ1_SEQS
@@ -31,7 +32,7 @@ task fastqc {
       read_pairs="ERROR:Unequal number of L and R reads- $READ1_SEQS and $READ2_SEQS"
     fi
     echo $read_pairs | tee READ_PAIRS
-  }
+  >>>
 
   output {
     File       fastqc1_html = "${read1_name}_fastqc.html"
