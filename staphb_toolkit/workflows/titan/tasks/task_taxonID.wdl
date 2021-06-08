@@ -11,31 +11,32 @@ task kraken2 {
     String      docker="staphb/kraken2:2.0.8-beta_hv"
   }
 
-  command{
+  command
+  <<<
     # date and version control
     date | tee DATE
+
     kraken2 --version | head -n1 | tee VERSION
-    num_reads=$(ls *fastq.gz 2> /dev/nul | wc -l)
-    if ! [ -z ${read2} ]; then
+
+    if ! [ -z ~{read2} ]; then
       mode="--paired"
     fi
-    echo $mode
+
     kraken2 $mode \
       --classified-out cseqs#.fq \
-      --threads ${cpus} \
-      --db ${kraken2_db} \
-      ${read1} ${read2} \
-      --report ${samplename}_kraken2_report.txt
+      --threads ~{cpus} \
+      --db ~{kraken2_db} \
+      ~{read1} ~{read2} \
+      --report ~{samplename}_kraken2_report.txt
 
-    percentage_human=$(grep "Homo sapiens" ${samplename}_kraken2_report.txt | cut -f 1)
-     # | tee PERCENT_HUMAN
-    percentage_sc2=$(grep "Severe acute respiratory syndrome coronavirus 2" ${samplename}_kraken2_report.txt | cut -f1 )
-     # | tee PERCENT_COV
+    percentage_human=$(grep "Homo sapiens" ~{samplename}_kraken2_report.txt | cut -f 1)
+    percentage_sc2=$(grep "Severe acute respiratory syndrome coronavirus 2" ~{samplename}_kraken2_report.txt | cut -f1 )
+
     if [ -z "$percentage_human" ] ; then percentage_human="0" ; fi
     if [ -z "$percentage_sc2" ] ; then percentage_sc2="0" ; fi
     echo $percentage_human | tee PERCENT_HUMAN
     echo $percentage_sc2 | tee PERCENT_SC2
-  }
+  >>>
 
   output {
     String     date          = read_string("DATE")
@@ -63,22 +64,23 @@ task pangolin {
     String?     memory = "8 GB"
   }
 
-  command{
+  command
+  <<<
     # date and version control
     date | tee DATE
     pangolin --version | head -n1 | tee VERSION
 
-    pangolin --outdir ${samplename} ${fasta}
-    pangolin_lineage=$(tail -n 1 ${samplename}/lineage_report.csv | cut -f 2 -d "," | grep -v "lineage")
+    pangolin --outdir ~{samplename} ~{fasta}
+    pangolin_lineage=$(tail -n 1 ~{samplename}/lineage_report.csv | cut -f 2 -d "," | grep -v "lineage")
 
-    pangolin_aLRT=$(tail -n 1 ${samplename}/lineage_report.csv | cut -f 3 -d "," )
-    pangolin_stats=$(tail -n 1 ${samplename}/lineage_report.csv | cut -f 4 -d "," )
-    mv ${samplename}/lineage_report.csv ${samplename}_pango_lineage.csv
+    pangolin_aLRT=$(tail -n 1 ~{samplename}/lineage_report.csv | cut -f 3 -d "," )
+    pangolin_stats=$(tail -n 1 ~{samplename}/lineage_report.csv | cut -f 4 -d "," )
+    mv ~{samplename}/lineage_report.csv ~{samplename}_pango_lineage.csv
 
     echo $pangolin_lineage | tee PANGOLIN_LINEAGE
     echo $pangolin_aLRT | tee PANGOLIN_aLRT
     echo $pangolin_stats | tee PANGOLIN_STATS
-  }
+  >>>
 
   output {
     String     date                 = read_string("DATE")
@@ -107,7 +109,8 @@ task pangolin2 {
     String?     memory = "8 GB"
   }
 
-  command{
+  command
+  <<<
     # date and version control
     date | tee DATE
     echo "$(pangolin -v); $(pangolin -pv)" | tee VERSION
@@ -117,14 +120,14 @@ task pangolin2 {
        --outfile "~{samplename}.pangolin_report.csv" \
        --verbose
 
-    pangolin_lineage=$(tail -n 1 ${samplename}.pangolin_report.csv | cut -f 2 -d "," | grep -v "lineage")
+    pangolin_lineage=$(tail -n 1 ~{samplename}.pangolin_report.csv | cut -f 2 -d "," | grep -v "lineage")
 
-    pangolin_probability=$(tail -n 1 ${samplename}.pangolin_report.csv | cut -f 3 -d "," )
-    mv ${samplename}.pangolin_report.csv ${samplename}_pango2_lineage.csv
+    pangolin_probability=$(tail -n 1 ~{samplename}.pangolin_report.csv | cut -f 3 -d "," )
+    mv ~{samplename}.pangolin_report.csv ~{samplename}_pango2_lineage.csv
 
     echo $pangolin_lineage | tee PANGOLIN_LINEAGE
     echo $pangolin_probability | tee PANGOLIN_PROBABILITY
-  }
+  >>>
 
   output {
     String     date                 = read_string("DATE")
@@ -160,7 +163,8 @@ task nextclade_one_sample {
         String? memory = "3 GB"
     }
     String basename = basename(genome_fasta, ".fasta")
-    command {
+    command
+    <<<
         set -e
         nextclade.js --version > VERSION
         nextclade.js \
@@ -184,7 +188,7 @@ task nextclade_one_sample {
         grep ^clade transposed.tsv | cut -f 2 | grep -v clade > NEXTCLADE_CLADE
         grep ^aaSubstitutions transposed.tsv | cut -f 2 | grep -v aaSubstitutions | sed 's/,/|/g' > NEXTCLADE_AASUBS
         grep ^aaDeletions transposed.tsv | cut -f 2 | grep -v aaDeletions | sed 's/,/|/g' > NEXTCLADE_AADELS
-    }
+    >>>
     runtime {
         docker: "~{docker}"
         memory: "~{memory}"
