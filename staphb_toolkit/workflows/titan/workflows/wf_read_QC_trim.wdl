@@ -26,8 +26,8 @@ workflow read_QC_trim {
   call read_clean.trimmomatic {
     input:
       samplename = samplename,
-      read1 = read1_raw,
-      read2 = read2_raw,
+      read1 = ncbi_scrub_pe.read1_dehosted,
+      read2 = ncbi_scrub_pe.read2_dehosted,
       trimmomatic_minlen = trimmomatic_minlen,
       trimmomatic_quality_trim_score = trimmomatic_quality_trim_score,
       trimmomatic_window_size = trimmomatic_window_size
