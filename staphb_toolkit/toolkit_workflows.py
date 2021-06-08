@@ -663,16 +663,6 @@ def main():
         #titan path
         titan_path = os.path.join(workflows_path,"titan/")
 
-        #check cromwell
-
-
-        #give config to user if requested
-        #if args.get_config == "pe_assembly":
-            #config_path = os.path.join(monroe_path,"configs/pe_user_config.config")
-            #dest_path = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+"_pe_assembly.config")
-            #copyfile(config_path,dest_path)
-            #sys.exit()
-
         if args.titan_command == 'pe_assembly':
             #create output dir
             output_path = os.path.abspath(args.output)
@@ -712,8 +702,12 @@ def main():
             print("Starting the Titan paired-end assembly:")
             child = pexpect.spawn(command)
             child.interact()
-            tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)
+            try:
+                tw.parseOutputMetadata(f"{output_path}/metadata.json",output_path)
+            except KeyError:
+                print("Workflow Failed...")
+                sys.exit(1)
 
             #remove output files
-            rmtree(os.path.abspath('./cromwell-executions/'))
-            rmtree(os.path.abspath('./cromwell-workflow-logs/'))
+            rmtree(os.path.abspath('./titan-temp-run/'))
+            rmtree(os.path.abspath('./titan-temp-logs/'))
