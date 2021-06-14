@@ -1,7 +1,5 @@
 #!/usr/bin/env nextflow
 
-println("User is currently using the cecret workflow as part of the staphb toolkit.\n")
-
 println("Currently using the Cecret workflow for use with amplicon-based Illumina hybrid library prep on MiSeq\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
@@ -1245,8 +1243,7 @@ nextclade_files
     sort: true,
     storeDir: "${params.outdir}/nextclade")
 
-params.maxmem = Math.round(Runtime.runtime.totalMemory() / 10241024)
-if ( params.maxmem / 2 > params.medcpus && params.vadr ) {
+if ( Math.round(Runtime.runtime.totalMemory() / 10241024) / 2 > params.medcpus && params.vadr ) {
   vadrmemory = params.medcpus + params.medcpus
   vadrcpus = params.medcpus
 } else {
