@@ -81,7 +81,7 @@ process cleanreads {
   set val(name), file(reads) from trimmed_reads
 
   output:
-  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads
+  tuple name, file("${name}{_1,_2}.clean.fastq.gz") into cleaned_reads, reads_files_minimap
   file("${name}.phix.stats.txt") into phix_cleanning_stats
   file("${name}.adapters.stats.txt") into adapter_cleanning_stats
 
@@ -138,7 +138,7 @@ process centroid {
   file(assembly) from assembled_genomes.collect()
 
   output:
-  file("*_centroid_ref.fasta") into centroid_out
+  file("*_centroid_ref.fasta") into centroid_out, ref_minimap
 
   script:
   """
@@ -148,5 +148,103 @@ process centroid {
   ref=\$(cat centroid_out.txt | awk -F. '{print \$1}')
   ln ./assemblies/\${ref}.fasta ./\${ref}_centroid_ref.fasta
   """
+}
+//Step5: Map % reads to reference genome
+process sam_files {
+  publishDir "${params.outdir}/sam_files", mode: 'copy'
+  tag "$name"
 
+  input:
+  set val(name), file(reads) from reads_files_minimap
+  file(reference) from ref_minimap
+
+
+  output:
+  tuple name, file("${name}.sam") into sam_percent
+
+  script:
+  """
+  minimap2 -ax sr *_centroid_ref.fasta ${reads[0]} ${reads[1]} > ${name}.sam
+  """
+}
+
+//step6: Actually map % reads to reference genome
+process reference_mapping{
+  publishDir "${params.outdir}/logs/bam_files", mode: 'copy' ,pattern:"*.sorted.bam"
+  publishDir "${params.outdir}/logs/cvg_tsvs", mode: 'copy' ,pattern:"*.tsv"
+  tag "$name"
+
+  input:
+  set val(name), file(sam_files) from sam_percent
+
+  output:
+  file("${name}.samtools.cvg.tsv") into samtools_cvg_tsvs
+
+  script:
+  """
+  samtools view -S -b ${name}.sam -o ${name}.bam
+  samtools sort ${name}.bam > ${name}.sorted.bam
+  samtools index ${name}.sorted.bam
+  samtools flagstat ${name}.sorted.bam
+  samtools coverage ${name}.sorted.bam -o ${name}.samtools.cvg.tsv
+  """
+}
+
+process generate_report{
+  publishDir "${params.outdir}/", mode: 'copy', pattern:"hickory_summary*"
+  tag "$name"
+
+  input:
+  set val(name), file(samtools_coverage) from samtools_cvg_tsvs.collect()
+
+  output:
+  file("*hickory_summary*")
+
+  script:
+  """
+#!/usr/bin/env python3
+import os, sys
+import glob, csv
+import xml.etree.ElementTree as ET
+from datetime import datetime
+
+today = datetime.today()
+today = today.strftime("%m%d%y")
+
+class result_values:
+    def __init__(self,id):
+        self.id = id
+        self.aligned_bases = "NA"
+        self.percent_cvg = "NA"
+        self.mean_depth = "NA"
+        self.mean_base_q = "NA"
+        self.mean_map_q = "NA"
+
+#get list of result files
+samtools_results = glob.glob("*.samtools.cvg.tsv")
+results = {}
+
+# collect samtools results
+for file in samtools_results:
+    id = file.split(".samtools.cvg.tsv")[0]
+    result = result_values(id)
+    with open(file,'r') as tsv_file:
+        tsv_reader = list(csv.DictReader(tsv_file, delimiter="\t"))
+        for line in tsv_reader:
+            result.aligned_bases = line["covbases"]
+            result.percent_cvg = line["coverage"]
+            result.mean_depth = line["meandepth"]
+            result.mean_base_q = line["meanbaseq"]
+            result.mean_map_q = line["meanmapq"]
+
+    results[id] = result
+
+#create output file
+with open(f"hickory_summary_{today}.csv",'w') as csvout:
+    writer = csv.writer(csvout,delimiter=',')
+    writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q"])
+    for id in results:
+        result = results[id]
+        writer.writerow([result.id,result.aligned_bases,result.percent_cvg,result.mean_depth,result.mean_base_q,result.mean_map_q])
+  """
 }
