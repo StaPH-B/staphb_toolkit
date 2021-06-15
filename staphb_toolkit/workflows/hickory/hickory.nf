@@ -151,7 +151,7 @@ process centroid {
 }
 //Step5: Map % reads to reference genome
 process sam_files {
-  publishDir "${params.outdir}/sam_files", mode: 'copy'
+  publishDir "${params.outdir}/logs/sam_files", mode: 'copy'
   tag "$name"
 
   input:
@@ -192,10 +192,10 @@ process reference_mapping{
 
 process generate_report{
   publishDir "${params.outdir}/", mode: 'copy', pattern:"hickory_summary*"
-  tag "$name"
+//  tag "$name"
 
   input:
-  set val(name), file(samtools_coverage) from samtools_cvg_tsvs.collect()
+  file(samtools_coverage) from samtools_cvg_tsvs.collect()
 
   output:
   file("*hickory_summary*")
