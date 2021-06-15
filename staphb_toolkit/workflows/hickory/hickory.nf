@@ -75,7 +75,8 @@ process trim {
 //Step2: Remove PhiX contamination
 process cleanreads {
   tag "$name"
-  publishDir "${params.outdir}/logs/cleanedreads", mode: 'copy',pattern:"*.stats.txt"
+  publishDir "${params.outdir}/logs/cleanedreads/stats", mode: 'copy',pattern:"*.stats.txt"
+  publishDir "${params.outdir}/logs/cleanedreads/reads", mode: 'copy',pattern:"*.fastq.gz"
 
   input:
   set val(name), file(reads) from trimmed_reads
@@ -149,7 +150,8 @@ process centroid {
   ln ./assemblies/\${ref}.fasta ./\${ref}_centroid_ref.fasta
   """
 }
-//Step5: Map % reads to reference genome
+
+//Step5: Map reads to reference genome
 process sam_files {
   publishDir "${params.outdir}/logs/sam_files", mode: 'copy'
   tag "$name"
@@ -168,7 +170,7 @@ process sam_files {
   """
 }
 
-//step6: Actually map % reads to reference genome
+//step6: get coverage
 process reference_mapping{
   publishDir "${params.outdir}/logs/bam_files", mode: 'copy' ,pattern:"*.sorted.bam"
   publishDir "${params.outdir}/logs/cvg_tsvs", mode: 'copy' ,pattern:"*.tsv"
