@@ -172,8 +172,9 @@ process sam_files {
 
 //step6: get coverage
 process reference_mapping{
-  publishDir "${params.outdir}/logs/bam_files", mode: 'copy' ,pattern:"*.sorted.bam"
-  publishDir "${params.outdir}/logs/cvg_tsvs", mode: 'copy' ,pattern:"*.tsv"
+  publishDir "${params.outdir}/logs/bam_files", mode: 'copy' ,pattern:'*.sorted.bam'
+  publishDir "${params.outdir}/logs/indexed_bam_files", mode: 'copy', pattern:'*.bai'
+  publishDir "${params.outdir}/logs/cvg_tsvs", mode: 'copy' ,pattern:'*.tsv'
   tag "$name"
 
   input:
@@ -181,6 +182,8 @@ process reference_mapping{
 
   output:
   file("${name}.samtools.cvg.tsv") into samtools_cvg_tsvs
+  file("${name}.sorted.bam")
+  file("${name}.sorted.bam.bai")
 
   script:
   """
@@ -193,14 +196,14 @@ process reference_mapping{
 }
 
 process generate_report{
-  publishDir "${params.outdir}/", mode: 'copy', pattern:"hickory_summary*"
+  publishDir "${params.outdir}/", mode: 'copy', pattern:"hickory*"
 //  tag "$name"
 
   input:
   file(samtools_coverage) from samtools_cvg_tsvs.collect()
 
   output:
-  file("*hickory_summary*")
+  file("*hickory_read_map_summary*")
 
   script:
   """
@@ -242,7 +245,7 @@ for file in samtools_results:
     results[id] = result
 
 #create output file
-with open(f"hickory_summary_{today}.csv",'w') as csvout:
+with open(f"hickory_read_map_summary_{today}.csv",'w') as csvout:
     writer = csv.writer(csvout,delimiter=',')
     writer.writerow(["sample","aligned_bases","percent_cvg", "mean_depth", "mean_base_q", "mean_map_q"])
     for id in results:
