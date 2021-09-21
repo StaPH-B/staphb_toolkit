@@ -1,0 +1,354 @@
+{
+  "apps": {
+    "temp": {
+      "description": "",
+      "image": "docker://staphb/",
+      "tag": "latest",
+      "help": "-h",
+      "exec": ""
+    },
+    "abricate": {
+      "description": "Abricate - Mass screening of contigs for antimicrobial and virulence genes",
+      "image": "docker://staphb/abricate",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "abricate"
+    },
+    "any2fasta": {
+      "description": "any2fasta - Convert various sequence formats to FASTA",
+      "image": "docker://staphb/any2fasta",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "any2fasta"
+    },
+    "ariba": {
+      "description": "Ariba - Antimicrobial Resistance Identification By Assembly",
+      "image": "docker://staphb/ariba",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "ariba"
+    },
+    "artic-ncov2019": {
+      "description": "ARTIC-ncov2019 - SARS-CoV-2 Workflow",
+      "image": "docker://staphb/artic-ncov2019",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "artic minion"
+    },
+    "augur": {
+      "description": "augur - a bioinformatics toolkit to track evolution from sequence and serological data",
+      "image": "docker://staphb/augur",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "augur"
+    },
+    "auspice": {
+      "description": "auspice - an open-source interactive web app for visualizing phylogenomic data",
+      "image": "docker://staphb/auspice",
+      "tag": "latest",
+      "help": "--help",
+      "exec": "auspice"
+    },
+    "bbtools": {
+      "description": "BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data",
+      "image": "docker://staphb/bbtools",
+      "tag": "latest",
+      "help": "BBTools shell script must be specified, e.g. staphb-tk bbtools bbmap.sh, staphb-tk bbtools bbduk.sh, etc. \n\nMore info on BBTools at https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/."
+    },
+    "bcftools": {
+      "description": "BCFTools - Variant calling and manipulating files in the Variant Call Format (VCF) and its binary counterpart BCF",
+      "image": "docker://staphb/bcftools",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "bcftools"
+    },
+    "bedtools": {
+      "description": "bedtools - a swiss-army knife of tools for a wide-range of genomics analysis tasks",
+      "image": "docker://staphb/bedtools",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "bedtools"
+    },
+    "bwa": {
+      "description": "BWA - mapping low-divergent sequences against a large reference genome",
+      "image": "docker://staphb/bwa",
+      "tag": "latest",
+      "help": "",
+      "exec": "bwa"
+    },
+    "canu": {
+      "description": "Canu - Long read assembly and polishing tools",
+      "image": "docker://staphb/canu",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "canu"
+    },
+    "centroid": {
+      "description": "centroid - a tool for determining an ideal reference genome from a set of fasta files",
+      "image": "docker://staphb/centroid",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "centroid.py"
+    },
+    "cfsan-snp-pipeline": {
+      "description": "CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory",
+      "image": "docker://staphb/cfsan-snp-pipeline",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "cfsan_snp_pipeline"
+    },
+    "circlator": {
+      "description": "Circlator - A tool to circularize genome assemblies",
+      "image": "docker://staphb/circlator",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "circlator"
+    },
+    "clustalo": {
+      "description": "ClustalO - A fast multiple sequence alignment program",
+      "image": "docker://staphb/clustalo",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "clustalo"
+    },
+    "colorid": {
+      "description": "Colorid - Experiments with using BIGSI data structure for metagenomic and QC applications",
+      "image": "docker://staphb/colorid",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "colorid"
+    },
+    "emm-typing-tool": {
+       "image": "docker://staphb/emm-typing-tool",
+       "tag": "latest"
+    },
+    "fastani": {
+        "image": "docker://staphb/fastani",
+        "tag": "latest"
+    },
+    "fasttree": {
+        "image": "docker://staphb/fasttree",
+        "tag": "latest"
+    },
+    "fastqc": {
+        "image": "docker://staphb/fastqc",
+        "tag": "latest"
+    },
+    "filtlong": {
+        "image": "docker://staphb/filtlong",
+        "tag": "latest"
+    },
+    "flye": {
+       "image": "docker://staphb/flye",
+       "tag": "latest"
+    },
+    "iqtree": {
+       "image": "docker://staphb/iqtree",
+       "tag": "latest"
+    },
+    "ivar":{
+      "image": "docker://staphb/ivar",
+      "tag": "latest"
+    },
+    "ivar-SC2":{
+      "image": "docker://staphb/ivar",
+      "tag": "latest"
+    },
+    "kma":{
+       "image": "docker://staphb/kma",
+       "tag": "latest"
+    },
+    "kraken": {
+       "image": "docker://staphb/kraken",
+       "tag": "latest"
+    },
+    "kraken2": {
+       "image": "docker://staphb/kraken2",
+       "tag": "latest"
+    },
+    "ksnp3": {
+       "image": "docker://staphb/ksnp3",
+       "tag": "latest"
+    },
+    "legsta": {
+       "image": "docker://staphb/legsta",
+       "tag": "latest"
+    },
+    "lyveset": {
+       "image": "docker://staphb/lyveset",
+       "tag": "latest"
+    },
+    "mafft": {
+       "image": "docker://staphb/mafft",
+       "tag": "latest"
+    },
+     "mash": {
+        "image": "docker://staphb/mash",
+        "tag": "latest"
+     },
+     "mashtree" : {
+        "image": "docker://staphb/mashtree",
+        "tag": "latest"
+     },
+     "medaka" : {
+        "image": "docker://staphb/medaka",
+        "tag": "latest"
+     },
+     "minimap2": {
+        "image": "docker://staphb/minimap2",
+        "tag": "latest"
+     },
+     "mlst" : {
+        "image": "docker://staphb/mlst",
+        "tag": "latest"
+     },
+     "mugsy": {
+        "image": "docker://staphb/mugsy",
+        "tag": "latest"
+     },
+     "multiqc": {
+        "image": "docker://staphb/multiqc",
+        "tag": "latest"
+     },
+     "nanoplot": {
+        "image": "docker://staphb/nanoplot",
+        "tag": "latest"
+     },
+     "ncbi-amrfinder-plus": {
+        "image": "docker://staphb/ncbi-amrfinderplus",
+        "tag": "latest"
+     },
+     "orthofinder": {
+        "image": "docker://staphb/orthofinder",
+        "tag": "latest"
+     },
+     "pangolin": {
+        "image": "docker://staphb/pangolin",
+        "tag": "latest"
+     },
+     "pilon": {
+        "image": "docker://staphb/pilon",
+        "tag": "latest"
+     },
+     "plasmidseeker": {
+        "image": "docker://staphb/plasmidseeker",
+        "tag": "latest"
+     },
+     "prokka": {
+        "image": "docker://staphb/prokka",
+        "tag": "latest"
+     },
+     "quast": {
+        "image": "docker://staphb/quast",
+        "tag": "latest"
+     },
+     "racon": {
+        "image": "docker://staphb/racon",
+        "tag": "latest"
+     },
+     "rasusa": {
+        "image": "docker://staphb/rasusa",
+        "tag": "latest"
+     },
+     "raxml":{
+        "image": "docker://staphb/raxml",
+         "tag": "latest"
+     },
+     "roary": {
+        "image": "docker://staphb/roary",
+        "tag": "latest"
+     },
+     "salmid": {
+        "image": "docker://staphb/salmid",
+        "tag": "latest"
+     },
+     "samtools": {
+        "image": "docker://staphb/samtools",
+        "tag": "latest"
+     },
+     "seqsero": {
+        "image": "docker://staphb/seqsero",
+        "tag": "latest"
+     },
+     "seqsero2": {
+        "image": "docker://staphb/seqsero2",
+        "tag": "latest"
+     },
+     "seqtk": {
+        "image": "docker://staphb/seqtk",
+        "tag": "latest"
+     },
+     "seqyclean": {
+        "image": "docker://staphb/seqyclean",
+        "tag": "latest"
+     },
+     "seroba": {
+        "image": "docker://staphb/seroba",
+        "tag": "latest"
+     },
+     "serotypefinder": {
+        "image": "docker://staphb/serotypefinder",
+        "tag": "latest"
+     },
+     "shovill": {
+        "image": "docker://staphb/shovill",
+        "tag": "latest"
+     },
+     "sistr": {
+        "image": "docker://staphb/sistr",
+        "tag": "latest"
+     },
+     "skesa": {
+        "image": "docker://staphb/skesa",
+        "tag": "latest"
+     },
+     "snippy": {
+        "image": "docker://staphb/snippy",
+        "tag": "latest"
+     },
+     "snp-dists": {
+        "image": "docker://staphb/snp-dists",
+        "tag": "latest"
+     },
+     "snp-sites": {
+        "image": "docker://staphb/snp-sites",
+        "tag": "latest"
+     },
+   "spades": {
+      "image": "docker://staphb/spades",
+      "tag": "latest"
+     },
+     "sra-toolkit": {
+        "image": "docker://staphb/sratoolkit",
+        "tag": "latest"
+     },
+     "staramr": {
+        "image": "docker://staphb/staramr",
+        "tag": "latest"
+     },
+     "tiptoft": {
+        "image": "docker://staphb/tiptoft",
+        "tag": "latest"
+     },
+     "trimmomatic": {
+        "image": "docker://staphb/trimmomatic",
+        "tag": "latest"
+     },
+     "unicycler": {
+        "image": "docker://staphb/unicycler",
+        "tag": "latest"
+     },
+     "vadr": {
+        "image": "docker://staphb/vadr",
+        "tag": "latest"
+     },
+     "vibrant": {
+        "image": "docker://staphb/vibrant",
+        "tag": "latest"
+     },
+    "wtdbg2": {
+       "image": "docker://staphb/wtdbg2",
+       "tag": "latest"
+    }
+  }
+}
