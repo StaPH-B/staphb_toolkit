@@ -436,81 +436,151 @@
       "help": "-h",
       "exec": "SeqSero2_package.py"
     },
-     "seqtk": {
-        "image": "docker://staphb/seqtk",
-        "tag": "latest"
-     },
-     "seqyclean": {
-        "image": "docker://staphb/seqyclean",
-        "tag": "latest"
-     },
-     "seroba": {
-        "image": "docker://staphb/seroba",
-        "tag": "latest"
-     },
-     "serotypefinder": {
-        "image": "docker://staphb/serotypefinder",
-        "tag": "latest"
-     },
-     "shovill": {
-        "image": "docker://staphb/shovill",
-        "tag": "latest"
-     },
-     "sistr": {
-        "image": "docker://staphb/sistr",
-        "tag": "latest"
-     },
-     "skesa": {
-        "image": "docker://staphb/skesa",
-        "tag": "latest"
-     },
-     "snippy": {
-        "image": "docker://staphb/snippy",
-        "tag": "latest"
-     },
-     "snp-dists": {
-        "image": "docker://staphb/snp-dists",
-        "tag": "latest"
-     },
-     "snp-sites": {
-        "image": "docker://staphb/snp-sites",
-        "tag": "latest"
-     },
-   "spades": {
+    "seqtk": {
+      "description": "SeqTK - Toolkit for processing sequences in FASTA/Q formats",
+      "image": "docker://staphb/seqtk",
+      "tag": "latest",
+      "help": "",
+      "exec": "seqtk"
+    },
+    "seqyclean": {
+      "description": "SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis",
+      "image": "docker://staphb/seqyclean",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "seqyclean"
+    },
+    "seroba": {
+      "description": "Seroba - k-mer based Pipeline to identify the Serotype from Illumina NGS reads",
+      "image": "docker://staphb/seroba",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "seroba"
+    },
+    "serotypefinder": {
+      "description": "SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli",
+      "image": "docker://staphb/serotypefinder",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "serotypefinder.pl"
+    },
+    "shovill": {
+      "description": "Shovill - Faster SPAdes assembler",
+      "image": "docker://staphb/shovill",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "shovill"
+    },
+    "sistr": {
+      "description": "SISTR - Salmonella in silico typing resource command-line tool",
+      "image": "docker://staphb/sistr",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "sistr"
+    },
+    "skesa": {
+      "description": "SKESA - NCBI's de novo genome assemlber",
+      "image": "docker://staphb/skesa",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "skesa"
+    },
+    "snippy": {
+      "description": "Snippy - Rapid haploid variant calling and core genome alignment",
+      "image": "docker://staphb/snippy",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "snippy"
+    },
+    "snp-dists": {
+      "description": "SNP-dists - Pairwise SNP distance matrix from a FASTA sequence alignment",
+      "image": "docker://staphb/snp-dists",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "snp-dists"
+    },
+    "snp-sites": {
+      "description": "SNP-sites - Finds SNP sites from a multi-FASTA alignment file",
+      "image": "docker://staphb/snp-sites",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "snp-sites"
+    },
+    "spades": {
+      "description": "SPAdes - St. Petersburg genome assembler",
       "image": "docker://staphb/spades",
-      "tag": "latest"
-     },
-     "sra-toolkit": {
-        "image": "docker://staphb/sratoolkit",
-        "tag": "latest"
-     },
-     "staramr": {
-        "image": "docker://staphb/staramr",
-        "tag": "latest"
-     },
-     "tiptoft": {
-        "image": "docker://staphb/tiptoft",
-        "tag": "latest"
-     },
-     "trimmomatic": {
-        "image": "docker://staphb/trimmomatic",
-        "tag": "latest"
-     },
-     "unicycler": {
-        "image": "docker://staphb/unicycler",
-        "tag": "latest"
-     },
-     "vadr": {
-        "image": "docker://staphb/vadr",
-        "tag": "latest"
-     },
-     "vibrant": {
-        "image": "docker://staphb/vibrant",
-        "tag": "latest"
-     },
+      "tag": "latest",
+      "help": "-h",
+      "exec": "spades"
+    },
+    "sra-toolkit": {
+      "description": "SRA ToolKit - Collection of tools and libraries for using data in the INSDC Sequence Read Archives.",
+      "image": "docker://staphb/sra-toolkit",
+      "tag": "latest",
+      "help": "SRA toolkit tool must be specified, e.g. staphb-tk sra-toolkit fasterq-dump, staphb-tk sra-toolkit sra-pileup, etc. \n\nMore info on SRA Toolkit usage at: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc"
+    },
+    "staramr": {
+      "description": "StarAMR - Scans genome contigs against the ResFinder, PlasmidFinder, and PointFinder databases",
+      "image": "docker://staphb/staramr",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "staramr"
+    },
+    "tiptoft": {
+      "description": "TipToft - Predict plasmids from uncorrected long read data",
+      "image": "docker://staphb/tiptoft",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "tiptoft"
+    },
+    "trimmomatic": {
+      "description": "Trimmomatic - Flexible read trimming tool for Illumina NGS data",
+      "image": "docker://staphb/trimmomatic",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "trimmomatic"
+    },
+    "trycycler": {
+      "description": "Trimmomatic - Trycycler is a tool for generating consensus long-read assemblies for bacterial genomes it can combine multiple long-read assemblies into a single high quality assembly",
+      "image": "docker://staphb/trycycler",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "trycycler"
+    },
+    "unicycler": {
+      "description": "Unicycler - an assembly pipeline for bacterial genomes",
+      "image": "docker://staphb/unicycler",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "unicycler"
+    },
+    "vadr": {
+      "description": "VADR - Software for viral annotations",
+      "image": "docker://staphb/vadr",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "vadr"
+    },
+    "vigor4": {
+      "description": "VIGOR4 (Viral Genome ORF Reader) is a Java application to predict protein sequences encoded in viral genomes",
+      "image": "docker://staphb/vigor4",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "vigor4"
+    },
+    "virsorter2": {
+      "description": "VirSorter2 - applies a multi-classifier, expert-guided approach to detect diverse DNA and RNA virus genomes",
+      "image": "docker://staphb/virsorter2",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "virsorter2"
+    },
     "wtdbg2": {
-       "image": "docker://staphb/wtdbg2",
-       "tag": "latest"
+      "description": "WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly",
+      "image": "docker://staphb/wtdbg2",
+      "tag": "latest",
+      "help": "-h",
+      "exec": "vadr"
     }
   }
 }
