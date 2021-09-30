@@ -1,12 +1,5 @@
 {
   "apps": {
-    "temp": {
-      "description": "",
-      "image": "docker://staphb/",
-      "tag": "latest",
-      "help": "-h",
-      "exec": ""
-    },
     "abricate": {
       "description": "Abricate - Mass screening of contigs for antimicrobial and virulence genes",
       "image": "docker://staphb/abricate",
@@ -541,7 +534,7 @@
       "exec": "trimmomatic"
     },
     "trycycler": {
-      "description": "Trimmomatic - Trycycler is a tool for generating consensus long-read assemblies for bacterial genomes it can combine multiple long-read assemblies into a single high quality assembly",
+      "description": "Trycycler - a tool for generating consensus long-read assemblies for bacterial genomes it can combine multiple long-read assemblies into a single high quality assembly",
       "image": "docker://staphb/trycycler",
       "tag": "latest",
       "help": "-h",

@@ -1,0 +1,9 @@
+{
+  "workflows":{
+    "test": {
+      "description": "test - workflow",
+      "help": "this is the help",
+      "configuration": "config_file"
+    }
+  }
+}
