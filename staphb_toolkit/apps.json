@@ -39,7 +39,7 @@
       "description": "auspice - an open-source interactive web app for visualizing phylogenomic data",
       "image": "docker://staphb/auspice",
       "tag": "latest",
-      "help": "--help",
+      "help": "-h",
       "exec": "auspice"
     },
     "bbtools": {

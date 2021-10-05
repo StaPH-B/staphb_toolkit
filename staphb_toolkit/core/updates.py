@@ -7,7 +7,7 @@ import shlex
 #version number
 versionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'VERSION')
 with open(versionPath,'r') as versionFile:
-    version = versionFile.readline().strip()
+    tk_version = versionFile.readline().strip()
 
 #selfupdate check file
 selfupdate_status = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),'selfupdate')
