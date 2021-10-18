@@ -12,6 +12,7 @@ from staphb_toolkit.core.autopath import path_replacer
 import staphb_toolkit.core.updates as updates
 import staphb_toolkit.core.callnextflow as callnxf
 from datetime import date
+from pyfiglet import Figlet
 
 def main():
     #setup argparser to display help if no arguments
@@ -30,7 +31,11 @@ def main():
         workflow_data = json.load(workflow_data_path)
 
     #construct top level help menu
-    parser = MyParser(description=f"StaPH-B ToolKit v{updates.tk_version}",usage="staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]",add_help=True)
+    f = Figlet(font='big')
+    print(f.renderText('StaPH-B ToolKit'))
+    print('StaPH-B ToolKit')
+    print(f"Version: {updates.tk_version}")
+    parser = MyParser(description=f"",usage="staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]",add_help=True)
     subparser = parser.add_subparsers(title='application or workflow name', metavar='<application/workflow>', dest="app_name", parser_class=MyParser)
     parser.add_argument("-l","--list_tools", default=False, action="store_true", help="List all tools in the toolkit.")
     parser.add_argument("-w","--list_workflows", default=False, action="store_true", help="List all workflows in the toolkit.")
