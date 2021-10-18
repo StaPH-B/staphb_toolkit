@@ -10,6 +10,7 @@ import json
 import staphb_toolkit.core.container_handler as container
 from staphb_toolkit.core.autopath import path_replacer
 import staphb_toolkit.core.updates as updates
+import staphb_toolkit.core.callnextflow as callnxf
 from datetime import date
 
 def main():
@@ -25,20 +26,21 @@ def main():
         app_data = json.load(app_data_file)
 
     #get workflow metadata
-    with open(os.path.abspath(os.path.dirname(__file__) + '/config/workflows.json'),'r') as workflows_data_path:
-        workflow_data = json.load(workflows_data_path)
+    with open(os.path.abspath(os.path.dirname(__file__) + '/config/workflows.json'),'r') as workflow_data_path:
+        workflow_data = json.load(workflow_data_path)
 
     #construct top level help menu
     parser = MyParser(description=f"StaPH-B ToolKit v{updates.tk_version}",usage="staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]",add_help=True)
-    subparser = parser.add_subparsers(title='application or workflow name',metavar='<application/workflow>',dest="app_name",parser_class=MyParser)
-    parser.add_argument("-ch","--command_help",default=False,action="store_true", help="get usage for the tool or workflow to run.")
-    parser.add_argument("-v","--run_version",default="latest", metavar="<version>", help="version of tool or workflow to run. default: latest")
-    parser.add_argument("-c","--configuration",metavar="<config_file>",help="custom workflow configuration file")
-    parser.add_argument("-l","--list_tools",default=False,action="store_true", help="List all tools in the toolkit.")
-    parser.add_argument("-w","--list_workflows",default=False,action="store_true", help="List all workflows in the toolkit.")
-    parser.add_argument("-nv","--nextflow_version",nargs='?',const="get",metavar="<version>",help="Get or set the version of nextflow.")
-    parser.add_argument("--update",default=False,action="store_true",help="Check for and install a ToolKit update.")
-    parser.add_argument("--auto_update",default=False,action="store_true",help="Toggle automatic ToolKit updates. Default is off.")
+    subparser = parser.add_subparsers(title='application or workflow name', metavar='<application/workflow>', dest="app_name", parser_class=MyParser)
+    parser.add_argument("-l","--list_tools", default=False, action="store_true", help="List all tools in the toolkit.")
+    parser.add_argument("-w","--list_workflows", default=False, action="store_true", help="List all workflows in the toolkit.")
+    parser.add_argument("-ch","--command_help", default=False, action="store_true", help="Get usage for the tool or workflow to run.")
+    parser.add_argument("-wv","--workflow_version", default="latest", metavar="<version>", help="Version of tool or workflow to run. Default: latest")
+    parser.add_argument("-c","--configuration", metavar="<config_file>", help="Specify a custom workflow configuration file.")
+    parser.add_argument("-gc","--get_configuration", default=False, action="store_true", help="Get the configuration file for the specified workflow. Note: You may need to specify a version for the workflow using -wv to get the correct configuration file.")
+    parser.add_argument("-nv","--nextflow_version", nargs='?', const="get", metavar="<version>", help="Get or set the version of nextflow.")
+    parser.add_argument("--update", default=False, action="store_true", help="Check for and install a ToolKit update.")
+    parser.add_argument("--auto_update", default=False, action="store_true", help="Toggle automatic ToolKit updates. Default is off.")
 
     #construct subparsers
     parser_data = {}
@@ -62,7 +64,7 @@ def main():
         print(f"{header[0]:<25}{header[1]:^10}")
         print(f"{header[2]:<25}{header[3]:^10}")
         for workflow in workflow_data['workflows']:
-            print(f"{workflow:<25}{workflow_data['workflows'][workflow]['description']:^10}")
+            print(f"{workflow:<25}{workflow_data['workflows'][workflow]['description']:^10}",'\n')
         return
 
     #handle the arguments and perform automatic path replacement for apps
@@ -70,6 +72,7 @@ def main():
     application = parser_args[0].app_name
     args = parser_args[1]
 
+    #set nextflow version
     if parser_args[0].nextflow_version == "get":
         updates.get_nf_version()
         sys.exit(0)
@@ -115,7 +118,7 @@ def main():
     toolName = application
     if toolName in app_data['apps'].keys():
         sb_tool = True
-    elif toolName in workflows_data['workflows'].keys():
+    elif toolName in workflow_data['workflows'].keys():
         sb_workflow = True
     else:
         print(f"The workflow or tool \"{toolName}\" is not in the StaPH-B Toolkit.")
@@ -127,6 +130,7 @@ def main():
 
     #Run the program
     #-----------------------------------------
+    #---------------------
     #app
     if sb_tool:
         try:
@@ -140,10 +144,32 @@ def main():
                 sys.exit(0)
         command = e + " " + " ".join(args)
         image = app_data['apps'][application]['image']
-        tag = parser_args[0].run_version
+        tag = parser_args[0].workflow_version
         program_object = container.Run(command=command, path=path_map, image=image, tag=tag)
         program_object.run()
+
+    #---------------------
     #workflow
     if sb_workflow:
-        command = workflow_data['workflow'][application]['repo']
-        sys.exit(0)
+        #get workflow information
+        wf_version = parser_args[0].workflow_version
+        if wf_version == 'latest':
+            wf_version = workflow_data['workflows'][application]['default_branch']
+        configFileName = workflow_data['workflows'][application]['configuration']
+        repo = workflow_data['workflows'][application]['repo']
+        config_url = f'https://raw.githubusercontent.com/{repo}/{wf_version}/{configFileName}'
+
+        #get configuration file from repo if asked
+        config_file = None
+        if parser_args[0].configuration:
+            config_file = parser_args[0].configuration
+
+        #get configuration file if asked
+        if parser_args[0].get_configuration:
+            callnxf.get_configuration_file(config_url,application)
+            sys.exit(0)
+
+        workflow_args = " ".join(parser_args[1])
+
+        #run nextflow workflow
+        callnxf.run(wf_version,repo,workflow_args,config_file)
