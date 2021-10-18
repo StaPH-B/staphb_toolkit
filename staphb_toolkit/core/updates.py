@@ -63,5 +63,6 @@ def check_for_updates():
             v = sout[-6:].strip()
             print(f"Updated to version {v}")
             print("Done.")
+            sys.exit(0)
         else:
             print("No new updates.")
