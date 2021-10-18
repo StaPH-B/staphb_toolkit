@@ -3,15 +3,31 @@ from shutil import which
 import re
 import subprocess as sub
 import shlex
+import pexpect
 
-#version number
+# version number
 versionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'VERSION')
 with open(versionPath,'r') as versionFile:
     tk_version = versionFile.readline().strip()
 
-#selfupdate check file
+#nextflow install path
+if which('nextflow'):
+    nextflow_path = os.path.abspath(os.path.dirname(which('nextflow')))
+else:
+    nextflow_path = os.path.abspath(os.path.dirname(__file__)+"/nextflow")
+
+#nextflow version tracker
+nxfVersionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'NXF_VERSION')
+try:
+    with open(nxfVersionPath,'r') as NXFversionFile:
+        nxf_version = NXFversionFile.readline().strip()
+except FileNotFoundError:
+    nxf_version = ''
+
+# selfupdate check file
 selfupdate_status = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),'selfupdate')
 
+# auto selfupdate toggle
 def toggle_updater(update):
     if update:
         if not os.path.exists(selfupdate_status):
@@ -24,9 +40,11 @@ def toggle_updater(update):
             sub.Popen(shlex.split(cmd)).wait()
             print('Auto-updates off')
 
+# check update status for toolkit
 def check_update_status():
     return os.path.exists(selfupdate_status)
 
+# check for toolkit updates
 def check_for_updates():
     #regular expressing for checking python version
     re_pattern = r"python\s3.[6-9]|python\s3.[0-9]{2,}"
@@ -66,3 +84,70 @@ def check_for_updates():
             sys.exit(0)
         else:
             print("No new updates.")
+
+#get nextflow
+def install_nextflow():
+    #check if we have curl or wget
+    if which('curl'):
+        cmd = "curl -s https://get.nextflow.io | bash"
+    elif which('wget'):
+        cmd = "wget -qO- https://get.nextflow.io | bash"
+    else:
+        print('Installing NextFlow requires wget or curl to be installed and in the path.')
+        sys.exit(1)
+
+    #pexpect strip $
+    def outputFilter(data):
+        data = data.decode('utf-8')
+        data = data.replace("$","")
+        return data.encode('utf-8')
+
+    #install nextflow
+    print("Getting the most recent version of NextFlow...")
+    try:
+        os.makedirs(nextflow_path)
+    except FileExistsError:
+        pass
+    child = pexpect.spawn('/bin/sh',cwd=nextflow_path)
+    child.setecho(False)
+    child.sendline(cmd)
+    child.sendline('exit')
+    child.interact(output_filter=outputFilter)
+
+#get nextflow version
+def get_nf_version():
+    if not which(nextflow_path+'/nextflow'):
+        install_nextflow()
+
+    cmd = nextflow_path + "/nextflow -v"
+    child = pexpect.spawn(cmd, cwd=os.path.expanduser("~"), env={'NXF_VER':nxf_version,'NXF_HOME':os.path.expanduser("~")})
+    child.setecho(False)
+    child.interact()
+
+#set nextflow version
+def set_nf_version(version='latest'):
+    print("Switching NextFlow to version:",version)
+    if not which(nextflow_path+'/nextflow'):
+        install_nextflow()
+
+    #update nextflow
+    cmd = nextflow_path + "/nextflow self-update"
+    child = pexpect.spawn(cmd,cwd=os.path.expanduser("~"))
+    child.setecho(False)
+
+    #an empty version indicates latest
+    if version == 'latest':
+        version = ''
+
+    #set version
+    cmd = nextflow_path + "/nextflow -v"
+    p = sub.Popen(shlex.split(cmd), stdout=sub.PIPE, stderr=sub.PIPE, env={'NXF_VER':version,'NXF_HOME':os.path.expanduser("~")})
+    out, err = p.communicate()
+    if err:
+        print(err.decode("utf-8"))
+        sys.exit(1)
+    else:
+        sout = out.decode("utf-8")
+        print(sout)
+        with open(nxfVersionPath,'w') as NXFversionFile:
+            NXFversionFile.write(version)
