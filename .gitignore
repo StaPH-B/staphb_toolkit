@@ -5,3 +5,4 @@ packaging/build/*
 packaging/dist/*
 *.egg-info
 nextflow
+NXF_VERSION
