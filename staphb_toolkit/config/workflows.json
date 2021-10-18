@@ -1,14 +1,22 @@
 {
   "workflows":{
-    "test": {
-      "description": "test - workflow",
-      "help": "this is the help",
-      "configuration": "config_file"
-    },
     "spriggan": {
-      "description": "test - workflow",
+      "description": "Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic resistance genes.",
       "repo": "wslh-bio/spriggan",
+      "default_branch": "main",
       "configuration": "spriggan.config"
+    },
+    "dryad": {
+      "description": "Dryad is a pipeline to construct reference free core-genome or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will performs both a reference free core-genome and/or a SNP analysis using the CFSAN-SNP pipeline.",
+      "repo": "wslh-bio/dryad",
+      "default_branch": "main",
+      "configuration": "dryad.config"
+    },
+    "cecret": {
+      "description": "Cecret is a workflow developed by @erinyoung at the Utah Public Health Laborotory for SARS-COV-2 sequencing with the artic/Illumina hybrid library prep workflow for MiSeq data.",
+      "repo": "UPHL-BioNGS/Cecret",
+      "default_branch": "master",
+      "configuration": "configs/cecret_config_template.config"
     }
   }
 }
