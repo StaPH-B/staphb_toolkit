@@ -34,7 +34,6 @@ def main():
     subparser = parser.add_subparsers(title='application or workflow name', metavar='<application/workflow>', dest="app_name", parser_class=MyParser)
     parser.add_argument("-l","--list_tools", default=False, action="store_true", help="List all tools in the toolkit.")
     parser.add_argument("-w","--list_workflows", default=False, action="store_true", help="List all workflows in the toolkit.")
-    parser.add_argument("-ch","--command_help", default=False, action="store_true", help="Get usage for the tool or workflow to run.")
     parser.add_argument("-wv","--workflow_version", default="latest", metavar="<version>", help="Version of tool or workflow to run. Default: latest")
     parser.add_argument("-c","--configuration", metavar="<config_file>", help="Specify a custom workflow configuration file.")
     parser.add_argument("-gc","--get_configuration", default=False, action="store_true", help="Get the configuration file for the specified workflow. Note: You may need to specify a version for the workflow using -wv to get the correct configuration file.")
