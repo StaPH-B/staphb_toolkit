@@ -21,11 +21,11 @@ def main():
             sys.exit(1)
 
     #get app metadata
-    with open(os.path.abspath(os.path.dirname(__file__) + '/apps.json'),'r') as app_data_file:
+    with open(os.path.abspath(os.path.dirname(__file__) + '/config/apps.json'),'r') as app_data_file:
         app_data = json.load(app_data_file)
 
     #get workflow metadata
-    with open(os.path.abspath(os.path.dirname(__file__) + '/workflows.json'),'r') as workflows_data_path:
+    with open(os.path.abspath(os.path.dirname(__file__) + '/config/workflows.json'),'r') as workflows_data_path:
         workflow_data = json.load(workflows_data_path)
 
     #construct top level help menu
@@ -33,6 +33,7 @@ def main():
     subparser = parser.add_subparsers(title='application or workflow name',metavar='<application/workflow>',dest="app_name",parser_class=MyParser)
     parser.add_argument("-ch","--command_help",default=False,action="store_true", help="get usage for the tool or workflow to run.")
     parser.add_argument("-v","--run_version",default="latest", metavar="<version>", help="version of tool or workflow to run. default: latest")
+    parser.add_argument("-c","--configuration",metavar="<config_file>",help="custom workflow configuration file")
     parser.add_argument("-l","--list_tools",default=False,action="store_true", help="List all tools in the toolkit.")
     parser.add_argument("-w","--list_workflows",default=False,action="store_true", help="List all workflows in the toolkit.")
     parser.add_argument("-nv","--nextflow_version",nargs='?',const="get",metavar="<version>",help="Get or set the version of nextflow.")
@@ -64,10 +65,20 @@ def main():
             print(f"{workflow:<25}{workflow_data['workflows'][workflow]['description']:^10}")
         return
 
-    #handle the arguments and perform automatic path replacement
+    #handle the arguments and perform automatic path replacement for apps
     parser_args = parser.parse_known_args()
     application = parser_args[0].app_name
     args = parser_args[1]
+
+    if parser_args[0].nextflow_version == "get":
+        updates.get_nf_version()
+        sys.exit(0)
+    elif parser_args[0].nextflow_version == "latest":
+        updates.set_nf_version()
+    elif parser_args[0].nextflow_version:
+        updates.set_nf_version(parser_args[0].nextflow_version)
+    else:
+        pass
 
     #check for updates
     if parser_args[0].update:
@@ -118,7 +129,6 @@ def main():
     #-----------------------------------------
     #app
     if sb_tool:
-
         try:
             e = app_data['apps'][application]['exec']
             if args == []:
