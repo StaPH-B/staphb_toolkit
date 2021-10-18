@@ -4,6 +4,11 @@
       "description": "test - workflow",
       "help": "this is the help",
       "configuration": "config_file"
+    },
+    "spriggan": {
+      "description": "test - workflow",
+      "repo": "wslh-bio/spriggan",
+      "configuration": "spriggan.config"
     }
   }
 }
