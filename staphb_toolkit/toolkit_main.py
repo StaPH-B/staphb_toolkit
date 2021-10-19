@@ -21,6 +21,14 @@ def main():
             self.print_help()
             sys.stderr.write('\nerror: %s\n' % message)
             sys.exit(1)
+        def print_help(self, file=None):
+            if file is None:
+                pass
+            f = Figlet(font='big')
+            print(f.renderText('StaPH-B ToolKit'))
+            print('StaPH-B ToolKit')
+            print(f"Version: {updates.tk_version}")
+            self._print_message(self.format_help(), file)
 
     #get app metadata
     with open(os.path.abspath(os.path.dirname(__file__) + '/config/apps.json'),'r') as app_data_file:
@@ -31,10 +39,6 @@ def main():
         workflow_data = json.load(workflow_data_path)
 
     #construct top level help menu
-    f = Figlet(font='big')
-    print(f.renderText('StaPH-B ToolKit'))
-    print('StaPH-B ToolKit')
-    print(f"Version: {updates.tk_version}")
     parser = MyParser(description=f"",usage="staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]",add_help=True)
     subparser = parser.add_subparsers(title='application or workflow name', metavar='<application/workflow>', dest="app_name", parser_class=MyParser)
     parser.add_argument("-l","--list_tools", default=False, action="store_true", help="List all tools in the toolkit.")
