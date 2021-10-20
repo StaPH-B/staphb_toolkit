@@ -22,4 +22,5 @@ This tool was developed and tested for use on an Ubuntu/Debian OS. However, the 
     - [Foushee](/staphb_toolkit/workflow_docs/foushee)
     - [Monroe](/staphb_toolkit/workflow_docs/monroe)
     - [Tredegar](/staphb_toolkit/workflow_docs/tredegar)
+    - [Cecret](/staphb_toolkit/workflow_docs/cecret)
   * [Custom Configurations](/staphb_toolkit/configs)
