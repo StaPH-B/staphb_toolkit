@@ -36,6 +36,7 @@ navbar-links:
     - Foushee: "workflow_docs/foushee"
     - Monroe: "workflow_docs/monroe"
     - Tredegar: "workflow_docs/tredegar"
+    - Cecret: "workflow_docs/cecret"
     - Contributing Workflows: "contributing"
 
 # Image to show in the navigation bar - image must be a square (width = height)
