@@ -18,13 +18,13 @@ if ( params.reads == params.single_reads ) {
 params.outdir = workflow.launchDir + '/cecret'
 
 Channel
-  .fromFilePairs("${params.reads}/*{1,2}*.{fastq,fastq.gz,fq,fq.gz}", size: 2 )
+  .fromFilePairs( "${params.reads}/*{R1,R2,_1,_2}*.{fastq,fastq.gz,fq,fq.gz}", size: 2 )
   .map { reads -> tuple(reads[0].replaceAll(~/_S[0-9]+_L[0-9]+/,""), reads[1], "paired" ) }
   .view { "Fastq file found : ${it[0]}" }
   .into { paried_reads_check ; paired_reads }
 
 Channel
-  .fromPath("${params.single_reads}/*.{fastq,fastq.gz,fq,fz.gz}")
+  .fromPath("${params.single_reads}/*.{fastq,fastq.gz,fq,fq.gz}")
   .map { reads -> tuple(reads.simpleName, reads, "single" ) }
   .view { "Fastq file found : ${it[0]}" }
   .into { single_reads_check ; single_reads }
