@@ -2,10 +2,12 @@
 
 A workflow for generating consensus sequences from single or paired-end fastq.gz or fastq reads from amplicon prepared Illumina libraries.
 
+Or, if the end user already has these consensus sequences in fasta files, they can be run through pangolin, nextclade, and vadr and/or aligned together and have a tree generated from them.
+
 # USAGE
 
 ```
-usage: staphb-wf [optional arguments] <workflow> [workflow arguments] cecret [--reads_type {paired,single}] [--output <output_path>] [--profile {docker,singularity}] [--config CONFIG] [--get_config] [--resume] [reads_path]
+usage: staphb-wf [optional arguments] <workflow> [workflow arguments] cecret [--reads_type {paired,single,fasta}] [--output <output_path>] [--profile {docker,singularity}] [--config CONFIG] [--get_config] [--resume] [reads_path]
 ```
 ## Default Usage
 ```
@@ -19,11 +21,9 @@ staphb-wf cecret --get_config
 ```
 staphb-wf cecret --reads_type single Sequencing_reads
 ```
-**Cecret** can actually handle both read types at the same time, as long as both types are reads are in separate directories. Specify the single end reads in the config file `params.single_reads = <directry with single reads>` and set the `reads_path` to the directory with paired end reads.
-
-## Annotating a collection of fastas
+## Using fastas
 ```
-staphb-wf cecret --annotation fastas
+staphb-wf cecret --reads_type fasta fastas
 ```
 Note: set `params.relatedness = true` in order to get a multiple sequence alignment, SNP matrix, and newick file for the collection of fastas.
 
