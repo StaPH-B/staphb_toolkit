@@ -3,7 +3,7 @@
 println("Currently using the Cecret workflow for use with amplicon-based Illumina hybrid library prep on MiSeq\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.2.2.20211213")
+println("Version: v.2.2.20211215")
 println("")
 
 params.reads = workflow.launchDir + '/reads'
