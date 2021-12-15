@@ -35,7 +35,7 @@ Channel
   .into { paried_reads_check ; paired_reads }
 
 Channel
-  .fromPath("${params.single_reads}/*.{fastq,fastq.gz,fq,fz.gz}")
+  .fromPath("${params.single_reads}/*.{fastq,fastq.gz,fq,fq.gz}")
   .map { reads -> tuple(reads.simpleName, reads, "single" ) }
   .view { "Fastq file found : ${it[0]}" }
   .into { single_reads_check ; single_reads }
