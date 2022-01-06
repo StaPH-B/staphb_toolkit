@@ -154,7 +154,7 @@ def main():
     #cecret-----------------------------------------
     parser_cecret = subparsers.add_parser('cecret', help='Consensus fasta creation of amplicon-based SARS-CoV-2 Illumina sequencing.', add_help=False)
     parser_cecret.add_argument('reads_path', type=str,help="path to the location of reads in a fastq format",nargs='?', default=False)
-    parser_cecret.add_argument('--reads_type',type=str,choices=["paired","single","fasta"],help="Specify either \"paired\"-end or \"single\"-end reads or \"fasta\" files, default \"paired\".",default="paired")
+    parser_cecret.add_argument('--reads_type',type=str,choices=["paired","single","fasta","multifasta"],help="Specify either \"paired\"-end or \"single\"-end reads and/or \"fasta\" or \"multifasta\" files, default \"paired\".",default="paired")
     parser_cecret.add_argument('--output','-o',metavar="<output_path>",type=str,help="Path to ouput directory, default \"cecret\".",default="cecret")
     parser_cecret.add_argument('--profile',type=str,choices=["docker","singularity"],help="Nextflow profile. Default will try docker first, then singularity if the docker executable cannot be found.")
     parser_cecret.add_argument('--config','-c',type=str,help="Nextflow custom configuration.")
@@ -674,6 +674,8 @@ def main():
             reads_type = "--single_reads"
         elif args.reads_type == "fasta":
             reads_type = "--fastas"
+        elif args.reads_type == "multifasta":
+            reads_type = "--multifastas"
         elif not args.reads_type:
             print("Type of reads not specified for some reason")
             sys.exit(1)
