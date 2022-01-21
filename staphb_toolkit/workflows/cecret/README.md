@@ -28,12 +28,23 @@ staphb-wf cecret --reads_type fasta fastas
 Note: set `params.relatedness = true` in order to get a multiple sequence alignment, SNP matrix, and newick file for the collection of fastas.
 
 ## Required parameters :
-- [primer_bed](./configs/artic_V3_nCoV-2019.bed) bedfile for primer sequences 
-  - Default is [artic](https://github.com/artic-network/artic-ncov2019/tree/master/primer_schemes/nCoV-2019/V3)'s SARS-CoV-2 V3 primer set
+- [primer_bed](./configs/artic_V4_SARS-CoV-2.primer.bed) bedfile for primer sequences
+  - Default is [artic](https://github.com/artic-network/artic-ncov2019/tree/master/primer_schemes/nCoV-2019/V4)'s SARS-CoV-2 V4 primer set
   - Change to user-supplied bedfile with `params.primer_bed`
 - [reference_genome](./configs/MN908947.3.fasta) fasta file of genome to align to
   - Default is MN908947.3/SARS-CoV-2
   - Change to user-supplied fasta file with `params.reference_genome`
+
+### Choosing which SARS-CoV-2 artic primer set
+Set 'params.primer' set to the following:
+```
+# if using artic's SARS-CoV-2 V3 primer set
+params.primer_set = 'ncov_V3'
+# if using artic's SARS-CoV-2 V4 primer set
+params.primer_set = 'ncov_V4'
+# if using artic's SARS-CoV-2 V4.1 primer set (V4 with additional spiked in primers)
+params.primer_set = 'ncov_V4.1'
+```
 
 ## Optional (recommended) parameters :
 - [gff_file](./configs/MN908947.3.gff) for ivar variants (recommended)
@@ -43,8 +54,8 @@ Note: set `params.relatedness = true` in order to get a multiple sequence alignm
 - kraken2 (recommended)
   - Default is `false`
   - Set `params.kraken2 = true` and `kraken2_db = <path to kraken2 database>`
-- [amplicon file](./configs/nCoV-2019.insert.bed)
-  - Default is the amplicons from artic's V3 primers.
+- [amplicon file](./configs/artic_V4_SARS-CoV-2.insert.bed)
+  - Default is the amplicons from artic's V4 primers.
   - Change to user-supplied bedfile with `params.amplicon_bed`
   - If not using, set `params.bedtools_multicov = false`  
 - Creating a multiple sequencing alignment, SNP matrix, and treefile with mafft, snp-dist, and iqtree
@@ -57,7 +68,7 @@ This workflow is also available as a standalone repository, [https://github.com/
 
 ## How is `cecret` different than `monroe`?
 
-It's not all that different. [monroe](../monroe) uses minimap2 for mapping/aligning and cleans reads with bbduk and trimmomatic. Running the aligned reads through ivar for primer trimming and consensus creation is the core for both workflows. 
+It's not all that different. [monroe](../monroe) uses minimap2 for mapping/aligning and cleans reads with bbduk and trimmomatic. Running the aligned reads through ivar for primer trimming and consensus creation is the core for both workflows.
 
 ## What if I am using an amplicon based library that is not SARS-CoV-2?
 
@@ -73,9 +84,9 @@ Change the following relevant paramters:
 
 ## How can I tell if certain amplicons are failing?
 
-There are two ways to do this. 
+There are two ways to do this.
 
-### With bedtools multicov : 
+### With bedtools multicov :
 `cecret/bedtools_multicov` has a file for each sample.
 This is standard bedtools multicov output, so it doesn't have a header.
 
@@ -92,11 +103,11 @@ Row number 126 (FDEPTH) has a column for each amplicon (also without a header). 
 
 ```
 grep "^FDEPTH" cecret/samtools_ampliconstats/* > samtools_ampliconstats_all.tsv
-``` 
+```
 
 ## This workflow has too many bells and whistles. I really only care about generating a consensus fasta. How do I get rid of all the extras?
 
-Change the parameters in your config file and set most of them to false. 
+Change the parameters in your config file and set most of them to false.
 
 ```
 params.fastqc = false
