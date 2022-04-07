@@ -42,6 +42,7 @@ if exists(nextclade_file) :
     columns = ['nextclade_clade'] + columns + nextclade_columns
 
 if exists(pangolin_file) :
+
     pangolin_df = pd.read_csv(pangolin_file, dtype = str)
     pangolin_df=pangolin_df.add_prefix('pangolin_')
     pangolin_columns = list(pangolin_df.columns)
