@@ -1,10 +1,10 @@
 {
   "workflows":{
-    "spriggan": {
-      "description": "Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic resistance genes.",
-      "repo": "wslh-bio/spriggan",
-      "default_branch": "main",
-      "configuration": "spriggan.config",
+    "cecret": {
+      "description": "Cecret is a workflow developed by @erinyoung at the Utah Public Health Laborotory for SARS-COV-2 sequencing with the artic/Illumina hybrid library prep workflow for MiSeq data.",
+      "repo": "UPHL-BioNGS/Cecret",
+      "default_branch": "master",
+      "configuration": "configs/cecret_config_template.config",
       "schema":""
     },
     "dryad": {
@@ -14,19 +14,19 @@
       "configuration": "dryad.config",
       "schema":"nextflow_schema.json"
     },
-    "cecret": {
-      "description": "Cecret is a workflow developed by @erinyoung at the Utah Public Health Laborotory for SARS-COV-2 sequencing with the artic/Illumina hybrid library prep workflow for MiSeq data.",
-      "repo": "UPHL-BioNGS/Cecret",
-      "default_branch": "master",
-      "configuration": "configs/cecret_config_template.config",
-      "schema":""
-    },
     "mycosnp": {
       "description": "MycoSNP is a portable workflow for performing whole genome sequencing analysis of fungal organisms, including Candida auris.",
       "repo": "CDCgov/mycosnp-nf",
       "default_branch": "master",
       "configuration": "nextflow.config",
       "schema":"nextflow_schema.json"
+    },
+    "spriggan": {
+      "description": "Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic resistance genes.",
+      "repo": "wslh-bio/spriggan",
+      "default_branch": "main",
+      "configuration": "spriggan.config",
+      "schema":""
     }
   }
 }
