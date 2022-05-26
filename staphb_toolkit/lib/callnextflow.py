@@ -1,5 +1,5 @@
 import os, sys
-import staphb_toolkit.core.updates as updates
+import staphb_toolkit.lib.updates as updates
 import pexpect
 from shutil import which
 import urllib.request
