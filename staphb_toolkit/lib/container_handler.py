@@ -4,6 +4,7 @@ import os
 import sys
 from shutil import which
 import signal,psutil
+from rich import print
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 ##Test to see if singularity or docker is installed
@@ -12,7 +13,7 @@ if which('docker'):
 elif which('singularity'):
     from staphb_toolkit.lib import callsing as container_engine
 else:
-    print('Singularity or Docker is not installed or not in found in PATH')
+    print('[bold red]Error: Singularity or Docker is not installed or not in found in PATH.[/bold red]')
     sys.exit(1)
 
 

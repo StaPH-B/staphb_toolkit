@@ -9,6 +9,7 @@ import json
 from datetime import date, datetime
 from rich.console import Console
 from rich.table import Table
+from rich import print
 
 DockerConfig = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'config','docker.config'))
 SingularityConfig = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'config', 'singularity.config'))
@@ -53,7 +54,7 @@ def run(version,repo,args,config_path=None):
     elif which('singularity'):
         config = SingularityConfig
     else:
-        print('Singularity or Docker is not installed or not in found in PATH')
+        print('[bold red]Error: Singularity or Docker is not installed or not in found in PATH. [/bold red]')
         sys.exit(1)
 
     #build command
@@ -81,13 +82,13 @@ def get_configuration_file(repo,workflow,wf_version,remote_config_fname):
 
 def get_workflow_help(repo,workflow,wf_version,schema_fname):
     if not schema_fname:
-        print("No help available for this workflow.")
+        print("[bold yellow]Sorry, no help is available for this workflow.[/bold yellow]")
         return
     schema_url = f"https://raw.githubusercontent.com/{repo}/{wf_version}/{schema_fname}"
     try:
         response = urlopen(schema_url)
     except (urlerror.HTTPError, urlerror.URLError):
-        print(f"Cannot connect to GitHub repository {repo} to fetch parameters for {workflow}.")
+        print(f"[bold red]Error: Cannot connect to GitHub repository {repo} to fetch parameters for {workflow}.[/bold red]")
         sys.exit(1)
     schema = json.loads(response.read())
 
