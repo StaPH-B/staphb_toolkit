@@ -74,7 +74,7 @@ def get_configuration_file(repo,workflow,wf_version,remote_config_fname):
     configFileName = os.path.join(os.getcwd(),date.today().strftime("%y-%m-%d")+f"_{workflow}.config")
     print(f'Downloading {workflow} configuration file to: {configFileName}')
     try:
-        urlretrieve(url, configFileName)
+        urlretrieve(config_url, configFileName)
     except (urlerror.HTTPError, urlerror.URLError):
         print(schema_url)
         sys.exit(1)
