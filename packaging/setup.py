@@ -20,8 +20,8 @@ with open("./staphb_toolkit/core/VERSION",'r') as versionFile:
 setuptools.setup(
     name="staphb_toolkit",
     version=version,
-    author="Kelsey Florek, Kevin Libuit",
-    author_email="kelsey.florek@slh.wisc.edu, kevin.libuit@dgs.virginia.gov",
+    author="Kelsey Florek",
+    author_email="kelsey.florek@slh.wisc.edu",
     description="A ToolKit of commonly used Public Health Bioinformatics Tools",
     long_description=long_description,
     long_description_content_type="text/markdown",
