@@ -24,7 +24,7 @@ def main():
         def print_help(self, file=None):
             if file is None:
                 pass
-            f = Figlet(font='big')
+            f = Figlet(font='starwars')
             print(f.renderText('StaPH-B ToolKit'))
             print('StaPH-B ToolKit')
             print(f"Version: {updates.tk_version}")
