@@ -27,6 +27,13 @@
       "default_branch": "main",
       "configuration": "spriggan.config",
       "schema":""
+    },
+    "viralrecon": {
+      "description": "Viralrecon is a pipeline used to perform assembly and intra-host/low-frequency variant calling for viral samples.",
+      "repo": "nf-core/viralrecon",
+      "default_branch": "master",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
     }
   }
 }
