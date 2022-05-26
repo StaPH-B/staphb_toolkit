@@ -8,9 +8,9 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/' + '../..'))
 
 ##Test to see if singularity or docker is installed
 if which('docker'):
-    from staphb_toolkit.core import calldocker as container_engine
+    from staphb_toolkit.lib import calldocker as container_engine
 elif which('singularity'):
-    from staphb_toolkit.core import callsing as container_engine
+    from staphb_toolkit.lib import callsing as container_engine
 else:
     print('Singularity or Docker is not installed or not in found in PATH')
     sys.exit(1)
