@@ -191,16 +191,16 @@ def main():
         repo = workflow_data['workflows'][application]['repo']
 
         #get workflow help if asked
-        if any(x in ['-h','--help','-help'] for x in parser_args[1]) or not parser_args[1]:
+        if (any(x in ['-h','--help','-help'] for x in parser_args[1]) or not parser_args[1]) and not parser_args[0].get_configuration:
             callnxf.get_workflow_help(repo,application,wf_version,workflow_data['workflows'][application]['schema'])
             sys.exit()
 
-        #get configuration file from repo if asked
+        #set configuration file
         config_file = None
         if parser_args[0].configuration:
             config_file = parser_args[0].configuration
 
-        #get configuration file if asked
+        #get configuration file from repo if asked
         if parser_args[0].get_configuration:
             callnxf.get_configuration_file(repo,application,wf_version,configFileName)
             sys.exit(0)
