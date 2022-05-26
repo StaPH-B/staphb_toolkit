@@ -7,10 +7,10 @@ import sys,os,re
 import argparse
 from shutil import copy
 import json
-import staphb_toolkit.core.container_handler as container
-from staphb_toolkit.core.autopath import path_replacer
-import staphb_toolkit.core.updates as updates
-import staphb_toolkit.core.callnextflow as callnxf
+import staphb_toolkit.lib.container_handler as container
+from staphb_toolkit.lib.autopath import path_replacer
+import staphb_toolkit.lib.updates as updates
+import staphb_toolkit.lib.callnextflow as callnxf
 from datetime import date
 from pyfiglet import Figlet
 
