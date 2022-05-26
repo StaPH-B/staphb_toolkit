@@ -33,7 +33,7 @@
       "repo": "wslh-bio/spriggan",
       "default_branch": "main",
       "configuration": "spriggan.config",
-      "schema":""
+      "schema":"nextflow_schema.json"
     },
     "viralrecon": {
       "description": "Viralrecon is a pipeline used to perform assembly and intra-host/low-frequency variant calling for viral samples.",
