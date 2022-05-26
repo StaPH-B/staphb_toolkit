@@ -23,7 +23,8 @@ $ pip install staphb_toolkit
 To install using git:
 ```
 $ git clone https://github.com/StaPH-B/staphb_toolkit.git
-$ ./staphb_toolkit/setup.py
+$ cd staphb_toolkit/packaging/
+$ ./setup.py install
 ```
 
 Test the pipeline with the following command and ensure you see the same usage output:  
