@@ -48,6 +48,7 @@ setuptools.setup(
         "psutil>=5.6.3",
         "docker>=4.1.0",
         "pexpect>=4.8",
-        "pyfiglet>=0.8.post1"],
-    python_requires='>=3.6',
+        "pyfiglet>=0.8.post1",
+        "rich>=12.4.4"],
+    python_requires='>=3.7',
 )

@@ -3,3 +3,4 @@ psutil>=5.6.3
 docker>=4.1.0
 pexpect>=4.8
 pyfiglet>=0.8.post1
+rich>=12.4.4

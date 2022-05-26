@@ -15,6 +15,8 @@ import staphb_toolkit.lib.updates as updates
 import staphb_toolkit.lib.callnextflow as callnxf
 from datetime import date
 from pyfiglet import Figlet
+from rich.console import Console
+from rich.table import Table
 
 def main():
     #setup argparser to display help if no arguments
@@ -47,8 +49,7 @@ def main():
         response = urlopen(workflow_list_url)
         workflow_data = json.loads(response.read())
     except (urlerror.HTTPError, urlerror.URLError):
-        print("Cannot connect to GitHub to get workflow inventory. Using local list instead.")
-        print(__file__)
+        print("WARNING: Cannot connect to GitHub to get workflow inventory. Using local list instead.")
         with open(os.path.abspath( os.path.join(os.path.dirname(__file__), '..', 'workflows.json') ),'r') as workflow_data_path:
             workflow_data = json.load(workflow_data_path)
 
@@ -72,21 +73,29 @@ def main():
         parser_data[workflow] = subparser.add_parser(workflow,add_help=False)
 
     def print_tool_list():
-        print("Available programs:")
-        header = ["Command","Description","-------","-----------"]
-        print(f"{header[0]:<25}{header[1]:^10}")
-        print(f"{header[2]:<25}{header[3]:^10}")
+        table = Table(title="Available programs:",title_justify="left",title_style="b",padding=(1,0,0,0))
+
+        table.add_column("Command", justify="left",no_wrap=True)
+        table.add_column("Description", justify="left")
+
         for app in app_data['apps']:
-            print(f"{app:<25}{app_data['apps'][app]['description']:^10}")
+            table.add_row(app,app_data['apps'][app]['description'])
+
+        console = Console()
+        console.print(table)
         return
 
     def print_workflow_list():
-        print("Available workflows:")
-        header = ["Command","Description","-------","-----------"]
-        print(f"{header[0]:<25}{header[1]:^10}")
-        print(f"{header[2]:<25}{header[3]:^10}")
+        table = Table(title="Available workflows:",title_justify="left",title_style="b",padding=(1,0,0,0))
+
+        table.add_column("Command", justify="left",no_wrap=True)
+        table.add_column("Description", justify="left")
+
         for workflow in workflow_data['workflows']:
-            print(f"{workflow:<25}{workflow_data['workflows'][workflow]['description']:^10}",'\n')
+            table.add_row(workflow,workflow_data['workflows'][workflow]['description'])
+
+        console = Console()
+        console.print(table)
         return
 
     #handle the arguments and perform automatic path replacement for apps
@@ -179,7 +188,11 @@ def main():
             wf_version = workflow_data['workflows'][application]['default_branch']
         configFileName = workflow_data['workflows'][application]['configuration']
         repo = workflow_data['workflows'][application]['repo']
-        config_url = f'https://raw.githubusercontent.com/{repo}/{wf_version}/{configFileName}'
+
+        #get workflow help if asked
+        if any(x in ['-h','--help','-help'] for x in parser_args[1]):
+            callnxf.get_workflow_help(repo,application,wf_version,workflow_data['workflows'][application]['schema'])
+            sys.exit()
 
         #get configuration file from repo if asked
         config_file = None
@@ -188,7 +201,7 @@ def main():
 
         #get configuration file if asked
         if parser_args[0].get_configuration:
-            callnxf.get_configuration_file(config_url,application)
+            callnxf.get_configuration_file(repo,application,wf_version,configFileName)
             sys.exit(0)
 
         workflow_args = " ".join(parser_args[1])
