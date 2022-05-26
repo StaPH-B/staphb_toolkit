@@ -17,6 +17,7 @@ from datetime import date
 from pyfiglet import Figlet
 from rich.console import Console
 from rich.table import Table
+from rich import print
 
 def main():
     #setup argparser to display help if no arguments
@@ -29,7 +30,7 @@ def main():
             if file is None:
                 pass
             f = Figlet(font='starwars')
-            print(f.renderText('StaPH-B ToolKit'))
+            print("[bold cyan]"+f.renderText('StaPH-B ToolKit')+"[/bold cyan]")
             print('StaPH-B ToolKit')
             print(f"Version: {updates.tk_version}")
             self._print_message(self.format_help(), file)
@@ -39,7 +40,7 @@ def main():
     try:
         response = urlopen(app_list_url)
     except (urlerror.HTTPError, urlerror.URLError):
-        print("Cannot connect to GitHub to get app inventory.")
+        print("[bold red]Error: Cannot connect to GitHub to get app inventory.[/bold red]")
         sys.exit(1)
     app_data = json.loads(response.read())
 
@@ -49,7 +50,7 @@ def main():
         response = urlopen(workflow_list_url)
         workflow_data = json.loads(response.read())
     except (urlerror.HTTPError, urlerror.URLError):
-        print("WARNING: Cannot connect to GitHub to get workflow inventory. Using local list instead.")
+        print("[bold yellow]WARNING: Cannot connect to GitHub to get workflow inventory. Using local list instead.[/bold yellow]")
         with open(os.path.abspath( os.path.join(os.path.dirname(__file__), '..', 'workflows.json') ),'r') as workflow_data_path:
             workflow_data = json.load(workflow_data_path)
 
@@ -152,7 +153,7 @@ def main():
     elif toolName in workflow_data['workflows'].keys():
         sb_workflow = True
     else:
-        print(f"The workflow or tool \"{toolName}\" is not in the StaPH-B Toolkit.")
+        print(f"[bold red]Error: The workflow or tool \"{toolName}\" is not in the StaPH-B Toolkit.[/bold red]")
         sys.exit(1)
 
     #Run autopathing if we are running an app

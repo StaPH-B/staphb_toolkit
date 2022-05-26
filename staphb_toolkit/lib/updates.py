@@ -4,6 +4,7 @@ import re
 import subprocess as sub
 import shlex
 import pexpect
+from rich import print
 
 # version number
 versionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'VERSION')
@@ -47,7 +48,7 @@ def check_update_status():
 # check for toolkit updates
 def check_for_updates():
     #regular expressing for checking python version
-    re_pattern = r"python\s3.[6-9]|python\s3.[0-9]{2,}"
+    re_pattern = r"python\s3.[7-9]|python\s3.[0-9]{2,}"
     cmd = ''
     #Determine pip command version
     if which('pip'):
@@ -65,7 +66,7 @@ def check_for_updates():
 
     #check if we have a pip command
     if not cmd:
-        print("Cannot find pip for python 3.6 or greater...")
+        print("[bold red]Error: Cannot find pip for python 3.7 or greater.[/bold red]")
         sys.exit(1)
 
     #run pip update
@@ -93,7 +94,7 @@ def install_nextflow():
     elif which('wget'):
         cmd = "wget -qO- https://get.nextflow.io | bash"
     else:
-        print('Installing NextFlow requires wget or curl to be installed and in the path.')
+        print('[bold red]Error: Installing NextFlow requires wget or curl to be installed and in the path.[/bold red]')
         sys.exit(1)
 
     #pexpect strip $
