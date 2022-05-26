@@ -190,7 +190,7 @@ def main():
         repo = workflow_data['workflows'][application]['repo']
 
         #get workflow help if asked
-        if any(x in ['-h','--help','-help'] for x in parser_args[1]):
+        if any(x in ['-h','--help','-help'] for x in parser_args[1]) or not parser_args[1]:
             callnxf.get_workflow_help(repo,application,wf_version,workflow_data['workflows'][application]['schema'])
             sys.exit()
 
