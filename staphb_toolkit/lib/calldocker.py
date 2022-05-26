@@ -6,6 +6,7 @@ import argparse
 import json
 import shlex
 import ast
+from rich.progress import Progress
 
 def shutdown():
     print('\nShutting down the running docker containers and exiting...')
@@ -25,17 +26,32 @@ def call(container,command,cwd='',paths={},remove=True):
     #update or pull image if necessary from docker hub
     low_client = docker.APIClient(base_url='unix://var/run/docker.sock')
     pull_stdout = low_client.pull(container,stream=True)
-    out_lines = []
-    for line in pull_stdout:
-        out = ast.literal_eval(line.decode('utf-8'))
-        out_lines.append(out['status'])
-        if len(out_lines) == 4:
-            print(f"Downloading container {container}, this could take some time.")
-        elif len(out_lines) > 4:
-            if "Downloaded newer image" in out['status']:
-                print(out['status'])
-        else:
-            pass
+
+    with Progress() as progress:
+        task_total = 0
+        task = progress.add_task(f"Pulling {container}",total = task_total,visible=False)
+        for line in pull_stdout:
+            out = ast.literal_eval(line.decode('utf-8'))
+            status = out['status']
+            if status == "Pulling fs layer":
+                if task_total == 0:
+                    task_total = 2
+                    progress.update(task,total=task_total,visible=True)
+                else:
+                    task_total += 2
+                    progress.update(task,total=task_total)
+
+            elif status == "Download complete":
+                progress.update(task,advance=1)
+
+            elif status == "Pull complete":
+                progress.update(task,advance=1)
+
+            elif "Downloaded newer image" in status:
+                    print(status)
+                    break
+            else:
+                pass
 
     ###get the effectie user and group id's
     user = str(os.geteuid())+':'+str(os.getegid())
