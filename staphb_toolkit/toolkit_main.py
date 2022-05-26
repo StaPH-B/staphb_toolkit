@@ -6,6 +6,8 @@
 import sys,os,re
 import argparse
 from shutil import copy
+from urllib.request import urlopen
+from urllib import error as urlerror
 import json
 import staphb_toolkit.lib.container_handler as container
 from staphb_toolkit.lib.autopath import path_replacer
@@ -30,13 +32,25 @@ def main():
             print(f"Version: {updates.tk_version}")
             self._print_message(self.format_help(), file)
 
-    #get app metadata
-    with open(os.path.abspath(os.path.dirname(__file__) + '/config/apps.json'),'r') as app_data_file:
-        app_data = json.load(app_data_file)
+    #get app list and metadata
+    app_list_url = "https://raw.githubusercontent.com/StaPH-B/docker-builds/master/staphb_toolkit_apps.json"
+    try:
+        response = urlopen(app_list_url)
+    except (urlerror.HTTPError, urlerror.URLError):
+        print("Cannot connect to GitHub to get app inventory.")
+        sys.exit(1)
+    app_data = json.loads(response.read())
 
-    #get workflow metadata
-    with open(os.path.abspath(os.path.dirname(__file__) + '/config/workflows.json'),'r') as workflow_data_path:
-        workflow_data = json.load(workflow_data_path)
+    #get workflow list and metadata
+    workflow_list_url = "https://raw.githubusercontent.com/StaPH-B/staphb_toolkit/main/workflows.json"
+    try:
+        response = urlopen(workflow_list_url)
+        workflow_data = json.loads(response.read())
+    except (urlerror.HTTPError, urlerror.URLError):
+        print("Cannot connect to GitHub to get workflow inventory. Using local list instead.")
+        print(__file__)
+        with open(os.path.abspath( os.path.join(os.path.dirname(__file__), '..', 'workflows.json') ),'r') as workflow_data_path:
+            workflow_data = json.load(workflow_data_path)
 
     #construct top level help menu
     parser = MyParser(description=f"",usage="staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]",add_help=True)
