@@ -7,6 +7,7 @@ import json
 import shlex
 import ast
 from rich.progress import Progress
+from rich import print
 
 def shutdown():
     print('\nShutting down the running docker containers and exiting...')
@@ -68,10 +69,10 @@ def call(container,command,cwd='',paths={},remove=True):
     #try block to run the container
     try:
         container_obj = client.containers.run(container,command,user=user,volumes=volumes,working_dir=cwd,remove=remove,detach=True,labels={"prog":"sb_toolkit"})
-    except:
-        #loop through output as it is streamed
-        for line in container_obj.logs(stream=True):
-            yield line.decode('utf-8')
-    else:
-        for line in container_obj.logs(stream=True):
-            yield line.decode('utf-8').strip()
+    except Exception as e:
+        print(f"[bold red]There was an error trying to run the container {container}[/bold red]")
+        print(e)
+
+
+    for line in container_obj.logs(stream=True):
+        yield line.decode('utf-8').strip()
