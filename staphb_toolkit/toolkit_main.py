@@ -156,16 +156,16 @@ def main():
         print(f"[bold red]Error: The workflow or tool \"{toolName}\" is not in the StaPH-B Toolkit.[/bold red]")
         sys.exit(1)
 
-    #Run autopathing if we are running an app
-    if sb_tool:
-        arg_string,path_map = path_replacer(args,os.getcwd())
-
     #Run the program
     #-----------------------------------------
 
     #---------------------
     #app
     if sb_tool:
+        #run autopathing to mount correct file locations
+        arg_string,path_map = path_replacer(args,os.getcwd())
+
+        #see if we have an executable, also check if we need to display help
         try:
             e = app_data['apps'][application]['exec']
             if not arg_string:
@@ -175,7 +175,10 @@ def main():
             if not arg_string:
                 print(app_data['apps'][application]['help'])
                 sys.exit(0)
+
+        #build command for running application
         command = e + " " + arg_string
+        #get proper image and tag
         image = app_data['apps'][application]['image']
         tag = parser_args[0].workflow_version
 
