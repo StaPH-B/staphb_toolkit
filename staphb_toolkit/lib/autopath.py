@@ -30,9 +30,9 @@ def path_replacer(args,cwd):
                         mountname = os.path.dirname(path_map[dirname])
                         path_map[dirname] = mountname+'/'
                 else:
-                    path_map[dirname] = '/mount'+str(counter)+'/'
+                    path_map[dirname] = os.path.join('/mount',str(counter))
                     counter += 1
-                arg_string = arg_string + ' ' + path_map[dirname]+'/'+basename
+                arg_string = arg_string + ' ' + os.path.join(path_map[dirname],basename)
         #if it's not add the argument to final string
         else:
             arg_string = arg_string + ' ' + arg

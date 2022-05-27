@@ -162,21 +162,23 @@ def main():
 
     #Run the program
     #-----------------------------------------
+
     #---------------------
     #app
     if sb_tool:
         try:
             e = app_data['apps'][application]['exec']
-            if args == []:
-                args.append(app_data['apps'][application]['help'])
+            if not arg_string:
+                arg_string = arg_string + " " + app_data['apps'][application]['help']
         except KeyError:
             e = ''
-            if args == []:
+            if not arg_string:
                 print(app_data['apps'][application]['help'])
                 sys.exit(0)
-        command = e + " " + " ".join(args)
+        command = e + " " + arg_string
         image = app_data['apps'][application]['image']
         tag = parser_args[0].workflow_version
+
         program_object = container.Run(command=command, path=path_map, image=image, tag=tag)
         program_object.run()
 
