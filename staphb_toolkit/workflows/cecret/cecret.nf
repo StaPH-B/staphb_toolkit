@@ -3,7 +3,7 @@
 println("Currently using the Cecret workflow for use with amplicon-based Illumina hybrid library prep on MiSeq\n")
 println("Author: Erin Young")
 println("email: eriny@utah.gov")
-println("Version: v.2.4.20220407")
+println("Version: v.2.5.20220706.patch")
 println("")
 
 params.reads = workflow.launchDir + '/reads'
@@ -1284,7 +1284,7 @@ process nextclade {
 
   shell:
   '''
-    mkdir -p !{task.process} dataset logs/!{task.process}
+    mkdir -p nextclade dataset logs/!{task.process}
     log_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.log
     err_file=logs/!{task.process}/!{task.process}.!{workflow.sessionId}.err
 
@@ -1299,15 +1299,11 @@ process nextclade {
       cat $fasta >> ultimate_fasta.fasta
     done
 
-    nextclade !{params.nextclade_options} \
-      --input-fasta=ultimate_fasta.fasta \
+    nextclade run !{params.nextclade_options} \
       --input-dataset dataset \
-      --output-json=!{task.process}/nextclade.json \
-      --output-csv=!{task.process}/nextclade.csv \
-      --output-tsv=!{task.process}/nextclade.tsv \
-      --output-tree=!{task.process}/nextclade.auspice.json \
-      --output-dir=!{task.process} \
-      --output-basename=nextclade \
+      --output-all=nextclade/ \
+      --jobs !{task.cpus} \
+      ultimate_fasta.fasta \
       2>> $err_file >> $log_file
     cp ultimate_fasta.fasta !{task.process}/combined.fasta
   '''
