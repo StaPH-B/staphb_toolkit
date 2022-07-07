@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={
         'staphb_toolkit' : ['lib/VERSION'],
-        '' : ['../requirements.txt','../workflows.json']
+        '' : ['../requirements.txt','../workflows.json','../staphb_toolkit/config/docker.config','../staphb_toolkit/config/singularity.config','../staphb-tk']
     },
     entry_points={
         "console_scripts": [
