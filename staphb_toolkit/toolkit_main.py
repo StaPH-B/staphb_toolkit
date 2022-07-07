@@ -8,6 +8,7 @@ import argparse
 from shutil import copy
 from urllib.request import urlopen
 from urllib import error as urlerror
+from shutil import which
 import json
 import staphb_toolkit.lib.container_handler as container
 from staphb_toolkit.lib.autopath import path_replacer
@@ -18,6 +19,9 @@ from pyfiglet import Figlet
 from rich.console import Console
 from rich.table import Table
 from rich import print
+
+#global app dir
+appDir = os.path.abspath(os.path.dirname(__file__))
 
 def main():
     #setup argparser to display help if no arguments
@@ -104,14 +108,21 @@ def main():
     application = parser_args[0].app_name
     args = parser_args[1]
 
+    #check if nextflow is installed, if not install and set to latest
+    if not which('nextflow') and not os.path.exists(os.path.join(appDir,'bin','nextflow')):
+        updates.install_nextflow()
+        updates.set_nf_version(version="latest")
+
     #set nextflow version
     if parser_args[0].nextflow_version == "get":
         updates.get_nf_version()
         sys.exit(0)
     elif parser_args[0].nextflow_version == "latest":
         updates.set_nf_version()
+        sys.exit(0)
     elif parser_args[0].nextflow_version:
         updates.set_nf_version(parser_args[0].nextflow_version)
+        sys.exit(0)
     else:
         pass
 
