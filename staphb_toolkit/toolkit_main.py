@@ -177,7 +177,7 @@ def main():
                 sys.exit(0)
 
         #build command for running application
-        command = e + " " + arg_string
+        command = e + " " + arg_string.lstrip()
         #get proper image and tag
         image = app_data['apps'][application]['image']
         tag = parser_args[0].workflow_version
