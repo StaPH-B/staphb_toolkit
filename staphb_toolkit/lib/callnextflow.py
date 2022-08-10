@@ -63,10 +63,11 @@ def run(version,repo,args,config_path=None):
 
     #run command using nextflow in a subprocess
     child = pexpect.spawn(nextflow_path+'/nextflow pull '+repo,env=env)
-    child.setecho(False)
-    child.wait()
+    child.interact()
+    child.close()
     child = pexpect.spawn(cmd,env=env)
     child.interact()
+    child.close()
     return
 
 def get_configuration_file(repo,workflow,wf_version,remote_config_fname):

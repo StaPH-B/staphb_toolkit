@@ -6,8 +6,11 @@ import shlex
 import pexpect
 from rich import print
 
+#global app dir
+appDir = os.path.abspath(os.path.dirname(__file__)+'/..')
+
 # version number
-versionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'VERSION')
+versionPath = os.path.join(appDir,'lib','VERSION')
 with open(versionPath,'r') as versionFile:
     tk_version = versionFile.readline().strip()
 
@@ -15,10 +18,10 @@ with open(versionPath,'r') as versionFile:
 if which('nextflow'):
     nextflow_path = os.path.abspath(os.path.dirname(which('nextflow')))
 else:
-    nextflow_path = os.path.abspath(os.path.dirname(__file__)+"/nextflow")
+    nextflow_path = os.path.join(appDir,'bin')
 
 #nextflow version tracker
-nxfVersionPath = os.path.abspath(os.path.dirname(__file__) + '/' + 'NXF_VERSION')
+nxfVersionPath = os.path.join(appDir,'bin','NXF_VERSION')
 try:
     with open(nxfVersionPath,'r') as NXFversionFile:
         nxf_version = NXFversionFile.readline().strip()
@@ -26,7 +29,7 @@ except FileNotFoundError:
     nxf_version = ''
 
 # selfupdate check file
-selfupdate_status = os.path.join(os.path.abspath(os.path.dirname(os.path.realpath(__file__))),'selfupdate')
+selfupdate_status = os.path.join(appDir,'selfupdate')
 
 # auto selfupdate toggle
 def toggle_updater(update):
@@ -117,9 +120,6 @@ def install_nextflow():
 
 #get nextflow version
 def get_nf_version():
-    if not which(nextflow_path+'/nextflow'):
-        install_nextflow()
-
     cmd = nextflow_path + "/nextflow -v"
     child = pexpect.spawn(cmd, cwd=os.path.expanduser("~"), env={'NXF_VER':nxf_version,'NXF_HOME':os.path.expanduser("~")})
     child.setecho(False)
@@ -128,13 +128,13 @@ def get_nf_version():
 #set nextflow version
 def set_nf_version(version='latest'):
     print("Switching NextFlow to version:",version)
-    if not which(nextflow_path+'/nextflow'):
-        install_nextflow()
 
     #update nextflow
+    print("Performing Nextflow selfupdate this may take a moment...")
     cmd = nextflow_path + "/nextflow self-update"
-    child = pexpect.spawn(cmd,cwd=os.path.expanduser("~"))
+    child = pexpect.spawn(cmd,cwd=os.path.expanduser("~"), env={'NXF_VER':version,'NXF_HOME':os.path.expanduser("~")})
     child.setecho(False)
+    child.wait()
 
     #an empty version indicates latest
     if version == 'latest':
@@ -142,13 +142,10 @@ def set_nf_version(version='latest'):
 
     #set version
     cmd = nextflow_path + "/nextflow -v"
-    p = sub.Popen(shlex.split(cmd), stdout=sub.PIPE, stderr=sub.PIPE, env={'NXF_VER':version,'NXF_HOME':os.path.expanduser("~")})
-    out, err = p.communicate()
-    if err:
-        print(err.decode("utf-8"))
-        sys.exit(1)
-    else:
-        sout = out.decode("utf-8")
-        print(sout)
-        with open(nxfVersionPath,'w') as NXFversionFile:
-            NXFversionFile.write(version)
+    child = pexpect.spawn(cmd, cwd=os.path.expanduser("~"), env={'NXF_VER':version,'NXF_HOME':os.path.expanduser("~")})
+    child.setecho(False)
+    child.interact()
+    
+    #record new nextflow version
+    with open(nxfVersionPath,'w') as NXFversionFile:
+        NXFversionFile.write(version)
