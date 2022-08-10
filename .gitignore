@@ -6,3 +6,4 @@ packaging/dist/*
 *.egg-info
 nextflow
 NXF_VERSION
+.vscode/*
