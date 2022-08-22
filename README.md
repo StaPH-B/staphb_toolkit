@@ -2,7 +2,9 @@
 ![Latest Release](https://img.shields.io/github/v/release/StaPH-B/staphb_toolkit)  
 [![Build Status](https://travis-ci.org/StaPH-B/staphb_toolkit.svg?branch=master)](https://travis-ci.org/StaPH-B/staphb_toolkit)  
 
-A python library designed to make programs held within the StaPH-B Docker repository more accessible to public health scientists.
+A python library designed to make bioinformatics piplines and applications more accessible to public health scientists.
+
+### [staphb.org/staphb_toolkit/](https://staphb.org/staphb_toolkit/)
 
 ## Summary
 The StaPH-B ToolKit is a Python library of commonly used bioinformatics tools that help to inform public health action. The StaPH-B ToolKit utilizes the [StaPH-B Docker Images](https://github.com/StaPH-B/docker-builds) to enable easy access of open-source software without the need of local installation and/or dependency maintenance.
@@ -12,8 +14,8 @@ Public health bioinformatics is dependent on open-source software that require c
 
 ## Installing and Usage
 The ToolKit requires **either** singularity or docker, Python 3.7 or greater, and Java version 8 or later.
-The documentation for installing the dependencies can be found here: [https://staph-b.github.io/staphb_toolkit](https://staph-b.github.io/staphb_toolkit/install).  
-The ToolKit itself can be installed using pip or git:
+The documentation for installing the dependencies can be found here: [https://staph-b.github.io/staphb_toolkit/install](https://staph-b.github.io/staphb_toolkit/install).  
+The ToolKit itself can be installed using pip or by cloning the repository from git:
 
 To install using pip:
 ```
