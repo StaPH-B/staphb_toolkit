@@ -27,17 +27,8 @@ navbar-links:
   GitHub Page: "https://github.com/StaPH-B/staphb_toolkit"
   Usage Guide:
     - Installing : "install"
-    - Using the Toolkit: "using_tk"
-    - Running Workflows: "workflows"
-    - Custom Configurations: "configs"
-  Workflows:
-    - Cutshaw: "workflow_docs/cutshaw"
-    - Dryad: "workflow_docs/dryad"
-    - Foushee: "workflow_docs/foushee"
-    - Monroe: "workflow_docs/monroe"
-    - Tredegar: "workflow_docs/tredegar"
-    - Cecret: "workflow_docs/cecret"
-    - Contributing Workflows: "contributing"
+    - Using Toolkit Applications: "using_tk"
+    - Using Workflows: "workflows"
 
 # Image to show in the navigation bar - image must be a square (width = height)
 # Remove this parameter if you don't want an image in the navbar
