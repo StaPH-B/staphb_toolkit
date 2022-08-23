@@ -3,148 +3,159 @@ title: "Using the ToolKit"
 layout: page
 ---
 
-Using the ToolKit is simply done by running the commands `staphb-tk` for running individual tools or `staphb-wf` for running the different workflows incorporated into the toolkit. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/staphb_toolkit/workflows) page.
+Once the ToolKit has been installed using the ToolKit is simply done by running the command `staphb-tk`. If you would like more information about the different workflows available in the ToolKit visit the [workflows](/staphb_toolkit/workflows) page.
 
-## Contents
+# Contents
   * [Running Applications](#running-applications-using-the-toolkit)
     - [Pipes and Paths](#special-note-about-autopathing-and-pipes)
-  * [Included Applications](#included-applications)
+    - [Included Applications](#included-applications)
   * [Running Workflows](#using-the-toolkit-to-run-workflows)
+    - [Controlling Versions](#controlling-versions)
+    - [Configuring Workflows](#configuring-workflows)
 
-<br>
-## Running applications using the ToolKit
+---
+
+# Running applications using the ToolKit
 Running the toolkit using the the `staphb-tk` command provides a menu of options available for running tools in the toolkit:
-```
-usage: staphb-tk [optional arguments] <application> [application arguments]
+````
+$ staphb-tk
+     _______.___________.    ___      .______    __    __         .______   
+    /       |           |   /   \     |   _  \  |  |  |  |        |   _  \  
+   |   (----`---|  |----`  /  ^  \    |  |_)  | |  |__|  |  ______|  |_)  |
+    \   \       |  |      /  /_\  \   |   ___/  |   __   | |______|   _  <  
+.----)   |      |  |     /  _____  \  |  |      |  |  |  |        |  |_)  |
+|_______/       |__|    /__/     \__\ | _|      |__|  |__|        |______/  
+
+.___________.  ______     ______    __       __  ___  __  .___________.
+|           | /  __  \   /  __  \  |  |     |  |/  / |  | |           |
+`---|  |----`|  |  |  | |  |  |  | |  |     |  '  /  |  | `---|  |----`
+    |  |     |  |  |  | |  |  |  | |  |     |    <   |  |     |  |     
+    |  |     |  `--'  | |  `--'  | |  `----.|  .  \  |  |     |  |     
+    |__|      \______/   \______/  |_______||__|\__\ |__|     |__|     
+
+
+StaPH-B ToolKit
+Version: 2.0.0
+usage: staphb-tk [optional arguments] <application/workflow> [application/workflow arguments]
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --docker_config <path>, -c <path>
-                        Configuration file for container images and tags; if
-                        none provided, configuration will be set to
-                        staphb_toolkit/core/docker_config.json
-  --list, -l            List all of the software available in the toolkit.
+-h, --help            show this help message and exit
+-l, --list_tools      List all tools in the toolkit.
+-w, --list_workflows  List all workflows in the toolkit.
+-wv <version>, --workflow_version <version>
+                   Version of tool or workflow to run. Default: latest
+-c <config_file>, --configuration <config_file>
+                   Specify a custom workflow configuration file.
+-gc, --get_configuration
+                   Get the configuration file for the specified workflow.
+                   Note: You may need to specify a version for the
+                   workflow using -wv to get the correct configuration
+                   file.
+-nv [<version>], --nextflow_version [<version>]
+                   Get or set the version of nextflow.
+--update              Check for and install a ToolKit update.
+--auto_update         Toggle automatic ToolKit updates. Default is off.
 
-custom program execution:
+application or workflow name:
+<application/workflow>
 
-    mash_species        MASH Species uses a custom database to identify the
-                        isolate species.
 ```
 
-The typical usage of the ToolKit involves a command structure that calls the toolkit i.e. `staphb-tk` followed by the application i.e. `spades` then the parameters associated with that tool. For example using the command `staphb-tk spades` the output shows the options available to the SPAdes assembly tool:
+The typical usage of the ToolKit involves a command structure that calls the toolkit i.e. `staphb-tk` followed by the application i.e. `bwa` then the parameters associated with that tool. For example using the command `staphb-tk bwa` the output shows the options available to the bwa alignment tool:
 
 ```
-SPAdes genome assembler v3.13.0
+$ staphb-tk bwa   
+Status: Downloaded newer image for staphb/bwa:latest
+Pulling staphb/bwa:latest ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
 
-Usage: /SPAdes-3.13.0-Linux/bin/spades.py [options] -o <output_dir>
+Program: bwa (alignment via Burrows-Wheeler transformation)
+Version: 0.7.17-r1188
+Contact: Heng Li <lh3@sanger.ac.uk>
 
-Basic options:
--o	<output_dir>	directory to store all the resulting files (required)
---sc			this flag is required for MDA (single-cell) data
---meta			this flag is required for metagenomic sample data
-...
-```
-If we wanted to run the SPAdes assembler on a pair of fastq files the command would be:
-```
-staphb-tk spades -1 <path to fwd reads> -2 <path to rev reads> -o <output dir>
-```
+Usage:   bwa <command> 
 
-### Special note about autopathing and pipes
-The ToolKit will automatically mount paths in your command from your host file system. This allows the toolkit to interact with docker or singularity containers without needing your input on how to mount things. However, if you wish to use a path to a file contained inside the container the autopathing will still try to find that file on your host system therefore you must use an `$` to indicate the path is located inside the container as shown in the command below:
+Command: index         index sequences in the FASTA format
+mem           BWA-MEM algorithm
+fastmap       identify super-maximal exact matches
+pemerge       merge overlapping paired ends (EXPERIMENTAL)
+aln           gapped/ungapped alignment
+samse         generate alignment (single ended)
+sampe         generate alignment (paired ended)
+bwasw         BWA-SW for long queries
+
+shm           manage indices in shared memory
+fa2pac        convert FASTA to PAC format
+pac2bwt       generate BWT from PAC
+pac2bwtgen    alternative algorithm for generating BWT
+bwtupdate     update .bwt to the new format
+bwt2sa        generate SA from BWT and Occ
+
+Note: To use BWA, you need to first index the genome with `bwa index'.
+There are three alignment algorithms in BWA: `mem', `bwasw', and
+`aln/samse/sampe'. If you are not sure which to use, try `bwa mem'
+first. Please `man ./bwa.1' for the manual.
+
+```
+<br>
+#### Special note about autopathing and pipes
+The ToolKit will automatically mount paths in your command from your host file system. This allows the toolkit to interact with docker or singularity containers without needing your input on how to mount file systems. However, if you wish to use a path to a file contained inside the container the autopathing will still try to find that file on your host system therefore you must use an `$` to indicate the path is located inside the container as shown in the command below:
 
 ```
 staphb-tk mash dist $/db/RefSeqSketchesDefaults.msh mash_output/sample_sketch.msh
 ```
 
-In addition, pipes are by default read by the bash interpreter. If you wish to use a pipe in your command and you want that pipe to run inside the container, you must use the bash escape character `\` to signify that you want the pipe run in the container. For example:
+In addition, pipes (`<`,`>`,`|`) are by default read by the bash interpreter. If you wish to use a pipe in your command and you want that pipe to run inside the container, you must use the bash escape character `\` to signify that you want the pipe run in the container. For example:
 
 ```
 staphb-tk mash dist $/db/RefSeqSketchesDefaults.msh mash_output/sample_sketch.msh \> mash_output/sample_distances.tab
 ```
 <br>
-## Included Applications
+### Included Applications
 
-To list the available software included with the ToolKit use the command `staphb-tk --list`.
+To list the available software included with the ToolKit use the command `staphb-tk -l` or `staphb-tk --list_tools`.
 
-**Note**: Some programs have been customized with additional functionality and are available under the **custom program execution** menu of the ToolKit help.
+---
+
+# Using the ToolKit to run workflows
+The ToolKit also provides the ability to run workflows. To list the available workflows using the `staphb-tk -w` or `staphb-tk --list_workflows` command.
+
 ```
-Available programs:
-Command                  Description
--------                  -----------
-abricate                 Abricate - Mass screening of contigs for antimicrobial and virulence genes
-bbtools                  BBTools - Suite of fast, multithreaded bioinformatics tools for DNA and RNA sequence data
-bwa                      BWA - mapping low-divergent sequences against a large reference genome
-canu-racon               Canu-Racon - Ultrafast consensus module for raw de novo assembly of long, uncorrected reads.
-cfsan-snp                CFSAN-SNP - SNP calling pipeline from the FDA CFSAN laboratory
-circlator                Circlator - A tool to circularize genome assemblies
-clustalo                 ClustalO - A fast multiple sequence alignment program
-emm-typing-tool          Emm-typing-tool - Group A streptococci emm typing tool for NGS data
-fastani                  FastANI - Fast whole-genome sequence average nucleotide identity (ANI) estimation
-fastqc                   FastQC - A quality control tool for high throughput sequence data.
-fasttree                 FastTree - Infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences.
-filtlong                 Filtlong - Quality filtering tool for long reads
-flye                     Flye - De novo assembler for single molecule sequencing reads using repeat graphs
-iqtree                   IQ-TREE - A fast and effective stochastic algorithm to infer phylogenetic trees by maximum likelihood.
-kma                      KMA - Mapping method designed to map raw reads directly against redundant databases, in an ultra-fast manner using seed and extend.
-kraken                   Kraken - Taxonomic sequence classification system
-kraken-build             Kraken-build - Build a kraken database
-kraken2                  Kraken2 - The second version of the Kraken taxonomic sequence classification system
-kraken2-build            Karken2-build - Build a kraken2 database
-ksnp3                    kSNP2 - Identifies the pan-genome SNPs in a set of genome sequences, and estimates phylogenetic trees based upon those SNPs.
-legsta                   Legsta - In silico Legionella pneumophila Sequence Based Typing
-lyveset                  LYVE-SET - a method of using hqSNPs to create a phylogeny.
-mash                     MASH - Fast genome and metagenome distance estimation using MinHash
-mashtree                 MashTree - Create a tree using Mash distances
-medaka                   Medaka - Sequence correction provided by ONT Research
-minimap2                 Minimap2 - a versatile sequence alignment program that aligns DNA or mRNA sequences against a large reference database.
-mlst                     MLST - Scan contig files against PubMLST typing schemes
-mugsy                    Mugsy - A multiple whole genome aligner.
-multiqc                  MultiQC - Aggregate results from bioinformatics analyses across many samples into a single report.
-nanoplot                 NanoPlot - Plotting scripts for long read sequencing data
-ncbi-amrfinder-plus      NCBI AMRFinderPlus - Designed to find acquired antimicrobial resistance genes and some point mutations in protein or assembled nucleotide sequences.
-orthofinder              OrthoFinder - Phylogenetic orthology inference for comparative genomics
-pilon                    Pilon - Automated genome assembly improvement and variant detection tool
-plasmidseeker            PlasmidSeeker - A k-mer based program for the identification of known plasmids from whole-genome sequencing reads
-prokka                   Prokka - Rapid prokaryotic genome annotation
-quast                    Quast - Genome assembly evaluation tool.
-rasusa                   RASUA - Randomly subsample sequencing reads to a specified coverage
-raxml                    RAxML -Maximum likelihood tree builder.
-roary                    Roary - Rapid large-scale prokaryote pan genome analysis.
-salmid                   SalmID - Rapid confirmation of Salmonella spp. and subspp. from sequence data
-samtools                 Samtools - A suite of programs for interacting with high-throughput sequencing data. It consists of three separate repositories.
-seqsero                  SeqSero - Salmonella serotyping from genome sequencing data.
-seqsero2                 SeqSero2 - Salmonella serotype prediction from genome sequencing data.
-seqyclean                SeqyClean - Pre-process and clean NGS data in order to prepare for downstream analysis
-seroba                   Seroba - k-mer based Pipeline to identify the Serotype from Illumina NGS reads
-serotypefinder           SerotypeFinder - identifies the serotype in total or partial sequenced isolates of E. coli.
-shovill                  Shovill - Faster SPAdes assembler
-sistr                    SISTR - Salmonella in silico typing resource command-line tool
-skesa                    SKESA - NCBI's de novo genome assemlber
-snippy                   Snippy - Rapid haploid variant calling and core genome alignment
-snp-dists                SNP-dists - Pairwise SNP distance matrix from a FASTA sequence alignment
-spades                   SPAdes - St. Petersburg genome assembler
-sra-toolkit              SRA ToolKit - Collection of tools and libraries for using data in the INSDC Sequence Read Archives.
-staramr                  StarAMR - Scans genome contigs against the ResFinder, PlasmidFinder, and PointFinder databases.
-tiptoft                  TipToft - Predict plasmids from uncorrected long read data
-trimmomatic              Trimmoamtic - Flexible read trimming tool for Illumina NGS data
-unicycler                Unicycler - an assembly pipeline for bacterial genomes.
-wtdbg2                   WTDBG2 - Fuzzy Bruijn graph approach to long noisy reads assembly
-```
-<br>
-## Using the ToolKit to run workflows
-The ToolKit also provides the ability to run workflows using the `staphb-wf` command. Information and usage of specific workflows is available on the [workflow page](/staphb_toolkit/workflows).
-```
-usage: staphb-wf [optional arguments] <workflow> [workflow arguments]
+$ staphb-tk -w
+Available workflows:                                                                                                              
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃          ┃                                                                                                                     ┃
+┃Command   ┃Description                                                                                                          ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│          │                                                                                                                     │
+│bactopia  │Bactopia is a flexible pipeline for complete analysis of bacterial genomes. The goal of Bactopia is to process your  │
+│          │data with a broad set of tools, so that you can get to the fun part of analyses quicker!                             │
+│          │                                                                                                                     │
+│cecret    │Cecret is a workflow developed by @erinyoung at the Utah Public Health Laborotory for SARS-COV-2 sequencing with the │
+│          │artic/Illumina hybrid library prep workflow for MiSeq data.                                                          │
+│          │                                                                                                                     │
+│dryad     │Dryad is a pipeline to construct reference free core-genome or SNP phylogenetic trees for examining prokaryote       │
+│          │relatedness in outbreaks. Dryad will performs both a reference free core-genome and/or a SNP analysis using the      │
+│          │CFSAN-SNP pipeline.                                                                                                  │
+│          │                                                                                                                     │
+│mycosnp   │MycoSNP is a portable workflow for performing whole genome sequencing analysis of fungal organisms, including Candida│
+│          │auris.                                                                                                               │
+│          │                                                                                                                     │
+│spriggan  │Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic    │
+│          │resistance genes.                                                                                                    │
+│          │                                                                                                                     │
+│viralrecon│Viralrecon is a pipeline used to perform assembly and intra-host/low-frequency variant calling for viral samples.    │
+└──────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-optional arguments:
-  -h, --help  show this help message and exit
-
-workflows:
-
-    tredegar  Quality control of WGS read data.
-    monroe    Consensus assembly for SARS-CoV-2 from ARTIC + Illumina
-              protocols.
-    dryad     A comprehensive tree building program.
 ```
 
-To run the workflow simply use the command and workflow allowing with the workflow specific commands.
+Additional help is available for each workflow by using the workflow name and the `-h` flag i.e. `staphb-tk bactopia -h`. This will list all of the parameters available for the workflow. For further information about each of the workflows visit their documentation.
+
+### Controlling Versions
+The toolkit allows changing the version of nextflow used to run the workflows as well as the version of the workflow. In order to specify a specific version of nextflow use the `-nv` or `--nextflow_version` flag. Likewise to specify a workflow version use the `-wv` or `--workflow_version` flags.
+
+```
+staphb-tk -nv 22.04.5 -wv 3.3.20220810 cecret
+```
+
+### Configuring Workflows 
+Workflow configurations can be obtained using the `-gc` or `--get_configuration` flags. This will either download the most recent configuration file or if a version is specified using the `-wv` flag then the appropriate version of the configuration will be downloaded. For further information on how Nextflow utilizes the configuration file visit the nextflow documentation [here](https://www.nextflow.io/docs/latest/config.html) or visit the workflows documentation page.
