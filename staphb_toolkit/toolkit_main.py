@@ -37,6 +37,7 @@ def main():
             print("[bold cyan]"+f.renderText('StaPH-B ToolKit')+"[/bold cyan]")
             print('StaPH-B ToolKit')
             print(f"Version: {updates.tk_version}")
+            print(f"Documentation: https://staphb.org/staphb_toolkit/")
             self._print_message(self.format_help(), file)
 
     #get app list and metadata
