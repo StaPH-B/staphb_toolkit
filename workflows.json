@@ -1,0 +1,46 @@
+{
+  "workflows":{
+    "bactopia": {
+      "description": "Bactopia is a flexible pipeline for complete analysis of bacterial genomes. The goal of Bactopia is to process your data with a broad set of tools, so that you can get to the fun part of analyses quicker!",
+      "repo": "bactopia/bactopia",
+      "default_branch": "master",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
+    },
+    "cecret": {
+      "description": "Cecret is a workflow developed by @erinyoung at the Utah Public Health Laborotory for SARS-COV-2 sequencing with the artic/Illumina hybrid library prep workflow for MiSeq data.",
+      "repo": "UPHL-BioNGS/Cecret",
+      "default_branch": "master",
+      "configuration": "configs/cecret_config_template.config",
+      "schema":""
+    },
+    "dryad": {
+      "description": "Dryad is a pipeline to construct reference free core-genome or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will performs both a reference free core-genome and/or a SNP analysis using the CFSAN-SNP pipeline.",
+      "repo": "wslh-bio/dryad",
+      "default_branch": "main",
+      "configuration": "dryad.config",
+      "schema":"nextflow_schema.json"
+    },
+    "mycosnp": {
+      "description": "MycoSNP is a portable workflow for performing whole genome sequencing analysis of fungal organisms, including Candida auris.",
+      "repo": "CDCgov/mycosnp-nf",
+      "default_branch": "master",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
+    },
+    "spriggan": {
+      "description": "Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic resistance genes.",
+      "repo": "wslh-bio/spriggan",
+      "default_branch": "main",
+      "configuration": "spriggan.config",
+      "schema":"nextflow_schema.json"
+    },
+    "viralrecon": {
+      "description": "Viralrecon is a pipeline used to perform assembly and intra-host/low-frequency variant calling for viral samples.",
+      "repo": "nf-core/viralrecon",
+      "default_branch": "master",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
+    }
+  }
+}
