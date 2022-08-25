@@ -14,11 +14,25 @@
       "configuration": "configs/cecret_config_template.config",
       "schema":""
     },
+    "donut_falls": {
+      "description": "Donut Falls is a basic assembly workflow for Nanopore sequencing.",
+      "repo": "UPHL-BioNGS/Donut_Falls",
+      "default_branch": "main",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
+    },
     "dryad": {
       "description": "Dryad is a pipeline to construct reference free core-genome or SNP phylogenetic trees for examining prokaryote relatedness in outbreaks. Dryad will performs both a reference free core-genome and/or a SNP analysis using the CFSAN-SNP pipeline.",
       "repo": "wslh-bio/dryad",
       "default_branch": "main",
       "configuration": "dryad.config",
+      "schema":"nextflow_schema.json"
+    },
+    "grandeur": {
+      "description": "Grandeur is short-read de novo assembly pipeline with serotyping.",
+      "repo": "UPHL-BioNGS/Grandeur",
+      "default_branch": "main",
+      "configuration": "nextflow.config",
       "schema":"nextflow_schema.json"
     },
     "mycosnp": {
