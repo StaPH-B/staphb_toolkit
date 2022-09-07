@@ -12,7 +12,7 @@
       "repo": "UPHL-BioNGS/Cecret",
       "default_branch": "master",
       "configuration": "configs/cecret_config_template.config",
-      "schema":""
+      "schema":"nextflow_schema.json"
     },
     "donut_falls": {
       "description": "Donut Falls is a basic assembly workflow for Nanopore sequencing.",
