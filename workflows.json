@@ -42,6 +42,13 @@
       "configuration": "nextflow.config",
       "schema":"nextflow_schema.json"
     },
+    "phoenix": {
+      "description": "PHoeNIx: A short-read pipeline for healthcare-associated and antimicrobial resistant pathogens.",
+      "repo": "CDCgov/phoenix",
+      "default_branch": "main",
+      "configuration": "nextflow.config",
+      "schema":"nextflow_schema.json"
+    },
     "spriggan": {
       "description": "Spriggan is a pipeline used for assembly of bacterial whole genome sequence data and identification of antibiotic resistance genes.",
       "repo": "wslh-bio/spriggan",
