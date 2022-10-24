@@ -101,7 +101,10 @@ def get_workflow_help(repo,workflow,wf_version,schema_fname):
     table.add_column("Description", justify="left")
 
     for parameter in params.keys():
-        table.add_row(parameter,params[parameter]['description'])
+        try:
+            table.add_row(parameter,params[parameter]['description'])
+        except KeyError:
+            table.add_row(parameter,'')
 
     console = Console()
     console.print(table)
